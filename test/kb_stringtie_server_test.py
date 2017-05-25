@@ -3,7 +3,9 @@ import unittest
 import os  # noqa: F401
 import json  # noqa: F401
 import time
-import requests
+import requests  # noqa: F401
+import shutil
+from mock import patch
 
 from os import environ
 try:
@@ -17,6 +19,7 @@ from biokbase.workspace.client import Workspace as workspaceService
 from kb_stringtie.kb_stringtieImpl import kb_stringtie
 from kb_stringtie.kb_stringtieServer import MethodContext
 from kb_stringtie.authclient import KBaseAuth as _KBaseAuth
+from kb_stringtie.Utils.StringTieUtil import StringTieUtil
 
 
 class kb_stringtieTest(unittest.TestCase):
@@ -51,11 +54,20 @@ class kb_stringtieTest(unittest.TestCase):
         cls.scratch = cls.cfg['scratch']
         cls.callback_url = os.environ['SDK_CALLBACK_URL']
 
+        cls.stringtie_runner = StringTieUtil(cls.cfg)
+        cls.prepare_data()
+
     @classmethod
     def tearDownClass(cls):
         if hasattr(cls, 'wsName'):
             cls.wsClient.delete_workspace({'workspace': cls.wsName})
             print('Test workspace was deleted')
+
+    @classmethod
+    def prepare_data(cls):
+        input_file = 'samExample.sam'
+        input_file_path = os.path.join(cls.scratch, input_file)
+        shutil.copy(os.path.join("data", input_file), input_file_path)
 
     def getWsClient(self):
         return self.__class__.wsClient
@@ -75,15 +87,82 @@ class kb_stringtieTest(unittest.TestCase):
     def getContext(self):
         return self.__class__.ctx
 
-    # NOTE: According to Python unittest naming rules test method names should start from 'test'. # noqa
-    def test_your_method(self):
-        # Prepare test objects in workspace if needed using
-        # self.getWsClient().save_objects({'workspace': self.getWsName(),
-        #                                  'objects': []})
-        #
-        # Run your method by
-        # ret = self.getImpl().your_method(self.getContext(), parameters...)
-        #
-        # Check returned data with
-        # self.assertEqual(ret[...], ...) or other unittest methods
-        pass
+    def mock_get_input_file():
+        print 'Mocking StringTieUtil._get_input_file'
+
+        return '/kb/module/work/tmp/samExample.sam'
+
+    def test_bad_run_stringtie_app_params(self):
+        invalidate_input_params = {
+          'missing_alignment_ref': 'alignment_ref',
+          'expression_object_name': 'expression_object_name',
+          'workspace_name': 'workspace_name'
+        }
+        with self.assertRaisesRegexp(
+                    ValueError, '"alignment_ref" parameter is required, but missing'):
+            self.getImpl().run_stringtie_app(self.getContext(), invalidate_input_params)
+
+        invalidate_input_params = {
+          'alignment_ref': 'alignment_ref',
+          'missing_expression_object_name': 'expression_object_name',
+          'workspace_name': 'workspace_name'
+        }
+        with self.assertRaisesRegexp(
+                    ValueError, '"expression_object_name" parameter is required, but missing'):
+            self.getImpl().run_stringtie_app(self.getContext(), invalidate_input_params)
+
+        invalidate_input_params = {
+          'alignment_ref': 'alignment_ref',
+          'expression_object_name': 'expression_object_name',
+          'missing_workspace_name': 'workspace_name'
+        }
+        with self.assertRaisesRegexp(
+                    ValueError, '"workspace_name" parameter is required, but missing'):
+            self.getImpl().run_stringtie_app(self.getContext(), invalidate_input_params)
+
+    def test_StringTieUtil_generate_command(self):
+        command_params = {
+            'num_threads': 4,
+            'junction_base': 8,
+            'junction_coverage': 0.8,
+            'disable_trimming': True,
+            'min_locus_gap_sep_value': 60,
+            'maximum_fraction': 0.8,
+            'label': 'Lable',
+            'min_length': 100,
+            'min_read_coverage': 1.6,
+            'min_isoform_abundance': 0.6,
+            'output_transcripts': 'output_transcripts_file',
+            'gene_abundances_file': 'gene_abundances_file',
+            'input_file': 'input_file',
+            'ballgown_mode': True,
+            'skip_reads_with_no_ref': True,
+            'gtf_file': 'gtf_file',
+            'cov_refs_file': 'cov_refs_file',
+            }
+
+        expect_command = '/kb/deployment/bin/StringTie/stringtie '
+        expect_command += '-p 4 -B   -C cov_refs_file -e   -G gtf_file -m 100 '
+        expect_command += '-o output_transcripts_file -A gene_abundances_file '
+        expect_command += '-f 0.6 -j 0.8 -a 8 -t   -c 1.6 -l Lable -g 60 -M 0.8 input_file '
+
+        command = self.stringtie_runner._generate_command(command_params)
+        self.assertEquals(command, expect_command)
+
+    @patch.object(StringTieUtil, "_get_input_file", side_effect=mock_get_input_file)
+    def test_run_stringtie_app_single_file(self, _get_input_file):
+
+        input_params = {
+            'alignment_ref': 'alignment_ref',
+            'expression_object_name': 'MyExpression',
+            'workspace_name': self.getWsName()
+        }
+
+        result = self.getImpl().run_stringtie_app(self.getContext(), input_params)[0]
+
+        print result
+
+        # self.assertTrue('result_directory' in result)
+        # self.assertTrue('binned_contig_obj_ref' in result)
+        # self.assertTrue('report_name' in result)
+        # self.assertTrue('report_ref' in result)
