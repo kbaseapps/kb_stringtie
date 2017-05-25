@@ -12,6 +12,7 @@ eval {
     $get_time = sub { Time::HiRes::gettimeofday() };
 };
 
+use Bio::KBase::AuthToken;
 
 # Client version should match Impl version
 # This is a Semantic Version number,
@@ -74,6 +75,27 @@ sub new
 	push(@{$self->{headers}}, 'Kbrpc-Errordest', $self->{kbrpc_error_dest});
     }
 
+    #
+    # This module requires authentication.
+    #
+    # We create an auth token, passing through the arguments that we were (hopefully) given.
+
+    {
+	my %arg_hash2 = @args;
+	if (exists $arg_hash2{"token"}) {
+	    $self->{token} = $arg_hash2{"token"};
+	} elsif (exists $arg_hash2{"user_id"}) {
+	    my $token = Bio::KBase::AuthToken->new(@args);
+	    if (!$token->error_message) {
+	        $self->{token} = $token->token;
+	    }
+	}
+	
+	if (exists $self->{token})
+	{
+	    $self->{client}->{token} = $self->{token};
+	}
+    }
 
     my $ua = $self->{client}->ua;	 
     my $timeout = $ENV{CDMI_TIMEOUT} || (30 * 60);	 
@@ -84,6 +106,138 @@ sub new
 }
 
 
+
+
+=head2 run_stringtie_app
+
+  $returnVal = $obj->run_stringtie_app($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a kb_stringtie.StringTieInput
+$returnVal is a kb_stringtie.StringTieResult
+StringTieInput is a reference to a hash where the following keys are defined:
+	alignment_ref has a value which is a kb_stringtie.obj_ref
+	expression_object_name has a value which is a string
+	workspace_name has a value which is a string
+	merge has a value which is a kb_stringtie.boolean
+	num_threads has a value which is an int
+	junction_base has a value which is an int
+	junction_coverage has a value which is a float
+	disable_trimming has a value which is a kb_stringtie.boolean
+	min_locus_gap_sep_value has a value which is an int
+	ballgown_mode has a value which is a kb_stringtie.boolean
+	skip_reads_with_no_ref has a value which is a kb_stringtie.boolean
+	maximum_fraction has a value which is a float
+	label has a value which is a string
+	min_length has a value which is an int
+	min_read_coverage has a value which is a float
+	min_isoform_abundance has a value which is a float
+obj_ref is a string
+boolean is an int
+StringTieResult is a reference to a hash where the following keys are defined:
+	result_directory has a value which is a string
+	expression_obj_ref has a value which is a kb_stringtie.obj_ref
+	report_name has a value which is a string
+	report_ref has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a kb_stringtie.StringTieInput
+$returnVal is a kb_stringtie.StringTieResult
+StringTieInput is a reference to a hash where the following keys are defined:
+	alignment_ref has a value which is a kb_stringtie.obj_ref
+	expression_object_name has a value which is a string
+	workspace_name has a value which is a string
+	merge has a value which is a kb_stringtie.boolean
+	num_threads has a value which is an int
+	junction_base has a value which is an int
+	junction_coverage has a value which is a float
+	disable_trimming has a value which is a kb_stringtie.boolean
+	min_locus_gap_sep_value has a value which is an int
+	ballgown_mode has a value which is a kb_stringtie.boolean
+	skip_reads_with_no_ref has a value which is a kb_stringtie.boolean
+	maximum_fraction has a value which is a float
+	label has a value which is a string
+	min_length has a value which is an int
+	min_read_coverage has a value which is a float
+	min_isoform_abundance has a value which is a float
+obj_ref is a string
+boolean is an int
+StringTieResult is a reference to a hash where the following keys are defined:
+	result_directory has a value which is a string
+	expression_obj_ref has a value which is a kb_stringtie.obj_ref
+	report_name has a value which is a string
+	report_ref has a value which is a string
+
+
+=end text
+
+=item Description
+
+run_stringtie_app: run StringTie app
+
+ref: http://ccb.jhu.edu/software/stringtie/index.shtml?t=manual
+
+=back
+
+=cut
+
+ sub run_stringtie_app
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function run_stringtie_app (received $n, expecting 1)");
+    }
+    {
+	my($params) = @args;
+
+	my @_bad_arguments;
+        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to run_stringtie_app:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'run_stringtie_app');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "kb_stringtie.run_stringtie_app",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'run_stringtie_app',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method run_stringtie_app",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'run_stringtie_app',
+				       );
+    }
+}
+ 
   
 sub status
 {
@@ -119,7 +273,7 @@ sub status
 sub version {
     my ($self) = @_;
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
-        method => "${last_module.module_name}.version",
+        method => "kb_stringtie.version",
         params => [],
     });
     if ($result) {
@@ -127,16 +281,16 @@ sub version {
             Bio::KBase::Exceptions::JSONRPC->throw(
                 error => $result->error_message,
                 code => $result->content->{code},
-                method_name => '${last_method.name}',
+                method_name => 'run_stringtie_app',
             );
         } else {
             return wantarray ? @{$result->result} : $result->result->[0];
         }
     } else {
         Bio::KBase::Exceptions::HTTP->throw(
-            error => "Error invoking method ${last_method.name}",
+            error => "Error invoking method run_stringtie_app",
             status_line => $self->{client}->status_line,
-            method_name => '${last_method.name}',
+            method_name => 'run_stringtie_app',
         );
     }
 }
@@ -170,6 +324,198 @@ sub _validate_version {
 }
 
 =head1 TYPES
+
+
+
+=head2 boolean
+
+=over 4
+
+
+
+=item Description
+
+A boolean - 0 for false, 1 for true.
+@range (0, 1)
+
+
+=item Definition
+
+=begin html
+
+<pre>
+an int
+</pre>
+
+=end html
+
+=begin text
+
+an int
+
+=end text
+
+=back
+
+
+
+=head2 obj_ref
+
+=over 4
+
+
+
+=item Description
+
+An X/Y/Z style reference
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a string
+</pre>
+
+=end html
+
+=begin text
+
+a string
+
+=end text
+
+=back
+
+
+
+=head2 StringTieInput
+
+=over 4
+
+
+
+=item Description
+
+required params:
+assembly_ref: Alignment object reference
+expression_set_name: ExpressionSet object name and output file header
+workspace_name: the name of the workspace it gets saved to.
+
+optional params:
+num_threads: number of processing threads
+junction_base: junctions that don't have spliced reads
+junction_coverage: junction coverage
+disable_trimming: disables trimming at the ends of the assembled transcripts
+min_locus_gap_sep_value: minimum locus gap separation value
+ballgown_mode: enables the output of Ballgown input table files
+skip_reads_with_no_ref: reads with no reference will be skipped
+maximum_fraction: maximum fraction of muliple-location-mapped reads
+label: prefix for the name of the output transcripts
+min_length: minimum length allowed for the predicted transcripts
+min_read_coverage: minimum input transcript coverage
+min_isoform_abundance: minimum isoform abundance
+merge: set transcript merge mode
+
+ref: http://ccb.jhu.edu/software/stringtie/index.shtml?t=manual
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+alignment_ref has a value which is a kb_stringtie.obj_ref
+expression_object_name has a value which is a string
+workspace_name has a value which is a string
+merge has a value which is a kb_stringtie.boolean
+num_threads has a value which is an int
+junction_base has a value which is an int
+junction_coverage has a value which is a float
+disable_trimming has a value which is a kb_stringtie.boolean
+min_locus_gap_sep_value has a value which is an int
+ballgown_mode has a value which is a kb_stringtie.boolean
+skip_reads_with_no_ref has a value which is a kb_stringtie.boolean
+maximum_fraction has a value which is a float
+label has a value which is a string
+min_length has a value which is an int
+min_read_coverage has a value which is a float
+min_isoform_abundance has a value which is a float
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+alignment_ref has a value which is a kb_stringtie.obj_ref
+expression_object_name has a value which is a string
+workspace_name has a value which is a string
+merge has a value which is a kb_stringtie.boolean
+num_threads has a value which is an int
+junction_base has a value which is an int
+junction_coverage has a value which is a float
+disable_trimming has a value which is a kb_stringtie.boolean
+min_locus_gap_sep_value has a value which is an int
+ballgown_mode has a value which is a kb_stringtie.boolean
+skip_reads_with_no_ref has a value which is a kb_stringtie.boolean
+maximum_fraction has a value which is a float
+label has a value which is a string
+min_length has a value which is an int
+min_read_coverage has a value which is a float
+min_isoform_abundance has a value which is a float
+
+
+=end text
+
+=back
+
+
+
+=head2 StringTieResult
+
+=over 4
+
+
+
+=item Description
+
+result_directory: folder path that holds all files generated by run_stringtie
+expression_obj_ref: generated Expression/ExpressionSet object reference
+report_name: report name generated by KBaseReport
+report_ref: report reference generated by KBaseReport
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+result_directory has a value which is a string
+expression_obj_ref has a value which is a kb_stringtie.obj_ref
+report_name has a value which is a string
+report_ref has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+result_directory has a value which is a string
+expression_obj_ref has a value which is a kb_stringtie.obj_ref
+report_name has a value which is a string
+report_ref has a value which is a string
+
+
+=end text
+
+=back
 
 
 

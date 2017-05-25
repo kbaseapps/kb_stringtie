@@ -21,6 +21,15 @@ RUN pip install cffi --upgrade \
     && pip install requests --upgrade \
     && pip install 'requests[security]' --upgrade
 
+# download StringTie software and untar it
+RUN cd /kb/dev_container/modules && \
+    mkdir StringTie && cd StringTie && \
+    wget http://ccb.jhu.edu/software/stringtie/dl/stringtie-1.3.3b.Linux_x86_64.tar.gz &&\
+    tar xvfz stringtie-1.3.3b.Linux_x86_64.tar.gz && \
+    cd stringtie-1.3.3b.Linux_x86_64 && \
+    mkdir /kb/deployment/bin/StringTie && \
+    cp -R stringtie /kb/deployment/bin/StringTie/stringtie
+
 # -----------------------------------------
 
 COPY ./ /kb/module
