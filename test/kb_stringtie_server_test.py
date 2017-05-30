@@ -69,6 +69,8 @@ class kb_stringtieTest(unittest.TestCase):
         input_file_path = os.path.join(cls.scratch, input_file)
         shutil.copy(os.path.join("data", input_file), input_file_path)
 
+        cls.alignment_ref = '15206/133/1'
+
     def getWsClient(self):
         return self.__class__.wsClient
 
@@ -87,7 +89,7 @@ class kb_stringtieTest(unittest.TestCase):
     def getContext(self):
         return self.__class__.ctx
 
-    def mock_get_input_file():
+    def mock_get_input_file(alignment_ref):
         print 'Mocking StringTieUtil._get_input_file'
 
         return '/kb/module/work/tmp/samExample.sam'
@@ -153,16 +155,21 @@ class kb_stringtieTest(unittest.TestCase):
     def test_run_stringtie_app_single_file(self, _get_input_file):
 
         input_params = {
-            'alignment_ref': 'alignment_ref',
+            'alignment_ref': self.alignment_ref,
             'expression_object_name': 'MyExpression',
-            'workspace_name': self.getWsName()
+            'workspace_name': self.getWsName(),
+            'run_matrix_count': True
         }
 
         result = self.getImpl().run_stringtie_app(self.getContext(), input_params)[0]
 
         print result
 
-        # self.assertTrue('result_directory' in result)
+        self.assertTrue('result_directory' in result)
+        result_files = os.listdir(result['result_directory'])
+        expect_result_files = ['gene_count_matrix.csv', 'genes.fpkm_tracking',
+                               'transcript_count_matrix.csv', 'transcripts.gtf']
+        self.assertItemsEqual(expect_result_files, result_files)
         # self.assertTrue('binned_contig_obj_ref' in result)
         # self.assertTrue('report_name' in result)
         # self.assertTrue('report_ref' in result)

@@ -32,6 +32,27 @@ RUN cd /kb/dev_container/modules && \
 
 # -----------------------------------------
 
+# download prepDE script
+RUN cd /kb/dev_container/modules && \
+    mkdir prepDE && cd prepDE && \
+    wget http://ccb.jhu.edu/software/stringtie/dl/prepDE.py &&\
+    mkdir /kb/deployment/bin/prepDE && \
+    cp -R prepDE.py /kb/deployment/bin/prepDE/prepDE.py && \
+    chmod 777 /kb/deployment/bin/prepDE/prepDE.py
+
+# -----------------------------------------
+
+# download gffread script
+RUN cd /kb/dev_container/modules && \
+    mkdir gffread && cd gffread && \
+    wget http://ccb.jhu.edu/software/stringtie/dl/gffread-0.9.9.Linux_x86_64.tar.gz &&\
+    tar xvfz gffread-0.9.9.Linux_x86_64.tar.gz && \
+    cd gffread-0.9.9.Linux_x86_64 && \
+    mkdir /kb/deployment/bin/gffread && \
+    cp -R gffread /kb/deployment/bin/gffread/gffread
+
+# -----------------------------------------
+
 COPY ./ /kb/module
 RUN mkdir -p /kb/module/work
 RUN chmod -R a+rw /kb/module

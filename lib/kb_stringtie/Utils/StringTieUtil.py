@@ -4,13 +4,12 @@ import os
 import uuid
 import errno
 import subprocess
-import shutil
-import sys
-import zipfile
 
-# from DataFileUtil.DataFileUtilClient import DataFileUtil
+from DataFileUtil.DataFileUtilClient import DataFileUtil
+from Workspace.WorkspaceClient import Workspace as Workspace
 # from KBaseReport.KBaseReportClient import KBaseReport
-# from AssemblyUtil.AssemblyUtilClient import AssemblyUtil
+from AssemblyUtil.AssemblyUtilClient import AssemblyUtil
+from GenomeFileUtil.GenomeFileUtilClient import GenomeFileUtil
 
 
 def log(message, prefix_newline=False):
@@ -20,10 +19,8 @@ def log(message, prefix_newline=False):
 
 class StringTieUtil:
     STRINGTIE_TOOLKIT_PATH = '/kb/deployment/bin/StringTie'
-
-    MERGE_SPECIFIC_OPTION_MAP = {'min_fpkm': '-F',
-                                 'min_tpm': '-T',
-                                 'keep_introns': '-i'}
+    PREPDE_TOOLKIT_PATH = '/kb/deployment/bin/prepDE'
+    GFFREAD_TOOLKIT_PATH = '/kb/deployment/bin/gffread'
 
     OPTIONS_MAP = {
                     'output_transcripts': '-o',
@@ -92,7 +89,7 @@ class StringTieUtil:
 
         command += '{} '.format(params.get('input_file'))
 
-        log('Generated run_MaxBin command: {}'.format(command))
+        log('Generated stringtie command: {}'.format(command))
 
         return command
 
@@ -114,18 +111,101 @@ class StringTieUtil:
             error_msg += 'Exit Code: {}\nOutput:\n{}'.format(exitCode, output)
             raise ValueError(error_msg)
 
-    def _get_input_file(self):
+    def _get_input_file(self, alignment_ref):
+        """
+        _get_input_file: get input  SAM/BAM file from Alignment object
+        """
+        result_directory = self.scratch
+
         return 'input_file_path'
 
-    def _get_gtf_file(self):
-        return ''
+    def _get_gtf_file(self, alignment_ref):
+        """
+        _get_gtf_file: get the reference annotation file (in GTF or GFF3 format)
+        """
+        result_directory = self.scratch
+        alignment_info = self.ws.get_objects2({'objects':
+                                               [{'ref': alignment_ref}]})['data'][0]['info']
+
+        genome_ref = alignment_info[-1].get('genome_id')
+
+        # genome_ref = '15206/137/1'
+
+        genome_data = self.ws.get_objects2({'objects':
+                                            [{'ref': genome_ref}]})['data'][0]['data']
+
+        gff_handle_ref = genome_data.get('gff_handle_ref')
+
+        if gff_handle_ref:
+            log('getting reference annotation file from genome')
+            annotation_file = self.dfu.shock_to_file({'handle_id': gff_handle_ref,
+                                                      'file_path': result_directory,
+                                                      'unpack': 'unpack'})['file_path']
+        else:
+            annotation_file = self._create_gtf_file(genome_ref)
+
+        return annotation_file
+
+    def _create_gtf_file(self, genome_ref):
+        """
+        _create_gtf_file: create reference annotation file from genome
+        """
+
+        result_directory = self.scratch
+
+        log('start generating reference annotation file')
+
+        genome_gff_file = self.gfu.genome_to_gff({'genome_ref': genome_ref,
+                                                  'target_dir': result_directory})['file_path']
+
+        gtf_ext = '.gtf'
+        if not genome_gff_file.endswith(gtf_ext):
+            gtf_path = os.path.splitext(genome_gff_file)[0] + '.gtf'
+            self._run_gffread(genome_gff_file, gtf_path)
+        else:
+            gtf_path = genome_gff_file
+
+        return gtf_path
+
+    def _run_gffread(self, gff_path, gtf_path):
+        """
+        _run_gffread: run gffread script
+
+        ref: http://ccb.jhu.edu/software/stringtie/gff.shtml
+        """
+        log('converting gff to gtf')
+        command = self.GFFREAD_TOOLKIT_PATH + '/gffread '
+        command += "-E {0} -T -o {1}".format(gff_path, gtf_path)
+
+        self._run_command(command)
+
+    def _run_prepDE(self, result_directory):
+        """
+        _run_prepDE: run prepDE.py script
+
+        ref: http://ccb.jhu.edu/software/stringtie/index.shtml?t=manual#deseq
+        """
+
+        log('generating matrix of read counts')
+        command = self.PREPDE_TOOLKIT_PATH + '/prepDE.py '
+        command += '-i {} '.format(os.path.dirname(result_directory))
+        command += '-g {} '.format(os.path.join(result_directory, 'gene_count_matrix.csv'))
+        command += '-t {} '.format(os.path.join(result_directory, 'transcript_count_matrix.csv'))
+
+        self._run_command(command)
 
     def __init__(self, config):
+        self.ws_url = config["workspace-url"]
         self.callback_url = config['SDK_CALLBACK_URL']
-        self.scratch = config['scratch']
+        self.token = config['KB_AUTH_TOKEN']
         self.shock_url = config['shock-url']
-        # self.dfu = DataFileUtil(self.callback_url)
-        # self.au = AssemblyUtil(self.callback_url)
+        self.dfu = DataFileUtil(self.callback_url)
+        self.gfu = GenomeFileUtil(self.callback_url)
+        self.au = AssemblyUtil(self.callback_url)
+        self.ws = Workspace(self.ws_url, token=self.token)
+
+        self.scratch = os.path.join(config['scratch'], str(uuid.uuid4()))
+        self._mkdir_p(self.scratch)
 
     def run_stringtie_app(self, params):
         """
@@ -133,7 +213,7 @@ class StringTieUtil:
         (http://ccb.jhu.edu/software/stringtie/index.shtml?t=manual)
 
         required params:
-        assembly_ref: Alignment object reference
+        alignment_ref: Alignment object reference
         expression_set_name: ExpressionSet object name and output file header
         workspace_name: the name of the workspace it gets saved to.
 
@@ -167,11 +247,9 @@ class StringTieUtil:
         self._mkdir_p(result_directory)
 
         # input files
-        input_file = self._get_input_file()
-        params['input_file'] = input_file
-
-        gtf_file = self._get_gtf_file()
-        params['gtf_file'] = gtf_file
+        alignment_ref = params.get('alignment_ref')
+        params['input_file'] = self._get_input_file(alignment_ref)
+        params['gtf_file'] = self._get_gtf_file(alignment_ref)
 
         # output files
         output_transcripts = 'transcripts.gtf'
@@ -184,5 +262,8 @@ class StringTieUtil:
 
         self._run_command(command)
 
-        returnVal = {'a': 'a'}
+        if params.get('run_matrix_count'):
+            self._run_prepDE(result_directory)
+
+        returnVal = {'result_directory': result_directory}
         return returnVal
