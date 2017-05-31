@@ -69,7 +69,6 @@ module kb_stringtie {
         string report_ref;
     }StringTieResult;
 
-
     /*  
         run_stringtie_app: run StringTie app
 
