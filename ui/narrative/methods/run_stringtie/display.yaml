@@ -1,0 +1,108 @@
+#
+# Define basic display information
+#
+name     : Assemble Transcripts using StringTie
+
+tooltip  : |
+    Assemble the transcripts from RNA-seq reads using StringTie
+screenshots :
+    []
+
+#
+# Define the set of other narrative methods that should be suggested to the user.
+#
+method-suggestions :
+    related :
+        []
+    next :
+        [identify_differential_expression_using_cuffdiff,identify_differential_expression_using_ballgown]
+
+#
+# Configure the display and description of the parameters
+#
+parameters :
+  alignment_ref :
+    ui-name : |
+        RNA-seq Alignment or Alignment Set 
+    short-hint : |
+        Select the RNA-seq alignment or alignment set created by HISAT2, TopHat2 or Bowtie2.
+  min_isoform_abundance :
+    ui-name : |
+      Minimum Isoform Abundance
+    short-hint : |
+      Set the minimum isoform abundance of the predicted transcripts as a fraction of the most abundant transcript assembled at a given locus. Lower abundance transcripts are often artifacts of incompletely spliced precursors of processed transcripts. Default: 0.1. 
+  junction_base :
+    ui-name : |
+      Filter Junctions 
+    short-hint : |
+      Junctions that don't have spliced reads that align across them with at least this amount of bases on both sides are filtered out. Default is 10.
+  min_length :
+    ui-name : |
+      Minimum Length
+    short-hint : |      
+      Select minimum length for predicted transcripts. Default is 200.
+  junction_coverage :
+    ui-name : |
+      Minimum Spliced Reads
+    short-hint : |
+      Select minimum spliced reads to align across a junction. Default is 1.
+  min_read_coverage :
+    ui-name : |
+      Minimum Read Coverage
+    short-hint : |
+      Select minimum read coverage allowed for predicted transcripts. Default is 2.5
+  min_locus_gap_sep_value :
+    ui-name : |
+      Minimum Locus Gap
+    short-hint : |
+      Select minimum locus gap separation value. Default is 50.
+  expression_object_name :
+    ui-name : |
+      Expression Object Name
+    short_hint : |
+      Expression object name
+  merge :
+    ui-name : |
+      Transcript Merge Mode
+    short-hint : |
+      Transcript merge mode
+  run_matrix_count :
+    ui-name : |
+      Run Read Counts
+    short-hint : |
+      Run read counts preparing for DESeq
+    
+description : |
+    <p>This App assembles transcripts for a given sample or a sample set using StringTie so that you can view the relative abundances of the assembled transcripts in a histogram. </p>
+    <p>STringTie is a successor of Cufflinks that is faster and provides more accurate reconstruction of genes and expression level. It accepts aligned RNA-seq reads from HISAT2, TopHat2 or Bowtie2 and assembles the alignments into a parsimonious set of transcripts. It then estimates the relative abundances of these transcripts based on how many reads support each one, taking into account biases in library preparation protocols.</p>
+    <p>The StringTie output object contains GTF and FPKM files. The GTF file contains annotated transcripts assembled by StringTie whereas the FPKM file provides the normalized expression matrix objects (abundance of each transcript expressed in fragments per kilobase of exon per million fragments mapped (FPKM) and transcripts per kilobase million (TPM)). The StringTie Table Histogram tab displays the abundance of normalized gene expression value in both log2(FPKM+1) and log2(TPM+1).</p>
+    <p>The StringTie output object can be used to identify differential expression either using Cuffdiff or Ballgown.</p>
+    <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
+    Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Vivek Kumar</p>
+    
+publications :
+    -
+        display-text: |
+            Pertea M, Pertea GM, Antonescu CM, Chang TC, Mendell JT & Salzberg SL. StringTie enables improved reconstruction of a transcriptome from RNA-seq reads Nature Biotechnology 2015
+        link: http://www.nature.com/nbt/journal/v33/n3/full/nbt.3122.html
+    -
+        display-text: |
+            Kim D, Langmead B and Salzberg SL (2015). HISAT: a fast spliced aligner with low memory requirements. Nature Methods 2015
+        link: http://www.nature.com/nmeth/journal/v12/n4/full/nmeth.3317.html
+
+        display-text: |
+            Kim D, Pertea G, Trapnell C, Pimentel H, Kelley R, Salzberg SL (2013) TopHat2: accurate alignment of transcriptomes in the presence of insertions, deletions and gene fusions. Genome Biology. 14:R36
+        link: http://www.genomebiology.com/2013/14/4/R36/abstract
+    -    
+        display-text: |
+            Trapnell C, Roberts A, Goff L, Pertea G, Kim D, Kelley DR, Pimentel H, Salzberg SL, Rinn JL, Pachter, L (2012) Differential gene and transcript expression analysis of RNA-seq experiments with TopHat and Cufflinks. Nature Protocols, 7(3), 562–578.
+        link: http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3334321/
+    -
+        display-text: |
+            Trapnell C, Pachter L, Salzberg SL. (2009) TopHat: discovering splice junctions with RNA-Seq. Bioinformatics. Vol 25, 9:1105-1111.
+        link: http://bioinformatics.oxfordjournals.org/content/25/9/1105.abstract
+    -
+        display-text: |
+            Frazee, A. C., Pertea, G., Jaffe, A. E., Langmead, B., Salzberg, S. L., & Leek, J. T. (2015). Ballgown bridges the gap between transcriptome assembly and expression analysis. Nature Biotechnology, 33(3), 243–246.
+        link: http://www.ncbi.nlm.nih.gov/pmc/articles/PMC4792117/
+
