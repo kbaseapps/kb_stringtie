@@ -59,7 +59,7 @@ parameters :
   expression_object_name :
     ui-name : |
       Expression Object Name
-    short_hint : |
+    short-hint : |
       Expression object name
   merge :
     ui-name : |

@@ -123,9 +123,13 @@
           "target_property" : "workspace_name"
         },
         {
-          "input_parameter" : "alignmentset_id",
+          "input_parameter" : "alignment_ref",
           "target_type_transform": "resolved-ref",
-          "target_property" : "alignmentset_id"
+          "target_property" : "alignment_ref"
+        },
+        {
+          "input_parameter": "expression_object_name",
+          "target_property": "expression_object_name"
         },
         {
           "constant_value"  : 1,
