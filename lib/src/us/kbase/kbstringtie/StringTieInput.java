@@ -43,6 +43,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "expression_object_name",
     "workspace_name",
     "merge",
+    "run_matrix_count",
     "num_threads",
     "junction_base",
     "junction_coverage",
@@ -66,6 +67,8 @@ public class StringTieInput {
     private String workspaceName;
     @JsonProperty("merge")
     private Long merge;
+    @JsonProperty("run_matrix_count")
+    private Long runMatrixCount;
     @JsonProperty("num_threads")
     private Long numThreads;
     @JsonProperty("junction_base")
@@ -149,6 +152,21 @@ public class StringTieInput {
 
     public StringTieInput withMerge(Long merge) {
         this.merge = merge;
+        return this;
+    }
+
+    @JsonProperty("run_matrix_count")
+    public Long getRunMatrixCount() {
+        return runMatrixCount;
+    }
+
+    @JsonProperty("run_matrix_count")
+    public void setRunMatrixCount(Long runMatrixCount) {
+        this.runMatrixCount = runMatrixCount;
+    }
+
+    public StringTieInput withRunMatrixCount(Long runMatrixCount) {
+        this.runMatrixCount = runMatrixCount;
         return this;
     }
 
@@ -344,7 +362,7 @@ public class StringTieInput {
 
     @Override
     public String toString() {
-        return ((((((((((((((((((((((((((((((((((("StringTieInput"+" [alignmentRef=")+ alignmentRef)+", expressionObjectName=")+ expressionObjectName)+", workspaceName=")+ workspaceName)+", merge=")+ merge)+", numThreads=")+ numThreads)+", junctionBase=")+ junctionBase)+", junctionCoverage=")+ junctionCoverage)+", disableTrimming=")+ disableTrimming)+", minLocusGapSepValue=")+ minLocusGapSepValue)+", ballgownMode=")+ ballgownMode)+", skipReadsWithNoRef=")+ skipReadsWithNoRef)+", maximumFraction=")+ maximumFraction)+", label=")+ label)+", minLength=")+ minLength)+", minReadCoverage=")+ minReadCoverage)+", minIsoformAbundance=")+ minIsoformAbundance)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((((((((((((((((((((((((((("StringTieInput"+" [alignmentRef=")+ alignmentRef)+", expressionObjectName=")+ expressionObjectName)+", workspaceName=")+ workspaceName)+", merge=")+ merge)+", runMatrixCount=")+ runMatrixCount)+", numThreads=")+ numThreads)+", junctionBase=")+ junctionBase)+", junctionCoverage=")+ junctionCoverage)+", disableTrimming=")+ disableTrimming)+", minLocusGapSepValue=")+ minLocusGapSepValue)+", ballgownMode=")+ ballgownMode)+", skipReadsWithNoRef=")+ skipReadsWithNoRef)+", maximumFraction=")+ maximumFraction)+", label=")+ label)+", minLength=")+ minLength)+", minReadCoverage=")+ minReadCoverage)+", minIsoformAbundance=")+ minIsoformAbundance)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

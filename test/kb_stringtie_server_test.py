@@ -69,7 +69,7 @@ class kb_stringtieTest(unittest.TestCase):
         input_file_path = os.path.join(cls.scratch, input_file)
         shutil.copy(os.path.join("data", input_file), input_file_path)
 
-        cls.alignment_ref = '15206/133/1'
+        cls.alignment_ref = '21746/5/12'
 
     def getWsClient(self):
         return self.__class__.wsClient
@@ -163,13 +163,11 @@ class kb_stringtieTest(unittest.TestCase):
 
         result = self.getImpl().run_stringtie_app(self.getContext(), input_params)[0]
 
-        print result
-
         self.assertTrue('result_directory' in result)
         result_files = os.listdir(result['result_directory'])
         expect_result_files = ['gene_count_matrix.csv', 'genes.fpkm_tracking',
                                'transcript_count_matrix.csv', 'transcripts.gtf']
-        self.assertItemsEqual(expect_result_files, result_files)
-        # self.assertTrue('binned_contig_obj_ref' in result)
-        # self.assertTrue('report_name' in result)
-        # self.assertTrue('report_ref' in result)
+        self.assertTrue(all(x in result_files for x in expect_result_files))
+        self.assertTrue('expression_obj_ref' in result)
+        self.assertTrue('report_name' in result)
+        self.assertTrue('report_ref' in result)
