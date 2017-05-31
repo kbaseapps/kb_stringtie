@@ -44,6 +44,8 @@ class StringTieUtil:
                     'min_isoform_abundance': '-f'
                    }
 
+    BOOLEAN_OPTIONS = ['disable_trimming', 'ballgown_mode', 'skip_reads_with_no_ref']
+
     def _validate_run_stringtie_params(self, params):
         """
         _validate_run_stringtie_params:
@@ -83,7 +85,7 @@ class StringTieUtil:
 
         for key, option in self.OPTIONS_MAP.items():
             option_value = params.get(key)
-            if isinstance(option_value, bool) and option_value:
+            if key in self.BOOLEAN_OPTIONS and option_value:
                 option_value = ' '
             if option_value:
                 command += '{} {} '.format(option, option_value)

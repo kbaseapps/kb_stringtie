@@ -158,7 +158,17 @@ class kb_stringtieTest(unittest.TestCase):
             'alignment_ref': self.alignment_ref,
             'expression_object_name': 'MyExpression',
             'workspace_name': self.getWsName(),
-            'run_matrix_count': True
+            'run_matrix_count': True,
+            "min_read_coverage": 2.5,
+            "junction_base": 10,
+            "num_threads": 2,
+            "min_isoform_abundance": 0.1,
+            "min_length": 200,
+            "skip_reads_with_no_ref": 1,
+            "merge": 0,
+            "junction_coverage": 1,
+            "ballgown_mode": 1,
+            "min_locus_gap_sep_value": 50
         }
 
         result = self.getImpl().run_stringtie_app(self.getContext(), input_params)[0]
