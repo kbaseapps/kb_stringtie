@@ -40,7 +40,7 @@ class kb_stringtie(object):
         :param params: instance of type "StringTieInput" (required params:
            assembly_ref: Alignment object reference expression_set_name:
            ExpressionSet object name and output file header workspace_name:
-           the name of the workspace it gets saved to. optional params:
+           the name of the workspace it gets saved to optional params:
            num_threads: number of processing threads junction_base: junctions
            that don't have spliced reads junction_coverage: junction coverage
            disable_trimming: disables trimming at the ends of the assembled

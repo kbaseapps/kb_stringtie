@@ -24,7 +24,7 @@ class kb_stringtie:
     ######################################### noqa
     VERSION = "0.0.1"
     GIT_URL = "https://github.com/Tianhao-Gu/kb_stringtie.git"
-    GIT_COMMIT_HASH = "c698da3b43a5a9f378f14454ecbf15d0a99b8f71"
+    GIT_COMMIT_HASH = "87b11c3fd964afc6059662c2f30023ed94196eee"
 
     #BEGIN_CLASS_HEADER
     #END_CLASS_HEADER
@@ -47,7 +47,7 @@ class kb_stringtie:
         :param params: instance of type "StringTieInput" (required params:
            assembly_ref: Alignment object reference expression_set_name:
            ExpressionSet object name and output file header workspace_name:
-           the name of the workspace it gets saved to. optional params:
+           the name of the workspace it gets saved to optional params:
            num_threads: number of processing threads junction_base: junctions
            that don't have spliced reads junction_coverage: junction coverage
            disable_trimming: disables trimming at the ends of the assembled

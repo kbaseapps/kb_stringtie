@@ -16,7 +16,7 @@ module kb_stringtie {
         required params:
         assembly_ref: Alignment object reference
         expression_set_name: ExpressionSet object name and output file header
-        workspace_name: the name of the workspace it gets saved to.
+        workspace_name: the name of the workspace it gets saved to
 
         optional params:
         num_threads: number of processing threads
