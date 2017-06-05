@@ -41,7 +41,6 @@ module kb_stringtie {
         string workspace_name;
 
         boolean merge;
-        boolean run_matrix_count;
         int num_threads;
         int junction_base;
         float junction_coverage;

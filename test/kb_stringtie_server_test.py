@@ -89,70 +89,64 @@ class kb_stringtieTest(unittest.TestCase):
     def getContext(self):
         return self.__class__.ctx
 
-    def mock_get_input_file(alignment_ref):
-        print 'Mocking StringTieUtil._get_input_file'
+    # def test_bad_run_stringtie_app_params(self):
+    #     invalidate_input_params = {
+    #       'missing_alignment_ref': 'alignment_ref',
+    #       'expression_object_name': 'expression_object_name',
+    #       'workspace_name': 'workspace_name'
+    #     }
+    #     with self.assertRaisesRegexp(
+    #                 ValueError, '"alignment_ref" parameter is required, but missing'):
+    #         self.getImpl().run_stringtie_app(self.getContext(), invalidate_input_params)
 
-        return '/kb/module/work/tmp/samExample.sam'
+    #     invalidate_input_params = {
+    #       'alignment_ref': 'alignment_ref',
+    #       'missing_expression_object_name': 'expression_object_name',
+    #       'workspace_name': 'workspace_name'
+    #     }
+    #     with self.assertRaisesRegexp(
+    #                 ValueError, '"expression_object_name" parameter is required, but missing'):
+    #         self.getImpl().run_stringtie_app(self.getContext(), invalidate_input_params)
 
-    def test_bad_run_stringtie_app_params(self):
-        invalidate_input_params = {
-          'missing_alignment_ref': 'alignment_ref',
-          'expression_object_name': 'expression_object_name',
-          'workspace_name': 'workspace_name'
-        }
-        with self.assertRaisesRegexp(
-                    ValueError, '"alignment_ref" parameter is required, but missing'):
-            self.getImpl().run_stringtie_app(self.getContext(), invalidate_input_params)
+    #     invalidate_input_params = {
+    #       'alignment_ref': 'alignment_ref',
+    #       'expression_object_name': 'expression_object_name',
+    #       'missing_workspace_name': 'workspace_name'
+    #     }
+    #     with self.assertRaisesRegexp(
+    #                 ValueError, '"workspace_name" parameter is required, but missing'):
+    #         self.getImpl().run_stringtie_app(self.getContext(), invalidate_input_params)
 
-        invalidate_input_params = {
-          'alignment_ref': 'alignment_ref',
-          'missing_expression_object_name': 'expression_object_name',
-          'workspace_name': 'workspace_name'
-        }
-        with self.assertRaisesRegexp(
-                    ValueError, '"expression_object_name" parameter is required, but missing'):
-            self.getImpl().run_stringtie_app(self.getContext(), invalidate_input_params)
+    # def test_StringTieUtil_generate_command(self):
+    #     command_params = {
+    #         'num_threads': 4,
+    #         'junction_base': 8,
+    #         'junction_coverage': 0.8,
+    #         'disable_trimming': True,
+    #         'min_locus_gap_sep_value': 60,
+    #         'maximum_fraction': 0.8,
+    #         'label': 'Lable',
+    #         'min_length': 100,
+    #         'min_read_coverage': 1.6,
+    #         'min_isoform_abundance': 0.6,
+    #         'output_transcripts': 'output_transcripts_file',
+    #         'gene_abundances_file': 'gene_abundances_file',
+    #         'input_file': 'input_file',
+    #         'ballgown_mode': True,
+    #         'skip_reads_with_no_ref': True,
+    #         'gtf_file': 'gtf_file',
+    #         'cov_refs_file': 'cov_refs_file',
+    #         }
 
-        invalidate_input_params = {
-          'alignment_ref': 'alignment_ref',
-          'expression_object_name': 'expression_object_name',
-          'missing_workspace_name': 'workspace_name'
-        }
-        with self.assertRaisesRegexp(
-                    ValueError, '"workspace_name" parameter is required, but missing'):
-            self.getImpl().run_stringtie_app(self.getContext(), invalidate_input_params)
+    #     expect_command = '/kb/deployment/bin/StringTie/stringtie '
+    #     expect_command += '-p 4 -B   -C cov_refs_file -e   -G gtf_file -m 100 '
+    #     expect_command += '-o output_transcripts_file -A gene_abundances_file '
+    #     expect_command += '-f 0.6 -j 0.8 -a 8 -t   -c 1.6 -l Lable -g 60 -M 0.8 input_file '
 
-    def test_StringTieUtil_generate_command(self):
-        command_params = {
-            'num_threads': 4,
-            'junction_base': 8,
-            'junction_coverage': 0.8,
-            'disable_trimming': True,
-            'min_locus_gap_sep_value': 60,
-            'maximum_fraction': 0.8,
-            'label': 'Lable',
-            'min_length': 100,
-            'min_read_coverage': 1.6,
-            'min_isoform_abundance': 0.6,
-            'output_transcripts': 'output_transcripts_file',
-            'gene_abundances_file': 'gene_abundances_file',
-            'input_file': 'input_file',
-            'ballgown_mode': True,
-            'skip_reads_with_no_ref': True,
-            'gtf_file': 'gtf_file',
-            'cov_refs_file': 'cov_refs_file',
-            }
+    #     command = self.stringtie_runner._generate_command(command_params)
+    #     self.assertEquals(command, expect_command)
 
-        expect_command = '/kb/deployment/bin/StringTie/stringtie '
-        expect_command += '-p 4 -B   -C cov_refs_file -e   -G gtf_file -m 100 '
-        expect_command += '-o output_transcripts_file -A gene_abundances_file '
-        expect_command += '-f 0.6 -j 0.8 -a 8 -t   -c 1.6 -l Lable -g 60 -M 0.8 input_file '
-
-        command = self.stringtie_runner._generate_command(command_params)
-        self.assertEquals(command, expect_command)
-
-    @patch.object(StringTieUtil, "_get_input_file", side_effect=mock_get_input_file)
-    def test_run_stringtie_app_single_file(self, _get_input_file):
+    def test_run_stringtie_app_single_file(self):
 
         input_params = {
             'alignment_ref': self.alignment_ref,
@@ -175,8 +169,9 @@ class kb_stringtieTest(unittest.TestCase):
 
         self.assertTrue('result_directory' in result)
         result_files = os.listdir(result['result_directory'])
-        expect_result_files = ['gene_count_matrix.csv', 'genes.fpkm_tracking',
-                               'transcript_count_matrix.csv', 'transcripts.gtf']
+        print result_files
+        expect_result_files = ['genes.fpkm_tracking', 'transcripts.gtf',
+                               'e2t.ctab', 'e_data.ctab', 'i2t.ctab', 'i_data.ctab', 't_data.ctab']
         self.assertTrue(all(x in result_files for x in expect_result_files))
         self.assertTrue('expression_obj_ref' in result)
         self.assertTrue('report_name' in result)

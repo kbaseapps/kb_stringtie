@@ -126,7 +126,6 @@ StringTieInput is a reference to a hash where the following keys are defined:
 	expression_object_name has a value which is a string
 	workspace_name has a value which is a string
 	merge has a value which is a kb_stringtie.boolean
-	run_matrix_count has a value which is a kb_stringtie.boolean
 	num_threads has a value which is an int
 	junction_base has a value which is an int
 	junction_coverage has a value which is a float
@@ -160,7 +159,6 @@ StringTieInput is a reference to a hash where the following keys are defined:
 	expression_object_name has a value which is a string
 	workspace_name has a value which is a string
 	merge has a value which is a kb_stringtie.boolean
-	run_matrix_count has a value which is a kb_stringtie.boolean
 	num_threads has a value which is an int
 	junction_base has a value which is an int
 	junction_coverage has a value which is a float
@@ -433,7 +431,6 @@ alignment_ref has a value which is a kb_stringtie.obj_ref
 expression_object_name has a value which is a string
 workspace_name has a value which is a string
 merge has a value which is a kb_stringtie.boolean
-run_matrix_count has a value which is a kb_stringtie.boolean
 num_threads has a value which is an int
 junction_base has a value which is an int
 junction_coverage has a value which is a float
@@ -458,7 +455,6 @@ alignment_ref has a value which is a kb_stringtie.obj_ref
 expression_object_name has a value which is a string
 workspace_name has a value which is a string
 merge has a value which is a kb_stringtie.boolean
-run_matrix_count has a value which is a kb_stringtie.boolean
 num_threads has a value which is an int
 junction_base has a value which is an int
 junction_coverage has a value which is a float
