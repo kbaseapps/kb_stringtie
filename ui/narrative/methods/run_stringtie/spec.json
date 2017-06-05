@@ -100,18 +100,7 @@
       "checked_value": 1,
       "unchecked_value": 0
     } 
-  }, {
-    "id" : "run_matrix_count",
-    "optional":true,
-    "advanced":true,
-    "allow_multiple":false,
-    "default_values":["0"],
-    "field_type" : "checkbox",
-    "checkbox_options":{
-      "checked_value": 1,
-      "unchecked_value": 0
-    } 
-  } ],
+  }],
   "behavior" : {
     "service-mapping" : {
       "url" : "",
@@ -170,10 +159,6 @@
         {
           "input_parameter" : "merge",
           "target_property" : "merge"
-        },
-        {
-          "input_parameter" : "run_matrix_count",
-          "target_property" : "run_matrix_count"
         }],
       "output_mapping" : [
         {

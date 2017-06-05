@@ -10,7 +10,7 @@ from DataFileUtil.DataFileUtilClient import DataFileUtil
 from Workspace.WorkspaceClient import Workspace as Workspace
 from KBaseReport.KBaseReportClient import KBaseReport
 from GenomeFileUtil.GenomeFileUtilClient import GenomeFileUtil
-# from ReadsAlignmentUtils.ReadsAlignmentUtilsClient import ReadsAlignmentUtils
+from ReadsAlignmentUtils.ReadsAlignmentUtilsClient import ReadsAlignmentUtils
 
 
 def log(message, prefix_newline=False):
@@ -145,13 +145,15 @@ class StringTieUtil:
         """
         _get_input_file: get input  SAM/BAM file from Alignment object
         """
-        result_directory = self.scratch
 
-        input_file = self.rau.download_alignment({'alignment_ref': alignment_ref,
-                                                  'result_directory': result_directory,
-                                                  'downloadBAM': True})['bam_file']
-        input_file = 'input_file'
-        return input_file
+        bam_file_archive = self.rau.download_alignment({'source_ref': alignment_ref})['bam_file']
+
+        self.dfu.unpack_file({'file_path': bam_file_archive})
+
+        bam_file = os.path.join(os.path.dirname(bam_file_archive), 'accepted_hits.bam')
+
+        # print bam_file
+        return bam_file
 
     def _get_gtf_file(self, alignment_ref):
         """
@@ -358,7 +360,7 @@ class StringTieUtil:
         self.shock_url = config['shock-url']
         self.dfu = DataFileUtil(self.callback_url)
         self.gfu = GenomeFileUtil(self.callback_url)
-        # self.rau = ReadsAlignmentUtils(self.callback_url)
+        self.rau = ReadsAlignmentUtils(self.callback_url)
         self.ws = Workspace(self.ws_url, token=self.token)
 
         self.scratch = os.path.join(config['scratch'], str(uuid.uuid4()))
@@ -417,9 +419,6 @@ class StringTieUtil:
 
         command = self._generate_command(params)
         self._run_command(command)
-
-        if params.get('run_matrix_count'):
-            self._run_prepDE(result_directory)
 
         expression_obj_ref = self._save_expression(result_directory,
                                                    alignment_ref,
