@@ -21,7 +21,7 @@ method-suggestions :
 # Configure the display and description of the parameters
 #
 parameters :
-  alignment_ref :
+  alignment_object_ref :
     ui-name : |
         RNA-seq Alignment or Alignment Set 
     short-hint : |
@@ -56,11 +56,6 @@ parameters :
       Minimum Locus Gap
     short-hint : |
       Select minimum locus gap separation value. Default is 50.
-  expression_object_name :
-    ui-name : |
-      Expression Object Name
-    short-hint : |
-      Expression object name
   merge :
     ui-name : |
       Transcript Merge Mode

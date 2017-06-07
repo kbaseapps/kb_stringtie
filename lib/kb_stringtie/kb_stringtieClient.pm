@@ -122,8 +122,7 @@ sub new
 $params is a kb_stringtie.StringTieInput
 $returnVal is a kb_stringtie.StringTieResult
 StringTieInput is a reference to a hash where the following keys are defined:
-	alignment_ref has a value which is a kb_stringtie.obj_ref
-	expression_object_name has a value which is a string
+	alignment_object_ref has a value which is a kb_stringtie.obj_ref
 	workspace_name has a value which is a string
 	merge has a value which is a kb_stringtie.boolean
 	num_threads has a value which is an int
@@ -155,8 +154,7 @@ StringTieResult is a reference to a hash where the following keys are defined:
 $params is a kb_stringtie.StringTieInput
 $returnVal is a kb_stringtie.StringTieResult
 StringTieInput is a reference to a hash where the following keys are defined:
-	alignment_ref has a value which is a kb_stringtie.obj_ref
-	expression_object_name has a value which is a string
+	alignment_object_ref has a value which is a kb_stringtie.obj_ref
 	workspace_name has a value which is a string
 	merge has a value which is a kb_stringtie.boolean
 	num_threads has a value which is an int
@@ -399,8 +397,7 @@ a string
 =item Description
 
 required params:
-assembly_ref: Alignment object reference
-expression_set_name: ExpressionSet object name and output file header
+alignment_object_ref: Alignment or AlignmentSet object reference
 workspace_name: the name of the workspace it gets saved to
 
 optional params:
@@ -427,8 +424,7 @@ ref: http://ccb.jhu.edu/software/stringtie/index.shtml?t=manual
 
 <pre>
 a reference to a hash where the following keys are defined:
-alignment_ref has a value which is a kb_stringtie.obj_ref
-expression_object_name has a value which is a string
+alignment_object_ref has a value which is a kb_stringtie.obj_ref
 workspace_name has a value which is a string
 merge has a value which is a kb_stringtie.boolean
 num_threads has a value which is an int
@@ -451,8 +447,7 @@ min_isoform_abundance has a value which is a float
 =begin text
 
 a reference to a hash where the following keys are defined:
-alignment_ref has a value which is a kb_stringtie.obj_ref
-expression_object_name has a value which is a string
+alignment_object_ref has a value which is a kb_stringtie.obj_ref
 workspace_name has a value which is a string
 merge has a value which is a kb_stringtie.boolean
 num_threads has a value which is an int

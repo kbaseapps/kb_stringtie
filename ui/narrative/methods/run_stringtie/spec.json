@@ -9,7 +9,7 @@
     "output" : "kbaseExpressionSampleTableNew"
   },
    "parameters" : [ {
-    "id" : "alignment_ref",
+    "id" : "alignment_object_ref",
     "optional" : false,
     "advanced" : false,
     "allow_multiple" : false,
@@ -17,17 +17,6 @@
     "field_type" : "text",
     "text_options" : {
       "valid_ws_types" : ["KBaseRNASeq.RNASeqAlignmentSet" , "KBaseRNASeq.RNASeqAlignment"]
-    }
-  }, {
-   "id" : "expression_object_name",
-    "optional" : false,
-    "advanced" : false,
-    "allow_multiple" : false,
-    "default_values" : [ "" ],
-    "field_type" : "text",
-    "text_options" : {
-      "valid_ws_types" : ["KBaseRNASeq.RNASeqExpression", "KBaseRNASeq.RNASeqExpressionSet"],
-      "is_output_name" : true
     }
   }, {
    "id" : "min_isoform_abundance",
@@ -112,13 +101,9 @@
           "target_property" : "workspace_name"
         },
         {
-          "input_parameter" : "alignment_ref",
+          "input_parameter" : "alignment_object_ref",
           "target_type_transform": "resolved-ref",
-          "target_property" : "alignment_ref"
-        },
-        {
-          "input_parameter": "expression_object_name",
-          "target_property": "expression_object_name"
+          "target_property" : "alignment_object_ref"
         },
         {
           "constant_value"  : 1,
@@ -129,7 +114,7 @@
           "target_property" : "skip_reads_with_no_ref"
         },       
         {
-          "constant_value"  : 2,
+          "constant_value"  : 4,
           "target_property" : "num_threads"
         },      
         {
