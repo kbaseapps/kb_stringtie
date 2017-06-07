@@ -56,11 +56,11 @@ parameters :
       Minimum Locus Gap
     short-hint : |
       Select minimum locus gap separation value. Default is 50.
-  merge :
-    ui-name : |
-      Transcript Merge Mode
-    short-hint : |
-      Transcript merge mode
+  # merge :
+  #   ui-name : |
+  #     Transcript Merge Mode
+  #   short-hint : |
+  #     Transcript merge mode
     
 description : |
     <p>This App assembles transcripts for a given sample or a sample set using StringTie so that you can view the relative abundances of the assembled transcripts in a histogram. </p>

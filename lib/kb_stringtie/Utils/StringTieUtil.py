@@ -494,12 +494,10 @@ class StringTieUtil:
                 aliment_upload_params = params.copy()
                 aliment_upload_params['alignment_ref'] = alignment_id
                 mul_processor_params.append(aliment_upload_params)
-                # alignment_return = self._process_alignment_object(aliment_upload_params)
-                # alignment_expression_map.update({alignment_id:
-                #                                  alignment_return.get('expression_obj_ref')})
 
-        pool = Pool(ncpus=min(params.get('num_threads'),
-                              multiprocessing.cpu_count()))
+        cpus = min(params.get('num_threads'), multiprocessing.cpu_count())
+        pool = Pool(ncpus=cpus)
+        log('running _process_alignment_object with {} cpus'.format(cpus))
         alignment_expression_map = pool.map(self._process_alignment_object, mul_processor_params)
 
         result_directory = os.path.join(self.scratch, str(uuid.uuid4()))
