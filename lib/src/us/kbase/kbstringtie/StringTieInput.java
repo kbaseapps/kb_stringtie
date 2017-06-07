@@ -15,8 +15,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  * <p>Original spec-file type: StringTieInput</p>
  * <pre>
  * required params:
- * assembly_ref: Alignment object reference
- * expression_set_name: ExpressionSet object name and output file header
+ * alignment_object_ref: Alignment or AlignmentSet object reference
  * workspace_name: the name of the workspace it gets saved to
  * optional params:
  * num_threads: number of processing threads
@@ -39,8 +38,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("com.googlecode.jsonschema2pojo")
 @JsonPropertyOrder({
-    "alignment_ref",
-    "expression_object_name",
+    "alignment_object_ref",
     "workspace_name",
     "merge",
     "num_threads",
@@ -58,10 +56,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 })
 public class StringTieInput {
 
-    @JsonProperty("alignment_ref")
-    private String alignmentRef;
-    @JsonProperty("expression_object_name")
-    private String expressionObjectName;
+    @JsonProperty("alignment_object_ref")
+    private String alignmentObjectRef;
     @JsonProperty("workspace_name")
     private String workspaceName;
     @JsonProperty("merge")
@@ -92,33 +88,18 @@ public class StringTieInput {
     private Double minIsoformAbundance;
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
-    @JsonProperty("alignment_ref")
-    public String getAlignmentRef() {
-        return alignmentRef;
+    @JsonProperty("alignment_object_ref")
+    public String getAlignmentObjectRef() {
+        return alignmentObjectRef;
     }
 
-    @JsonProperty("alignment_ref")
-    public void setAlignmentRef(String alignmentRef) {
-        this.alignmentRef = alignmentRef;
+    @JsonProperty("alignment_object_ref")
+    public void setAlignmentObjectRef(String alignmentObjectRef) {
+        this.alignmentObjectRef = alignmentObjectRef;
     }
 
-    public StringTieInput withAlignmentRef(String alignmentRef) {
-        this.alignmentRef = alignmentRef;
-        return this;
-    }
-
-    @JsonProperty("expression_object_name")
-    public String getExpressionObjectName() {
-        return expressionObjectName;
-    }
-
-    @JsonProperty("expression_object_name")
-    public void setExpressionObjectName(String expressionObjectName) {
-        this.expressionObjectName = expressionObjectName;
-    }
-
-    public StringTieInput withExpressionObjectName(String expressionObjectName) {
-        this.expressionObjectName = expressionObjectName;
+    public StringTieInput withAlignmentObjectRef(String alignmentObjectRef) {
+        this.alignmentObjectRef = alignmentObjectRef;
         return this;
     }
 
@@ -344,7 +325,7 @@ public class StringTieInput {
 
     @Override
     public String toString() {
-        return ((((((((((((((((((((((((((((((((((("StringTieInput"+" [alignmentRef=")+ alignmentRef)+", expressionObjectName=")+ expressionObjectName)+", workspaceName=")+ workspaceName)+", merge=")+ merge)+", numThreads=")+ numThreads)+", junctionBase=")+ junctionBase)+", junctionCoverage=")+ junctionCoverage)+", disableTrimming=")+ disableTrimming)+", minLocusGapSepValue=")+ minLocusGapSepValue)+", ballgownMode=")+ ballgownMode)+", skipReadsWithNoRef=")+ skipReadsWithNoRef)+", maximumFraction=")+ maximumFraction)+", label=")+ label)+", minLength=")+ minLength)+", minReadCoverage=")+ minReadCoverage)+", minIsoformAbundance=")+ minIsoformAbundance)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((((((((((((((((((((((("StringTieInput"+" [alignmentObjectRef=")+ alignmentObjectRef)+", workspaceName=")+ workspaceName)+", merge=")+ merge)+", numThreads=")+ numThreads)+", junctionBase=")+ junctionBase)+", junctionCoverage=")+ junctionCoverage)+", disableTrimming=")+ disableTrimming)+", minLocusGapSepValue=")+ minLocusGapSepValue)+", ballgownMode=")+ ballgownMode)+", skipReadsWithNoRef=")+ skipReadsWithNoRef)+", maximumFraction=")+ maximumFraction)+", label=")+ label)+", minLength=")+ minLength)+", minReadCoverage=")+ minReadCoverage)+", minIsoformAbundance=")+ minIsoformAbundance)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

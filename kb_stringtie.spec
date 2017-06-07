@@ -14,8 +14,7 @@ module kb_stringtie {
 
     /*  
         required params:
-        assembly_ref: Alignment object reference
-        expression_set_name: ExpressionSet object name and output file header
+        alignment_object_ref: Alignment or AlignmentSet object reference
         workspace_name: the name of the workspace it gets saved to
 
         optional params:
@@ -36,8 +35,7 @@ module kb_stringtie {
         ref: http://ccb.jhu.edu/software/stringtie/index.shtml?t=manual
     */
     typedef structure {
-        obj_ref alignment_ref; 
-        string expression_object_name;
+        obj_ref alignment_object_ref;
         string workspace_name;
 
         boolean merge;

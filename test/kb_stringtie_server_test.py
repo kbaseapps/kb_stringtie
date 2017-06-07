@@ -16,6 +16,7 @@ except:
 from pprint import pprint  # noqa: F401
 
 from biokbase.workspace.client import Workspace as workspaceService
+from Workspace.WorkspaceClient import Workspace as Workspace
 from kb_stringtie.kb_stringtieImpl import kb_stringtie
 from kb_stringtie.kb_stringtieServer import MethodContext
 from kb_stringtie.authclient import KBaseAuth as _KBaseAuth
@@ -50,6 +51,7 @@ class kb_stringtieTest(unittest.TestCase):
                         'authenticated': 1})
         cls.wsURL = cls.cfg['workspace-url']
         cls.wsClient = workspaceService(cls.wsURL)
+        cls.ws = Workspace(cls.wsURL, token=token)
         cls.serviceImpl = kb_stringtie(cls.cfg)
         cls.scratch = cls.cfg['scratch']
         cls.callback_url = os.environ['SDK_CALLBACK_URL']
@@ -71,6 +73,8 @@ class kb_stringtieTest(unittest.TestCase):
 
         cls.alignment_ref = '21746/5/12'
 
+        cls.alignment_set_ref = '15206/146/4'
+
     def getWsClient(self):
         return self.__class__.wsClient
 
@@ -89,69 +93,58 @@ class kb_stringtieTest(unittest.TestCase):
     def getContext(self):
         return self.__class__.ctx
 
-    # def test_bad_run_stringtie_app_params(self):
-    #     invalidate_input_params = {
-    #       'missing_alignment_ref': 'alignment_ref',
-    #       'expression_object_name': 'expression_object_name',
-    #       'workspace_name': 'workspace_name'
-    #     }
-    #     with self.assertRaisesRegexp(
-    #                 ValueError, '"alignment_ref" parameter is required, but missing'):
-    #         self.getImpl().run_stringtie_app(self.getContext(), invalidate_input_params)
+    def test_bad_run_stringtie_app_params(self):
+        invalidate_input_params = {
+          'missing_alignment_object_ref': 'alignment_object_ref',
+          'workspace_name': 'workspace_name'
+        }
+        with self.assertRaisesRegexp(
+                    ValueError, '"alignment_object_ref" parameter is required, but missing'):
+            self.getImpl().run_stringtie_app(self.getContext(), invalidate_input_params)
 
-    #     invalidate_input_params = {
-    #       'alignment_ref': 'alignment_ref',
-    #       'missing_expression_object_name': 'expression_object_name',
-    #       'workspace_name': 'workspace_name'
-    #     }
-    #     with self.assertRaisesRegexp(
-    #                 ValueError, '"expression_object_name" parameter is required, but missing'):
-    #         self.getImpl().run_stringtie_app(self.getContext(), invalidate_input_params)
+        invalidate_input_params = {
+          'alignment_object_ref': 'alignment_object_ref',
+          'missing_workspace_name': 'workspace_name'
+        }
+        with self.assertRaisesRegexp(
+                    ValueError, '"workspace_name" parameter is required, but missing'):
+            self.getImpl().run_stringtie_app(self.getContext(), invalidate_input_params)
 
-    #     invalidate_input_params = {
-    #       'alignment_ref': 'alignment_ref',
-    #       'expression_object_name': 'expression_object_name',
-    #       'missing_workspace_name': 'workspace_name'
-    #     }
-    #     with self.assertRaisesRegexp(
-    #                 ValueError, '"workspace_name" parameter is required, but missing'):
-    #         self.getImpl().run_stringtie_app(self.getContext(), invalidate_input_params)
+    def test_StringTieUtil_generate_command(self):
+        command_params = {
+            'num_threads': 4,
+            'junction_base': 8,
+            'junction_coverage': 0.8,
+            'disable_trimming': True,
+            'min_locus_gap_sep_value': 60,
+            'maximum_fraction': 0.8,
+            'label': 'Lable',
+            'min_length': 100,
+            'min_read_coverage': 1.6,
+            'min_isoform_abundance': 0.6,
+            'output_transcripts': 'output_transcripts_file',
+            'gene_abundances_file': 'gene_abundances_file',
+            'input_file': 'input_file',
+            'ballgown_mode': True,
+            'skip_reads_with_no_ref': True,
+            'gtf_file': 'gtf_file',
+            'cov_refs_file': 'cov_refs_file',
+            }
 
-    # def test_StringTieUtil_generate_command(self):
-    #     command_params = {
-    #         'num_threads': 4,
-    #         'junction_base': 8,
-    #         'junction_coverage': 0.8,
-    #         'disable_trimming': True,
-    #         'min_locus_gap_sep_value': 60,
-    #         'maximum_fraction': 0.8,
-    #         'label': 'Lable',
-    #         'min_length': 100,
-    #         'min_read_coverage': 1.6,
-    #         'min_isoform_abundance': 0.6,
-    #         'output_transcripts': 'output_transcripts_file',
-    #         'gene_abundances_file': 'gene_abundances_file',
-    #         'input_file': 'input_file',
-    #         'ballgown_mode': True,
-    #         'skip_reads_with_no_ref': True,
-    #         'gtf_file': 'gtf_file',
-    #         'cov_refs_file': 'cov_refs_file',
-    #         }
+        expect_command = '/kb/deployment/bin/StringTie/stringtie '
+        expect_command += '-p 4 -B   -C cov_refs_file -e   -G gtf_file -m 100 '
+        expect_command += '-o output_transcripts_file -A gene_abundances_file '
+        expect_command += '-f 0.6 -j 0.8 -a 8 -t   -c 1.6 -l Lable -g 60 -M 0.8 input_file '
 
-    #     expect_command = '/kb/deployment/bin/StringTie/stringtie '
-    #     expect_command += '-p 4 -B   -C cov_refs_file -e   -G gtf_file -m 100 '
-    #     expect_command += '-o output_transcripts_file -A gene_abundances_file '
-    #     expect_command += '-f 0.6 -j 0.8 -a 8 -t   -c 1.6 -l Lable -g 60 -M 0.8 input_file '
+        command = self.stringtie_runner._generate_command(command_params)
+        self.assertEquals(command, expect_command)
 
-    #     command = self.stringtie_runner._generate_command(command_params)
-    #     self.assertEquals(command, expect_command)
-
-    def test_run_stringtie_app_single_file(self):
+    def test_run_stringtie_app_alignment(self):
 
         input_params = {
-            'alignment_ref': self.alignment_ref,
-            'expression_object_name': 'MyExpression',
+            'alignment_object_ref': self.alignment_ref,
             'workspace_name': self.getWsName(),
+
             'run_matrix_count': True,
             "min_read_coverage": 2.5,
             "junction_base": 10,
@@ -176,3 +169,39 @@ class kb_stringtieTest(unittest.TestCase):
         self.assertTrue('expression_obj_ref' in result)
         self.assertTrue('report_name' in result)
         self.assertTrue('report_ref' in result)
+        # expression_data = self.ws.get_objects2({
+        #                 'objects': [{'ref': result.get('expression_obj_ref')}]})['data'][0]['data']
+        # print expression_data.get('genome_id')
+        # print expression_data.get('id')
+        # print expression_data.get('condition')
+
+    def test_run_stringtie_app_alignment_set(self):
+
+        input_params = {
+            'alignment_object_ref': self.alignment_set_ref,
+            'workspace_name': self.getWsName(),
+
+            'run_matrix_count': True,
+            "min_read_coverage": 2.5,
+            "junction_base": 10,
+            "num_threads": 2,
+            "min_isoform_abundance": 0.1,
+            "min_length": 200,
+            "skip_reads_with_no_ref": 1,
+            "merge": 0,
+            "junction_coverage": 1,
+            "ballgown_mode": 1,
+            "min_locus_gap_sep_value": 50
+        }
+
+        result = self.getImpl().run_stringtie_app(self.getContext(), input_params)[0]
+
+        self.assertTrue('result_directory' in result)
+        self.assertTrue('expression_obj_ref' in result)
+        self.assertTrue('report_name' in result)
+        self.assertTrue('report_ref' in result)
+        # expression_data = self.ws.get_objects2({
+        #                 'objects': [{'ref': result.get('expression_obj_ref')}]})['data'][0]['data']
+        # print expression_data.get('genome_id')
+        # print expression_data.get('id')
+        # print expression_data.get('condition')

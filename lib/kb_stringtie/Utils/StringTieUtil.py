@@ -5,6 +5,7 @@ import uuid
 import errno
 import subprocess
 import math
+import re
 
 from DataFileUtil.DataFileUtilClient import DataFileUtil
 from Workspace.WorkspaceClient import Workspace as Workspace
@@ -55,7 +56,7 @@ class StringTieUtil:
         log('Start validating run_stringtie params')
 
         # check for required parameters
-        for p in ['alignment_ref', 'expression_object_name', 'workspace_name']:
+        for p in ['alignment_object_ref', 'workspace_name']:
             if p not in params:
                 raise ValueError('"{}" parameter is required, but missing'.format(p))
 
@@ -147,12 +148,10 @@ class StringTieUtil:
         """
 
         bam_file_archive = self.rau.download_alignment({'source_ref': alignment_ref})['bam_file']
-
         self.dfu.unpack_file({'file_path': bam_file_archive})
 
         bam_file = os.path.join(os.path.dirname(bam_file_archive), 'accepted_hits.bam')
 
-        # print bam_file
         return bam_file
 
     def _get_gtf_file(self, alignment_ref):
@@ -160,10 +159,12 @@ class StringTieUtil:
         _get_gtf_file: get the reference annotation file (in GTF or GFF3 format)
         """
         result_directory = self.scratch
-        alignment_info = self.ws.get_objects2({'objects':
-                                               [{'ref': alignment_ref}]})['data'][0]['info']
+        alignment_data = self.ws.get_objects2({'objects':
+                                               [{'ref': alignment_ref}]})['data'][0]['data']
 
-        genome_ref = alignment_info[-1].get('genome_id')
+        genome_ref = alignment_data.get('genome_id')
+        # genome_name = self.ws.get_object_info([{"ref": genome_ref}], includeMetadata=None)[0][1]
+        # ws_gtf = genome_name+"_GTF_Annotation"
 
         genome_data = self.ws.get_objects2({'objects':
                                             [{'ref': genome_ref}]})['data'][0]['data']
@@ -238,32 +239,78 @@ class StringTieUtil:
 
         return gtf_path
 
+    def _generate_expression_set_data(self, result_directory, alignment_set_ref,
+                                      gtf_file, workspace_name):
+        """
+        _generate_expression_set_data: generate ExpressionSet object with stringtie output files
+        """
+        alignment_set_data_object = self.ws.get_objects2({'objects':
+                                                         [{'ref': alignment_set_ref}]})['data'][0]
+
+        alignment_set_name = alignment_set_data_object['info'][1]
+        expression_set_name = re.sub('_[Aa]lignment_*[Ss]et',
+                                     '_stringtie_expression_set',
+                                     alignment_set_name)
+
+        alignment_set_data = alignment_set_data_object['data']
+
+        print alignment_set_data
+
+        expression_set_data = {
+            'tool_used': 'StringTie',
+            'tool_version': '1.3.3b',
+            'id': expression_set_name,
+            'alignmentSet_id': alignment_set_ref,
+            'genome_id': alignment_set_data.get('genome_id'),
+            'sampleset_id': alignment_set_data.get('sampleset_id')
+        }
+
+        sample_expression_ids = []
+        expression_set_data['sample_expression_ids'] = sample_expression_ids
+
+        mapped_expression_objects = []
+        expression_set_data['mapped_expression_objects'] = mapped_expression_objects
+
+        mapped_expression_ids = []
+        expression_set_data['mapped_expression_ids'] = mapped_expression_ids
+
+        print expression_set_data
+
+        return expression_set_data
+
     def _generate_expression_data(self, result_directory, alignment_ref,
-                                  expression_object_name, gtf_file, workspace_name):
+                                  gtf_file, workspace_name):
         """
         _generate_expression_data: generate Expression object with stringtie output files
         """
+        alignment_data_object = self.ws.get_objects2({'objects':
+                                                     [{'ref': alignment_ref}]})['data'][0]
+
+        alignment_name = alignment_data_object['info'][1]
+        expression_name = re.sub('_[Aa]lignment',
+                                 '_stringtie_expression',
+                                 alignment_name)
+
         expression_data = {
-            'id': expression_object_name,
+            'id': expression_name,
             'type': 'RNA-Seq',
             'numerical_interpretation': 'FPKM',
             'processing_comments': 'log2 Normalized',
             'tool_used': 'StringTie',
             'tool_version': '1.3.3b'
         }
-        alignment_info = self.ws.get_objects2({'objects':
-                                               [{'ref': alignment_ref}]})['data'][0]['info']
+        alignment_data = alignment_data_object['data']
 
-        condition = alignment_info[-1].get('condition')
+        condition = alignment_data.get('condition')
         expression_data.update({'condition': condition})
 
-        genome_id = alignment_info[-1].get('genome_id')
+        genome_id = alignment_data.get('genome_id')
         expression_data.update({'genome_id': genome_id})
 
         gff_annotation_obj_ref = self._save_gff_annotation(genome_id, gtf_file, workspace_name)
         expression_data.update({'annotation_id': gff_annotation_obj_ref})
 
-        read_sample_id = alignment_info[-1].get('read_sample_id')
+        read_sample_id = alignment_data.get('read_sample_id')
         expression_data.update({'mapped_rnaseq_alignment': {read_sample_id: alignment_ref}})
 
         exp_dict = self._parse_FPKMtracking(os.path.join(result_directory,
@@ -297,8 +344,7 @@ class StringTieUtil:
                     result[larr[pos1]] = math.log(float(larr[pos2]) + 1, 2)
         return result
 
-    def _save_expression(self, result_directory, alignment_ref,
-                         workspace_name, expression_object_name, gtf_file):
+    def _save_expression(self, result_directory, alignment_ref, workspace_name, gtf_file):
         """
         _save_expression: save Expression object to workspace
         """
@@ -310,7 +356,6 @@ class StringTieUtil:
 
         expression_data = self._generate_expression_data(result_directory,
                                                          alignment_ref,
-                                                         expression_object_name,
                                                          gtf_file,
                                                          workspace_name)
 
@@ -320,14 +365,44 @@ class StringTieUtil:
             'objects': [{
                             'type': object_type,
                             'data': expression_data,
-                            'name': expression_object_name
+                            'name': expression_data.get('id')
                         }]
         }
 
         dfu_oi = self.dfu.save_objects(save_object_params)[0]
-        expression_obj_ref = str(dfu_oi[6]) + '/' + str(dfu_oi[0]) + '/' + str(dfu_oi[4])
+        expression_ref = str(dfu_oi[6]) + '/' + str(dfu_oi[0]) + '/' + str(dfu_oi[4])
 
-        return expression_obj_ref
+        return expression_ref
+
+    def _save_expression_set(self, result_directory, alignment_set_ref, workspace_name, gtf_file):
+        """
+        _save_expression_set: save ExpressionSet object to workspace
+        """
+        log('start saving ExpressionSet object')
+        if isinstance(workspace_name, int) or workspace_name.isdigit():
+            workspace_id = workspace_name
+        else:
+            workspace_id = self.dfu.ws_name_to_id(workspace_name)
+
+        expression_set_data = self._generate_expression_set_data(result_directory,
+                                                                 alignment_set_ref,
+                                                                 gtf_file,
+                                                                 workspace_name)
+
+        object_type = 'KBaseRNASeq.RNASeqExpressionSet'
+        save_object_params = {
+            'id': workspace_id,
+            'objects': [{
+                            'type': object_type,
+                            'data': expression_set_data,
+                            'name': expression_set_data.get('id')
+                        }]
+        }
+
+        dfu_oi = self.dfu.save_objects(save_object_params)[0]
+        expression_set_ref = str(dfu_oi[6]) + '/' + str(dfu_oi[0]) + '/' + str(dfu_oi[4])
+
+        return expression_set_ref
 
     def _generate_report(self, obj_ref, workspace_name):
         """
@@ -353,6 +428,84 @@ class StringTieUtil:
 
         return report_output
 
+    def _process_alignment_object(self, params):
+        """
+        _process_alignment_object: process KBaseRNASeq.RNASeqAlignment type input object
+        """
+        log('start processing RNASeqAlignment object\nparams:\n{}'.format(
+                                                                json.dumps(params, indent=1)))
+        alignment_ref = params.get('alignment_ref')
+
+        result_directory = os.path.join(self.scratch, str(uuid.uuid4()))
+        self._mkdir_p(result_directory)
+
+        # input files
+        params['input_file'] = self._get_input_file(alignment_ref)
+        if not params.get('gtf_file'):
+            params['gtf_file'] = self._get_gtf_file(alignment_ref)
+
+        # output files
+        self.output_transcripts = 'transcripts.gtf'
+        params['output_transcripts'] = os.path.join(result_directory, self.output_transcripts)
+
+        self.gene_abundances_file = 'genes.fpkm_tracking'
+        params['gene_abundances_file'] = os.path.join(result_directory, self.gene_abundances_file)
+
+        command = self._generate_command(params)
+        self._run_command(command)
+
+        expression_obj_ref = self._save_expression(result_directory,
+                                                   alignment_ref,
+                                                   params.get('workspace_name'),
+                                                   params['gtf_file'])
+
+        returnVal = {'result_directory': result_directory,
+                     'expression_obj_ref': expression_obj_ref}
+
+        report_output = self._generate_report(expression_obj_ref, params.get('workspace_name'))
+        returnVal.update(report_output)
+
+        return returnVal
+
+    def _process_alignment_set_object(self, params):
+        """
+        _process_alignment_set_object: process KBaseRNASeq.RNASeqAlignmentSet type input object
+        """
+        log('start processing RNASeqAlignmentSet object\nparams:\n{}'.format(
+                                                                json.dumps(params, indent=1)))
+
+        alignment_set_ref = params.get('alignment_set_ref')
+
+        params['gtf_file'] = self._get_gtf_file(alignment_set_ref)
+
+        alignment_set_data = self.ws.get_objects2({'objects':
+                                                   [{'ref': alignment_set_ref}]})['data'][0]['data']
+
+        mapped_alignment_ids = alignment_set_data['mapped_alignments_ids']
+        for i in mapped_alignment_ids:
+            for sample_name, alignment_id in i.items():
+                aliment_upload_params = params.copy()
+                aliment_upload_params['alignment_ref'] = alignment_id
+                alignment_return = self._process_alignment_object(aliment_upload_params)
+                print 'kkk'
+                print alignment_return
+
+        result_directory = os.path.join(self.scratch, str(uuid.uuid4()))
+        self._mkdir_p(result_directory)
+
+        expression_obj_ref = self._save_expression_set(result_directory,
+                                                       alignment_set_ref,
+                                                       params.get('workspace_name'),
+                                                       params['gtf_file'])
+
+        returnVal = {'result_directory': result_directory,
+                     'expression_obj_ref': expression_obj_ref}
+
+        report_output = self._generate_report(expression_obj_ref, params.get('workspace_name'))
+        returnVal.update(report_output)
+
+        return returnVal
+
     def __init__(self, config):
         self.ws_url = config["workspace-url"]
         self.callback_url = config['SDK_CALLBACK_URL']
@@ -372,8 +525,7 @@ class StringTieUtil:
         (http://ccb.jhu.edu/software/stringtie/index.shtml?t=manual)
 
         required params:
-        alignment_ref: Alignment object reference
-        expression_object_name: Expression/Set object name and output file header
+        alignment_object_ref: Alignment or AlignmentSet object reference
         workspace_name: the name of the workspace it gets saved to.
 
         optional params:
@@ -402,34 +554,19 @@ class StringTieUtil:
 
         self._validate_run_stringtie_params(params)
 
-        result_directory = os.path.join(self.scratch, str(uuid.uuid4()))
-        self._mkdir_p(result_directory)
+        alignment_object_ref = params.get('alignment_object_ref')
+        alignment_object_info = self.ws.get_object_info3({
+                                        "objects": [{"ref": alignment_object_ref}]})['infos'][0]
+        alignment_object_type = alignment_object_info[2]
 
-        # input files
-        alignment_ref = params.get('alignment_ref')
-        params['input_file'] = self._get_input_file(alignment_ref)
-        params['gtf_file'] = self._get_gtf_file(alignment_ref)
-
-        # output files
-        self.output_transcripts = 'transcripts.gtf'
-        params['output_transcripts'] = os.path.join(result_directory, self.output_transcripts)
-
-        self.gene_abundances_file = 'genes.fpkm_tracking'
-        params['gene_abundances_file'] = os.path.join(result_directory, self.gene_abundances_file)
-
-        command = self._generate_command(params)
-        self._run_command(command)
-
-        expression_obj_ref = self._save_expression(result_directory,
-                                                   alignment_ref,
-                                                   params.get('workspace_name'),
-                                                   params.get('expression_object_name'),
-                                                   params['gtf_file'])
-
-        returnVal = {'result_directory': result_directory,
-                     'expression_obj_ref': expression_obj_ref}
-
-        report_output = self._generate_report(expression_obj_ref, params.get('workspace_name'))
-        returnVal.update(report_output)
+        if re.match('KBaseRNASeq.RNASeqAlignment-\d.\d', alignment_object_type):
+            params.update({'alignment_ref': alignment_object_ref})
+            returnVal = self._process_alignment_object(params)
+        elif re.match('KBaseRNASeq.RNASeqAlignmentSet-\d.\d', alignment_object_type):
+            params.update({'alignment_set_ref': alignment_object_ref})
+            returnVal = self._process_alignment_set_object(params)
+        else:
+            raise ValueError('None RNASeqAlignment type\nObject info:\n{}'.format(
+                                                                    alignment_object_info))
 
         return returnVal
