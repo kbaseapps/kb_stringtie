@@ -21,6 +21,8 @@ RUN pip install cffi --upgrade \
     && pip install requests --upgrade \
     && pip install 'requests[security]' --upgrade
 
+RUN pip install pathos
+
 # download StringTie software and untar it
 RUN cd /kb/dev_container/modules && \
     mkdir StringTie && cd StringTie && \

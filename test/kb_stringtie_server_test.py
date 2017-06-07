@@ -184,7 +184,7 @@ class kb_stringtieTest(unittest.TestCase):
             'run_matrix_count': True,
             "min_read_coverage": 2.5,
             "junction_base": 10,
-            "num_threads": 2,
+            "num_threads": 4,
             "min_isoform_abundance": 0.1,
             "min_length": 200,
             "skip_reads_with_no_ref": 1,
@@ -200,8 +200,3 @@ class kb_stringtieTest(unittest.TestCase):
         self.assertTrue('expression_obj_ref' in result)
         self.assertTrue('report_name' in result)
         self.assertTrue('report_ref' in result)
-        # expression_data = self.ws.get_objects2({
-        #                 'objects': [{'ref': result.get('expression_obj_ref')}]})['data'][0]['data']
-        # print expression_data.get('genome_id')
-        # print expression_data.get('id')
-        # print expression_data.get('condition')
