@@ -6,7 +6,7 @@
   "categories" : ["active","expression","assembly"],
   "widgets" : {
     "input" : null,
-    "output" : "kbaseExpressionSampleTableNew"
+    "output" : null
   },
    "parameters" : [ {
     "id" : "alignment_object_ref",
@@ -78,17 +78,6 @@
     "text_options" : {
       "validate_as": "int"
     }
-  }, {
-    "id" : "merge",
-    "optional":true,
-    "advanced":true,
-    "allow_multiple":false,
-    "default_values":["0"],
-    "field_type" : "checkbox",
-    "checkbox_options":{
-      "checked_value": 1,
-      "unchecked_value": 0
-    } 
   }],
   "behavior" : {
     "service-mapping" : {
@@ -140,10 +129,6 @@
         {
           "input_parameter" : "min_locus_gap_sep_value",
           "target_property" : "min_locus_gap_sep_value"
-        },
-        {
-          "input_parameter" : "merge",
-          "target_property" : "merge"
         }],
       "output_mapping" : [
         {
