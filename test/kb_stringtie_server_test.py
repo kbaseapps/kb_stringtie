@@ -73,7 +73,7 @@ class kb_stringtieTest(unittest.TestCase):
 
         cls.alignment_ref = '21746/5/12'
 
-        cls.alignment_set_ref = '15206/146/4'
+        cls.alignment_set_ref = '15206/147/1'
 
     def getWsClient(self):
         return self.__class__.wsClient
