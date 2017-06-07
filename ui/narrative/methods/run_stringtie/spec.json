@@ -6,7 +6,7 @@
   "categories" : ["active","expression","assembly"],
   "widgets" : {
     "input" : null,
-    "output" : null
+    "output" : "no-display"
   },
    "parameters" : [ {
     "id" : "alignment_object_ref",
