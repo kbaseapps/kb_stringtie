@@ -5,7 +5,6 @@ import json  # noqa: F401
 import time
 import requests  # noqa: F401
 import shutil
-from mock import patch
 
 from os import environ
 try:
@@ -21,6 +20,10 @@ from kb_stringtie.kb_stringtieImpl import kb_stringtie
 from kb_stringtie.kb_stringtieServer import MethodContext
 from kb_stringtie.authclient import KBaseAuth as _KBaseAuth
 from kb_stringtie.Utils.StringTieUtil import StringTieUtil
+from GenomeFileUtil.GenomeFileUtilClient import GenomeFileUtil
+from ReadsUtils.ReadsUtilsClient import ReadsUtils
+from ReadsAlignmentUtils.ReadsAlignmentUtilsClient import ReadsAlignmentUtils
+from DataFileUtil.DataFileUtilClient import DataFileUtil
 
 
 class kb_stringtieTest(unittest.TestCase):
@@ -56,7 +59,17 @@ class kb_stringtieTest(unittest.TestCase):
         cls.scratch = cls.cfg['scratch']
         cls.callback_url = os.environ['SDK_CALLBACK_URL']
 
+        cls.gfu = GenomeFileUtil(cls.callback_url)
+        cls.dfu = DataFileUtil(cls.callback_url)
+        cls.ru = ReadsUtils(cls.callback_url)
+        cls.rau = ReadsAlignmentUtils(cls.callback_url, service_ver='dev')
+
         cls.stringtie_runner = StringTieUtil(cls.cfg)
+
+        suffix = int(time.time() * 1000)
+        cls.wsName = "test_kb_stringtie_" + str(suffix)
+        cls.wsClient.create_workspace({'workspace': cls.wsName})
+
         cls.prepare_data()
 
     @classmethod
@@ -67,25 +80,115 @@ class kb_stringtieTest(unittest.TestCase):
 
     @classmethod
     def prepare_data(cls):
-        input_file = 'samExample.sam'
-        input_file_path = os.path.join(cls.scratch, input_file)
-        shutil.copy(os.path.join("data", input_file), input_file_path)
+        # upload genome object
+        genbank_file_name = 'minimal.gbff'
+        genbank_file_path = os.path.join(cls.scratch, genbank_file_name)
+        shutil.copy(os.path.join('data', genbank_file_name), genbank_file_path)
 
-        cls.alignment_ref = '21746/5/12'
+        genome_object_name = 'test_Genome'
+        cls.genome_ref = cls.gfu.genbank_to_genome({'file': {'path': genbank_file_path},
+                                                    'workspace_name': cls.wsName,
+                                                    'genome_name': genome_object_name
+                                                    })['genome_ref']
 
-        cls.alignment_set_ref = '15206/147/1'
+        # upload reads object
+        reads_file_name = 'Sample1.fastq'
+        reads_file_path = os.path.join(cls.scratch, reads_file_name)
+        shutil.copy(os.path.join('data', reads_file_name), reads_file_path)
+
+        reads_object_name_1 = 'test_Reads_1'
+        cls.reads_ref_1 = cls.ru.upload_reads({'fwd_file': reads_file_path,
+                                               'wsname': cls.wsName,
+                                               'sequencing_tech': 'Unknown',
+                                               'interleaved': 0,
+                                               'name': reads_object_name_1
+                                               })['obj_ref']
+
+        reads_object_name_2 = 'test_Reads_2'
+        cls.reads_ref_2 = cls.ru.upload_reads({'fwd_file': reads_file_path,
+                                               'wsname': cls.wsName,
+                                               'sequencing_tech': 'Unknown',
+                                               'interleaved': 0,
+                                               'name': reads_object_name_2
+                                               })['obj_ref']
+
+        # upload alignment object
+        alignment_file_name = 'accepted_hits.bam'
+        alignment_file_path = os.path.join(cls.scratch, alignment_file_name)
+        shutil.copy(os.path.join('data', alignment_file_name), alignment_file_path)
+
+        alignment_object_name_1 = 'test_Alignment_1'
+        cls.condition_1 = 'test_condition_1'
+        cls.alignment_ref_1 = cls.rau.upload_alignment(
+                                   {'file_path': alignment_file_path,
+                                    'destination_ref': cls.wsName + '/' + alignment_object_name_1,
+                                    'read_library_ref': cls.reads_ref_1,
+                                    'condition':  cls.condition_1,
+                                    'assembly_or_genome_ref': cls.genome_ref
+                                    })['obj_ref']
+
+        alignment_object_name_2 = 'test_Alignment_2'
+        cls.condition_2 = 'test_condition_2'
+        cls.alignment_ref_2 = cls.rau.upload_alignment(
+                                   {'file_path': alignment_file_path,
+                                    'destination_ref': cls.wsName + '/' + alignment_object_name_2,
+                                    'read_library_ref': cls.reads_ref_2,
+                                    'condition':  cls.condition_2,
+                                    'assembly_or_genome_ref': cls.genome_ref
+                                    })['obj_ref']
+
+        # upload sample_set object
+        workspace_id = cls.dfu.ws_name_to_id(cls.wsName)
+        sample_set_object_name = 'test_Sample_Set'
+        sample_set_data = {
+                    'sampleset_id': sample_set_object_name,
+                    'sampleset_desc': 'test sampleset object',
+                    'Library_type': 'SingleEnd',
+                    'condition': [cls.condition_1, cls.condition_2],
+                    'domain': 'Unknown',
+                    'num_samples': 2,
+                    'platform': 'Unknown'}
+        save_object_params = {
+            'id': workspace_id,
+            'objects': [{
+                            'type': 'KBaseRNASeq.RNASeqSampleSet',
+                            'data': sample_set_data,
+                            'name': sample_set_object_name
+                        }]
+        }
+
+        dfu_oi = cls.dfu.save_objects(save_object_params)[0]
+        cls.sample_set_ref = str(dfu_oi[6]) + '/' + str(dfu_oi[0]) + '/' + str(dfu_oi[4])
+
+        # upload alignment_set object
+        object_type = 'KBaseRNASeq.RNASeqAlignmentSet'
+        alignment_set_object_name = 'test_Alignment_Set'
+        alignment_set_data = {
+                    'genome_id': cls.genome_ref,
+                    'read_sample_ids': [reads_object_name_1, reads_object_name_2],
+                    'mapped_rnaseq_alignments': [{reads_object_name_1: alignment_object_name_1},
+                                                 {reads_object_name_2: alignment_object_name_2}],
+                    'mapped_alignments_ids': [{reads_object_name_1: cls.alignment_ref_1},
+                                              {reads_object_name_2: cls.alignment_ref_2}],
+                    'sample_alignments': [cls.alignment_ref_1, cls.alignment_ref_2],
+                    'sampleset_id': cls.sample_set_ref}
+        save_object_params = {
+            'id': workspace_id,
+            'objects': [{
+                            'type': object_type,
+                            'data': alignment_set_data,
+                            'name': alignment_set_object_name
+                        }]
+        }
+
+        dfu_oi = cls.dfu.save_objects(save_object_params)[0]
+        cls.alignment_set_ref = str(dfu_oi[6]) + '/' + str(dfu_oi[0]) + '/' + str(dfu_oi[4])
 
     def getWsClient(self):
         return self.__class__.wsClient
 
     def getWsName(self):
-        if hasattr(self.__class__, 'wsName'):
-            return self.__class__.wsName
-        suffix = int(time.time() * 1000)
-        wsName = "test_kb_stringtie_" + str(suffix)
-        ret = self.getWsClient().create_workspace({'workspace': wsName})  # noqa
-        self.__class__.wsName = wsName
-        return wsName
+        return self.__class__.wsName
 
     def getImpl(self):
         return self.__class__.serviceImpl
@@ -142,20 +245,20 @@ class kb_stringtieTest(unittest.TestCase):
     def test_run_stringtie_app_alignment(self):
 
         input_params = {
-            'alignment_object_ref': self.alignment_ref,
+            'alignment_object_ref': self.alignment_ref_1,
             'workspace_name': self.getWsName(),
 
-            'run_matrix_count': True,
             "min_read_coverage": 2.5,
             "junction_base": 10,
-            "num_threads": 2,
+            "num_threads": 4,
             "min_isoform_abundance": 0.1,
             "min_length": 200,
             "skip_reads_with_no_ref": 1,
             "merge": 0,
             "junction_coverage": 1,
             "ballgown_mode": 1,
-            "min_locus_gap_sep_value": 50
+            "min_locus_gap_sep_value": 50,
+            "disable_trimming": 1
         }
 
         result = self.getImpl().run_stringtie_app(self.getContext(), input_params)[0]
@@ -169,11 +272,11 @@ class kb_stringtieTest(unittest.TestCase):
         self.assertTrue('expression_obj_ref' in result)
         self.assertTrue('report_name' in result)
         self.assertTrue('report_ref' in result)
-        # expression_data = self.ws.get_objects2({
-        #                 'objects': [{'ref': result.get('expression_obj_ref')}]})['data'][0]['data']
-        # print expression_data.get('genome_id')
-        # print expression_data.get('id')
-        # print expression_data.get('condition')
+        expression_data = self.ws.get_objects2({
+                        'objects': [{'ref': result.get('expression_obj_ref')}]})['data'][0]['data']
+        self.assertEqual(expression_data.get('genome_id'), self.genome_ref)
+        self.assertEqual(expression_data.get('condition'), self.condition_1)
+        self.assertEqual(expression_data.get('id'), 'test_stringtie_expression_1')
 
     def test_run_stringtie_app_alignment_set(self):
 
@@ -181,7 +284,6 @@ class kb_stringtieTest(unittest.TestCase):
             'alignment_object_ref': self.alignment_set_ref,
             'workspace_name': self.getWsName(),
 
-            'run_matrix_count': True,
             "min_read_coverage": 2.5,
             "junction_base": 10,
             "num_threads": 4,
@@ -191,7 +293,8 @@ class kb_stringtieTest(unittest.TestCase):
             "merge": 0,
             "junction_coverage": 1,
             "ballgown_mode": 1,
-            "min_locus_gap_sep_value": 50
+            "min_locus_gap_sep_value": 50,
+            "disable_trimming": 1
         }
 
         result = self.getImpl().run_stringtie_app(self.getContext(), input_params)[0]
@@ -200,3 +303,8 @@ class kb_stringtieTest(unittest.TestCase):
         self.assertTrue('expression_obj_ref' in result)
         self.assertTrue('report_name' in result)
         self.assertTrue('report_ref' in result)
+        expression_data = self.ws.get_objects2({
+                        'objects': [{'ref': result.get('expression_obj_ref')}]})['data'][0]['data']
+        self.assertEqual(expression_data.get('genome_id'), self.genome_ref)
+        self.assertEqual(expression_data.get('sampleset_id'), self.sample_set_ref)
+        self.assertEqual(expression_data.get('id'), 'test_stringtie_expression_set')
