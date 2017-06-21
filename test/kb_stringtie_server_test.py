@@ -124,6 +124,7 @@ class kb_stringtieTest(unittest.TestCase):
                                     'destination_ref': cls.wsName + '/' + alignment_object_name_1,
                                     'read_library_ref': cls.reads_ref_1,
                                     'condition':  cls.condition_1,
+                                    'library_type': 'single_end',
                                     'assembly_or_genome_ref': cls.genome_ref
                                     })['obj_ref']
 
@@ -134,6 +135,7 @@ class kb_stringtieTest(unittest.TestCase):
                                     'destination_ref': cls.wsName + '/' + alignment_object_name_2,
                                     'read_library_ref': cls.reads_ref_2,
                                     'condition':  cls.condition_2,
+                                    'library_type': 'single_end',
                                     'assembly_or_genome_ref': cls.genome_ref
                                     })['obj_ref']
 
