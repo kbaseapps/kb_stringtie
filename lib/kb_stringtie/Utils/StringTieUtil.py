@@ -156,7 +156,7 @@ class StringTieUtil:
         files = os.listdir(os.path.dirname(bam_file_archive))
         bam_file_list = [file for file in files if re.match(r'.*\_sorted\.bam', file)]
         if not bam_file_list:
-            bam_file_list = [file for file in files if re.match(r'.*\.bam', file)]
+            bam_file_list = [file for file in files if re.match(r'.*(?<!sorted)\.bam', file)]
 
         if not bam_file_list:
             raise ValueError('Cannot find .bam file from alignment {}'.format(alignment_ref))
