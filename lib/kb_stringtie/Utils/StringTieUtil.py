@@ -461,7 +461,7 @@ class StringTieUtil:
             Overview_Content += '<p>Generated Expression Object:</p><p>{}</p>'.format(
                                                                 expression_object.get('info')[1])
         elif re.match('KBaseRNASeq.RNASeqExpressionSet-\d.\d', expression_object_type):
-            Overview_Content += '<p>Generated ExpressionSet Object:</p><p>{}</p>'.format(
+            Overview_Content += '<p>Generated Expression Set Object:</p><p>{}</p>'.format(
                                                                 expression_object.get('info')[1])
             Overview_Content += '<br><p>Generated Expression Object:</p>'
             for expression_ref in expression_object['data']['sample_expression_ids']:
@@ -499,7 +499,7 @@ class StringTieUtil:
               'file_links': output_files,
               'html_links': output_html_files,
               'direct_html_link_index': 0,
-              'html_window_height': 266,
+              'html_window_height': 366,
               'report_object_name': 'kb_stringtie_report_' + str(uuid.uuid4())}
 
         kbase_report_client = KBaseReport(self.callback_url, token=self.token)
