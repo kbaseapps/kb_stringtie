@@ -463,7 +463,7 @@ class StringTieUtil:
         elif re.match('KBaseRNASeq.RNASeqExpressionSet-\d.\d', expression_object_type):
             Overview_Content += '<p>Generated ExpressionSet Object:</p><p>{}</p>'.format(
                                                                 expression_object.get('info')[1])
-            Overview_Content += '<p></p><p>Generated Expression Object:</p>'
+            Overview_Content += '<br><p>Generated Expression Object:</p>'
             for expression_ref in expression_object['data']['sample_expression_ids']:
                 expression_name = self.ws.get_object_info([{"ref": expression_ref}],
                                                           includeMetadata=None)[0][1]
