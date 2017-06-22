@@ -151,12 +151,9 @@ class StringTieUtil:
         """
 
         bam_file_archive = self.rau.download_alignment({'source_ref': alignment_ref})['bam_file']
-        print 'fdsafds'
-        print bam_file_archive
         self.dfu.unpack_file({'file_path': bam_file_archive})
 
         files = os.listdir(os.path.dirname(bam_file_archive))
-        print files
         bam_file_list = [file for file in files if re.match(r'.*\_sorted\.bam', file)]
         if not bam_file_list:
             bam_file_list = [file for file in files if re.match(r'.*(?<!sorted)\.bam', file)]
