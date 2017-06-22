@@ -153,7 +153,17 @@ class StringTieUtil:
         bam_file_archive = self.rau.download_alignment({'source_ref': alignment_ref})['bam_file']
         self.dfu.unpack_file({'file_path': bam_file_archive})
 
-        bam_file = os.path.join(os.path.dirname(bam_file_archive), 'accepted_hits.bam')
+        files = os.listdir(os.path.dirname(bam_file_archive))
+        bam_file_list = [file for file in files if re.match(r'.*\_sorted\.bam', file)]
+        if not bam_file_list:
+            bam_file_list = [file for file in files if re.match(r'.*\.bam', file)]
+
+        if not bam_file_list:
+            raise ValueError('Cannot find .bam file from alignment {}'.format(alignment_ref))
+
+        bam_file_name = bam_file_list[0]
+
+        bam_file = os.path.join(os.path.dirname(bam_file_archive), bam_file_name)
 
         return bam_file
 
