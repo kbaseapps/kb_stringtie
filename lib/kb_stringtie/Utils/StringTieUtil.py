@@ -490,7 +490,7 @@ class StringTieUtil:
         html_report.append({'path': result_file_path,
                             'name': os.path.basename(result_file_path),
                             'label': os.path.basename(result_file_path),
-                            'description': 'HTML summary report for MaxBin2 App'})
+                            'description': 'HTML summary report for StringTie App'})
         return html_report
 
     def _generate_report(self, obj_ref, workspace_name, result_directory):
