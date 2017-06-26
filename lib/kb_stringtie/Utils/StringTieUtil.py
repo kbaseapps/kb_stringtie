@@ -162,7 +162,7 @@ class StringTieUtil:
 
         bam_file_name = bam_file_list[0]
 
-        bam_file = os.path.join(os.path.dirname(bam_file_dir), bam_file_name)
+        bam_file = os.path.join(bam_file_dir, bam_file_name)
 
         return bam_file
 
