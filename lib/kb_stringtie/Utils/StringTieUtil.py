@@ -152,7 +152,7 @@ class StringTieUtil:
 
         bam_file_dir = self.rau.download_alignment({'source_ref': alignment_ref})['destination_dir']
 
-        files = os.listdir(os.path.dirname(bam_file_dir))
+        files = os.listdir(bam_file_dir)
         bam_file_list = [file for file in files if re.match(r'.*\_sorted\.bam', file)]
         if not bam_file_list:
             bam_file_list = [file for file in files if re.match(r'.*(?<!sorted)\.bam', file)]
