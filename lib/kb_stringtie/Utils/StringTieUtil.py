@@ -293,7 +293,7 @@ class StringTieUtil:
         _generate_html_report: generate html summary report
         """
 
-        log('Start generating html report')
+        log('start generating html report')
         html_report = list()
 
         output_directory = os.path.join(self.scratch, str(uuid.uuid4()))
@@ -302,22 +302,39 @@ class StringTieUtil:
 
         expression_object = self.ws.get_objects2({'objects':
                                                  [{'ref': obj_ref}]})['data'][0]
+        expression_info = expression_object['info']
+        expression_data = expression_object['data']
 
-        expression_object_type = expression_object.get('info')[2]
-
+        expression_object_type = expression_info[2]
         Overview_Content = ''
         if re.match('KBaseRNASeq.RNASeqExpression-\d.\d', expression_object_type):
-            Overview_Content += '<p>Generated Expression Object:</p>'
-            Overview_Content += '<p>{}</p>'.format(expression_object.get('info')[1])
+            Overview_Content += '<br/><table><tr><th>Generated Expression Object</th>'
+            Overview_Content += '<th></th></tr>'
+            Overview_Content += '<tr><th>Expression Name</th><th>Condition</th></tr>'
+            Overview_Content += '<tr><td>{} ({})</td>'.format(expression_info[1],
+                                                              obj_ref)
+            Overview_Content += '<td>{}</td></tr>'.format(expression_data['condition'])
+            Overview_Content += '</table>'
         elif re.match('KBaseSets.ExpressionSet-\d.\d', expression_object_type):
-            Overview_Content += '<p>Generated Expression Set Object:</p>'
-            Overview_Content += '<p>{}</p>'.format(expression_object.get('info')[1])
-            Overview_Content += '<br><p>Generated Expression Object:</p>'
-            for item in expression_object['data']['items']:
-                expression_name = self.ws.get_object_info([{"ref": item['ref']}],
-                                                          includeMetadata=None)[0][1]
-                Overview_Content += '<p>{}</p>'.format(expression_name)
-
+            Overview_Content += '<br/><table><tr><th>Generated ExpressionSet Object</th></tr>'
+            Overview_Content += '<tr><td>{} ({})'.format(expression_info[1],
+                                                         obj_ref)
+            Overview_Content += '</td></tr></table>'
+            Overview_Content += '<p><br/></p>'
+            Overview_Content += '<table><tr><th>Generated Expression Objects</th>'
+            Overview_Content += '<th></th></tr>'
+            Overview_Content += '<tr><th>Expression Name</th><th>Condition</th></tr>'
+            for item in expression_data['items']:
+                item_expression_object = self.ws.get_objects2({'objects':
+                                                              [{'ref': item['ref']}]})['data'][0]
+                item_expression_info = item_expression_object['info']
+                item_expression_data = item_expression_object['data']
+                expression_name = item_expression_info[1]
+                Overview_Content += '<tr><td>{} ({})</td>'.format(expression_name,
+                                                                  item['ref'])
+                Overview_Content += '<td>{}</td>'.format(item_expression_data['condition'])
+                Overview_Content += '</tr>'
+            Overview_Content += '</table>'
         with open(result_file_path, 'w') as result_file:
             with open(os.path.join(os.path.dirname(__file__), 'report_template.html'),
                       'r') as report_template_file:
