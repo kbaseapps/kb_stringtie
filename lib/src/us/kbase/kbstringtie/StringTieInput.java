@@ -17,6 +17,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  * required params:
  * alignment_object_ref: Alignment or AlignmentSet object reference
  * workspace_name: the name of the workspace it gets saved to
+ * expression_set_suffix: suffix append to expression set object name
+ * expression_suffix: suffix append to expression object name
  * optional params:
  * num_threads: number of processing threads
  * junction_base: junctions that don't have spliced reads
@@ -40,6 +42,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @JsonPropertyOrder({
     "alignment_object_ref",
     "workspace_name",
+    "expression_set_suffix",
+    "expression_suffix",
     "merge",
     "num_threads",
     "junction_base",
@@ -60,6 +64,10 @@ public class StringTieInput {
     private String alignmentObjectRef;
     @JsonProperty("workspace_name")
     private String workspaceName;
+    @JsonProperty("expression_set_suffix")
+    private String expressionSetSuffix;
+    @JsonProperty("expression_suffix")
+    private String expressionSuffix;
     @JsonProperty("merge")
     private Long merge;
     @JsonProperty("num_threads")
@@ -115,6 +123,36 @@ public class StringTieInput {
 
     public StringTieInput withWorkspaceName(String workspaceName) {
         this.workspaceName = workspaceName;
+        return this;
+    }
+
+    @JsonProperty("expression_set_suffix")
+    public String getExpressionSetSuffix() {
+        return expressionSetSuffix;
+    }
+
+    @JsonProperty("expression_set_suffix")
+    public void setExpressionSetSuffix(String expressionSetSuffix) {
+        this.expressionSetSuffix = expressionSetSuffix;
+    }
+
+    public StringTieInput withExpressionSetSuffix(String expressionSetSuffix) {
+        this.expressionSetSuffix = expressionSetSuffix;
+        return this;
+    }
+
+    @JsonProperty("expression_suffix")
+    public String getExpressionSuffix() {
+        return expressionSuffix;
+    }
+
+    @JsonProperty("expression_suffix")
+    public void setExpressionSuffix(String expressionSuffix) {
+        this.expressionSuffix = expressionSuffix;
+    }
+
+    public StringTieInput withExpressionSuffix(String expressionSuffix) {
+        this.expressionSuffix = expressionSuffix;
         return this;
     }
 
@@ -325,7 +363,7 @@ public class StringTieInput {
 
     @Override
     public String toString() {
-        return ((((((((((((((((((((((((((((((((("StringTieInput"+" [alignmentObjectRef=")+ alignmentObjectRef)+", workspaceName=")+ workspaceName)+", merge=")+ merge)+", numThreads=")+ numThreads)+", junctionBase=")+ junctionBase)+", junctionCoverage=")+ junctionCoverage)+", disableTrimming=")+ disableTrimming)+", minLocusGapSepValue=")+ minLocusGapSepValue)+", ballgownMode=")+ ballgownMode)+", skipReadsWithNoRef=")+ skipReadsWithNoRef)+", maximumFraction=")+ maximumFraction)+", label=")+ label)+", minLength=")+ minLength)+", minReadCoverage=")+ minReadCoverage)+", minIsoformAbundance=")+ minIsoformAbundance)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((((((((((((((((((((((((((("StringTieInput"+" [alignmentObjectRef=")+ alignmentObjectRef)+", workspaceName=")+ workspaceName)+", expressionSetSuffix=")+ expressionSetSuffix)+", expressionSuffix=")+ expressionSuffix)+", merge=")+ merge)+", numThreads=")+ numThreads)+", junctionBase=")+ junctionBase)+", junctionCoverage=")+ junctionCoverage)+", disableTrimming=")+ disableTrimming)+", minLocusGapSepValue=")+ minLocusGapSepValue)+", ballgownMode=")+ ballgownMode)+", skipReadsWithNoRef=")+ skipReadsWithNoRef)+", maximumFraction=")+ maximumFraction)+", label=")+ label)+", minLength=")+ minLength)+", minReadCoverage=")+ minReadCoverage)+", minIsoformAbundance=")+ minIsoformAbundance)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

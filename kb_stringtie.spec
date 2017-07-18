@@ -16,6 +16,8 @@ module kb_stringtie {
         required params:
         alignment_object_ref: Alignment or AlignmentSet object reference
         workspace_name: the name of the workspace it gets saved to
+        expression_set_suffix: suffix append to expression set object name
+        expression_suffix: suffix append to expression object name
 
         optional params:
         num_threads: number of processing threads
@@ -37,6 +39,8 @@ module kb_stringtie {
     typedef structure {
         obj_ref alignment_object_ref;
         string workspace_name;
+        string expression_set_suffix;
+        string expression_suffix;
 
         boolean merge;
         int num_threads;

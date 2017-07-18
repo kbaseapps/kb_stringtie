@@ -1,7 +1,7 @@
 #
 # Define basic display information
 #
-name     : Assemble Transcripts using StringTie
+name     : Assemble Transcripts using StringTie - v1.0.2
 
 tooltip  : |
     Assemble the transcripts from RNA-seq reads using StringTie
@@ -23,9 +23,19 @@ method-suggestions :
 parameters :
   alignment_object_ref :
     ui-name : |
-        RNA-seq Alignment or Alignment Set 
+        Reads Alignment or Reads Alignment Set 
     short-hint : |
-        Select the RNA-seq alignment or alignment set created by HISAT2, TopHat2 or Bowtie2.
+        Select the RNA-seq Alignment or KBaseSets.ReadsAlignmentSet created by HISAT2, TopHat2 or Bowtie2.
+  expression_suffix :
+    ui-name : |
+            Expression Name Suffix
+    short-hint : |
+            Suffix append to Alignment object name to form Expression name
+  expression_set_suffix :
+    ui-name : |
+            ExpressionSet Name Suffix
+    short-hint : |
+            Suffix append to Alignment Set object name to form ExpressionSet name
   min_isoform_abundance :
     ui-name : |
       Minimum Isoform Abundance

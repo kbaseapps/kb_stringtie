@@ -1,6 +1,6 @@
 {
   "ver" : "1.0.0",
-  "authors" : [ ],
+  "authors" : ["tgu2"],
   "contact" : "help@kbase.us",
   "visible" : true,
   "categories" : ["active","expression","assembly"],
@@ -16,9 +16,23 @@
     "default_values" : [ "" ],
     "field_type" : "text",
     "text_options" : {
-      "valid_ws_types" : ["KBaseRNASeq.RNASeqAlignmentSet" , "KBaseRNASeq.RNASeqAlignment"]
+      "valid_ws_types" : ["KBaseRNASeq.RNASeqAlignmentSet" , "KBaseRNASeq.RNASeqAlignment", "KBaseSets.ReadsAlignmentSet"]
     }
-  }, {
+  },{
+    "id" : "expression_suffix",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "_stringtie_expression" ],
+    "field_type" : "text"
+  },{
+    "id" : "expression_set_suffix",
+    "optional" : true,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "_stringtie_expression_set" ],
+    "field_type" : "text"
+  },{
    "id" : "min_isoform_abundance",
     "optional" : true,
     "advanced" : true,
@@ -93,6 +107,14 @@
           "input_parameter" : "alignment_object_ref",
           "target_type_transform": "resolved-ref",
           "target_property" : "alignment_object_ref"
+        },
+        {
+            "input_parameter" : "expression_suffix",
+            "target_property" : "expression_suffix"
+        },
+        {
+            "input_parameter" : "expression_set_suffix",
+            "target_property" : "expression_set_suffix"
         },
         {
           "constant_value"  : 1,

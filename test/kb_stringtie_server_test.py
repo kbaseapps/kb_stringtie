@@ -119,72 +119,85 @@ class kb_stringtieTest(unittest.TestCase):
 
         alignment_object_name_1 = 'test_Alignment_1'
         cls.condition_1 = 'test_condition_1'
-        cls.alignment_ref_1 = cls.rau.upload_alignment(
-                                   {'file_path': alignment_file_path,
-                                    'destination_ref': cls.wsName + '/' + alignment_object_name_1,
-                                    'read_library_ref': cls.reads_ref_1,
-                                    'condition':  cls.condition_1,
-                                    'library_type': 'single_end',
-                                    'assembly_or_genome_ref': cls.genome_ref
-                                    })['obj_ref']
+        destination_ref = cls.wsName + '/' + alignment_object_name_1
+        cls.alignment_ref_1 = cls.rau.upload_alignment({'file_path': alignment_file_path,
+                                                        'destination_ref': destination_ref,
+                                                        'read_library_ref': cls.reads_ref_1,
+                                                        'condition': cls.condition_1,
+                                                        'library_type': 'single_end',
+                                                        'assembly_or_genome_ref': cls.genome_ref
+                                                        })['obj_ref']
 
         alignment_object_name_2 = 'test_Alignment_2'
         cls.condition_2 = 'test_condition_2'
-        cls.alignment_ref_2 = cls.rau.upload_alignment(
-                                   {'file_path': alignment_file_path,
-                                    'destination_ref': cls.wsName + '/' + alignment_object_name_2,
-                                    'read_library_ref': cls.reads_ref_2,
-                                    'condition':  cls.condition_2,
-                                    'library_type': 'single_end',
-                                    'assembly_or_genome_ref': cls.genome_ref
-                                    })['obj_ref']
+        destination_ref = cls.wsName + '/' + alignment_object_name_2
+        cls.alignment_ref_2 = cls.rau.upload_alignment({'file_path': alignment_file_path,
+                                                        'destination_ref': destination_ref,
+                                                        'read_library_ref': cls.reads_ref_2,
+                                                        'condition': cls.condition_2,
+                                                        'library_type': 'single_end',
+                                                        'assembly_or_genome_ref': cls.genome_ref
+                                                        })['obj_ref']
 
         # upload sample_set object
         workspace_id = cls.dfu.ws_name_to_id(cls.wsName)
         sample_set_object_name = 'test_Sample_Set'
-        sample_set_data = {
-                    'sampleset_id': sample_set_object_name,
-                    'sampleset_desc': 'test sampleset object',
-                    'Library_type': 'SingleEnd',
-                    'condition': [cls.condition_1, cls.condition_2],
-                    'domain': 'Unknown',
-                    'num_samples': 2,
-                    'platform': 'Unknown'}
+        sample_set_data = {'sampleset_id': sample_set_object_name,
+                           'sampleset_desc': 'test sampleset object',
+                           'Library_type': 'SingleEnd',
+                           'condition': [cls.condition_1, cls.condition_2],
+                           'domain': 'Unknown',
+                           'num_samples': 2,
+                           'platform': 'Unknown'}
         save_object_params = {
             'id': workspace_id,
-            'objects': [{
-                            'type': 'KBaseRNASeq.RNASeqSampleSet',
-                            'data': sample_set_data,
-                            'name': sample_set_object_name
-                        }]
+            'objects': [{'type': 'KBaseRNASeq.RNASeqSampleSet',
+                         'data': sample_set_data,
+                         'name': sample_set_object_name}]
         }
 
         dfu_oi = cls.dfu.save_objects(save_object_params)[0]
         cls.sample_set_ref = str(dfu_oi[6]) + '/' + str(dfu_oi[0]) + '/' + str(dfu_oi[4])
 
-        # upload alignment_set object
+        # upload RNASeqAlignmentSet object
         object_type = 'KBaseRNASeq.RNASeqAlignmentSet'
-        alignment_set_object_name = 'test_Alignment_Set'
-        alignment_set_data = {
-                    'genome_id': cls.genome_ref,
-                    'read_sample_ids': [reads_object_name_1, reads_object_name_2],
-                    'mapped_rnaseq_alignments': [{reads_object_name_1: alignment_object_name_1},
-                                                 {reads_object_name_2: alignment_object_name_2}],
-                    'mapped_alignments_ids': [{reads_object_name_1: cls.alignment_ref_1},
-                                              {reads_object_name_2: cls.alignment_ref_2}],
-                    'sample_alignments': [cls.alignment_ref_1, cls.alignment_ref_2],
-                    'sampleset_id': cls.sample_set_ref}
+        alignment_set_object_name = 'test_RNASeq_Alignment_Set'
+        alignment_set_data = {'genome_id': cls.genome_ref,
+                              'read_sample_ids': [reads_object_name_1, reads_object_name_2],
+                              'mapped_rnaseq_alignments': [{reads_object_name_1: 
+                                                            alignment_object_name_1},
+                                                           {reads_object_name_2: 
+                                                            alignment_object_name_2}],
+                              'mapped_alignments_ids': [{reads_object_name_1: cls.alignment_ref_1},
+                                                        {reads_object_name_2: cls.alignment_ref_2}
+                                                        ],
+                              'sample_alignments': [cls.alignment_ref_1, cls.alignment_ref_2],
+                              'sampleset_id': cls.sample_set_ref}
         save_object_params = {
             'id': workspace_id,
-            'objects': [{
-                            'type': object_type,
-                            'data': alignment_set_data,
-                            'name': alignment_set_object_name
-                        }]
+            'objects': [{'type': object_type,
+                         'data': alignment_set_data,
+                         'name': alignment_set_object_name}]
         }
 
         dfu_oi = cls.dfu.save_objects(save_object_params)[0]
-        cls.alignment_set_ref = str(dfu_oi[6]) + '/' + str(dfu_oi[0]) + '/' + str(dfu_oi[4])
+        cls.rnaseq_alignment_set_ref = str(dfu_oi[6]) + '/' + str(dfu_oi[0]) + '/' + str(dfu_oi[4])
+
+        # upload ReadsAlignmentSet object
+        object_type = 'KBaseSets.ReadsAlignmentSet'
+        alignment_set_object_name = 'test_reads_Alignment_Set'
+        alignment_set_data = {'description': 'test ReadsAlignmentSet object',
+                              'items': [{'ref': cls.alignment_ref_1},
+                                        {'ref': cls.alignment_ref_2}]}
+        save_object_params = {
+            'id': workspace_id,
+            'objects': [{'type': object_type,
+                         'data': alignment_set_data,
+                         'name': alignment_set_object_name}]
+        }
+
+        dfu_oi = cls.dfu.save_objects(save_object_params)[0]
+        cls.reads_alignment_set_ref = str(dfu_oi[6]) + '/' + str(dfu_oi[0]) + '/' + str(dfu_oi[4])
 
     def getWsClient(self):
         return self.__class__.wsClient
@@ -199,20 +212,16 @@ class kb_stringtieTest(unittest.TestCase):
         return self.__class__.ctx
 
     def test_bad_run_stringtie_app_params(self):
-        invalidate_input_params = {
-          'missing_alignment_object_ref': 'alignment_object_ref',
-          'workspace_name': 'workspace_name'
-        }
-        with self.assertRaisesRegexp(
-                    ValueError, '"alignment_object_ref" parameter is required, but missing'):
+        invalidate_input_params = {'missing_alignment_object_ref': 'alignment_object_ref',
+                                   'workspace_name': 'workspace_name'}
+        with self.assertRaisesRegexp(ValueError, 
+                                     '"alignment_object_ref" parameter is required, but missing'):
             self.getImpl().run_stringtie_app(self.getContext(), invalidate_input_params)
 
-        invalidate_input_params = {
-          'alignment_object_ref': 'alignment_object_ref',
-          'missing_workspace_name': 'workspace_name'
-        }
-        with self.assertRaisesRegexp(
-                    ValueError, '"workspace_name" parameter is required, but missing'):
+        invalidate_input_params = {'alignment_object_ref': 'alignment_object_ref',
+                                   'missing_workspace_name': 'workspace_name'}
+        with self.assertRaisesRegexp(ValueError, 
+                                     '"workspace_name" parameter is required, but missing'):
             self.getImpl().run_stringtie_app(self.getContext(), invalidate_input_params)
 
     def test_StringTieUtil_generate_command(self):
@@ -233,8 +242,8 @@ class kb_stringtieTest(unittest.TestCase):
             'ballgown_mode': True,
             'skip_reads_with_no_ref': True,
             'gtf_file': 'gtf_file',
-            'cov_refs_file': 'cov_refs_file',
-            }
+            'cov_refs_file': 'cov_refs_file'
+        }
 
         expect_command = '/kb/deployment/bin/StringTie/stringtie '
         expect_command += '-p 4 -B   -C cov_refs_file -e   -G gtf_file -m 100 '
@@ -249,6 +258,8 @@ class kb_stringtieTest(unittest.TestCase):
         input_params = {
             'alignment_object_ref': self.alignment_ref_1,
             'workspace_name': self.getWsName(),
+            'expression_suffix': '_stringtie_expression',
+            'expression_set_suffix': '_stringtie_expression_set',
 
             "min_read_coverage": 2.5,
             "junction_base": 10,
@@ -274,17 +285,20 @@ class kb_stringtieTest(unittest.TestCase):
         self.assertTrue('expression_obj_ref' in result)
         self.assertTrue('report_name' in result)
         self.assertTrue('report_ref' in result)
-        expression_data = self.ws.get_objects2({
-                        'objects': [{'ref': result.get('expression_obj_ref')}]})['data'][0]['data']
+        expression_data = self.ws.get_objects2({'objects': 
+                                               [{'ref': result.get('expression_obj_ref')}]}
+                                               )['data'][0]['data']
         self.assertEqual(expression_data.get('genome_id'), self.genome_ref)
         self.assertEqual(expression_data.get('condition'), self.condition_1)
         self.assertEqual(expression_data.get('id'), 'test_stringtie_expression_1')
 
-    def test_run_stringtie_app_alignment_set(self):
+    def test_run_stringtie_app_reads_alignment_set(self):
 
         input_params = {
-            'alignment_object_ref': self.alignment_set_ref,
+            'alignment_object_ref': self.reads_alignment_set_ref,
             'workspace_name': self.getWsName(),
+            'expression_suffix': '_stringtie_expression',
+            'expression_set_suffix': '_stringtie_expression_set',
 
             "min_read_coverage": 2.5,
             "junction_base": 10,
@@ -302,11 +316,48 @@ class kb_stringtieTest(unittest.TestCase):
         result = self.getImpl().run_stringtie_app(self.getContext(), input_params)[0]
 
         self.assertTrue('result_directory' in result)
+        result_files = os.listdir(result['result_directory'])
+        print result_files
         self.assertTrue('expression_obj_ref' in result)
         self.assertTrue('report_name' in result)
         self.assertTrue('report_ref' in result)
-        expression_data = self.ws.get_objects2({
-                        'objects': [{'ref': result.get('expression_obj_ref')}]})['data'][0]['data']
-        self.assertEqual(expression_data.get('genome_id'), self.genome_ref)
-        self.assertEqual(expression_data.get('sampleset_id'), self.sample_set_ref)
-        self.assertEqual(expression_data.get('id'), 'test_stringtie_expression_set')
+        expression_data = self.ws.get_objects2({'objects': 
+                                               [{'ref': result.get('expression_obj_ref')}]}
+                                               )['data'][0]['data']
+        self.assertTrue('items' in expression_data)
+        self.assertTrue('description' in expression_data)
+
+    def test_run_stringtie_app_rnaseq_alignment_set(self):
+
+        input_params = {
+            'alignment_object_ref': self.rnaseq_alignment_set_ref,
+            'workspace_name': self.getWsName(),
+            'expression_suffix': '_stringtie_expression',
+            'expression_set_suffix': '_stringtie_expression_set',
+
+            "min_read_coverage": 2.5,
+            "junction_base": 10,
+            "num_threads": 4,
+            "min_isoform_abundance": 0.1,
+            "min_length": 200,
+            "skip_reads_with_no_ref": 1,
+            "merge": 0,
+            "junction_coverage": 1,
+            "ballgown_mode": 1,
+            "min_locus_gap_sep_value": 50,
+            "disable_trimming": 1
+        }
+
+        result = self.getImpl().run_stringtie_app(self.getContext(), input_params)[0]
+
+        self.assertTrue('result_directory' in result)
+        result_files = os.listdir(result['result_directory'])
+        print result_files
+        self.assertTrue('expression_obj_ref' in result)
+        self.assertTrue('report_name' in result)
+        self.assertTrue('report_ref' in result)
+        expression_data = self.ws.get_objects2({'objects': 
+                                               [{'ref': result.get('expression_obj_ref')}]}
+                                               )['data'][0]['data']
+        self.assertTrue('items' in expression_data)
+        self.assertTrue('description' in expression_data)
