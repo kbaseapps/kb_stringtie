@@ -23,14 +23,14 @@
     "optional" : false,
     "advanced" : false,
     "allow_multiple" : false,
-    "default_values" : [ "_stringtie_expression" ],
+    "default_values" : [ "_expression" ],
     "field_type" : "text"
   },{
     "id" : "expression_set_suffix",
     "optional" : true,
     "advanced" : false,
     "allow_multiple" : false,
-    "default_values" : [ "_stringtie_expression_set" ],
+    "default_values" : [ "_expression_set" ],
     "field_type" : "text"
   },{
    "id" : "min_isoform_abundance",
