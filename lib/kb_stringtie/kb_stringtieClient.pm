@@ -124,6 +124,8 @@ $returnVal is a kb_stringtie.StringTieResult
 StringTieInput is a reference to a hash where the following keys are defined:
 	alignment_object_ref has a value which is a kb_stringtie.obj_ref
 	workspace_name has a value which is a string
+	expression_set_suffix has a value which is a string
+	expression_suffix has a value which is a string
 	merge has a value which is a kb_stringtie.boolean
 	num_threads has a value which is an int
 	junction_base has a value which is an int
@@ -156,6 +158,8 @@ $returnVal is a kb_stringtie.StringTieResult
 StringTieInput is a reference to a hash where the following keys are defined:
 	alignment_object_ref has a value which is a kb_stringtie.obj_ref
 	workspace_name has a value which is a string
+	expression_set_suffix has a value which is a string
+	expression_suffix has a value which is a string
 	merge has a value which is a kb_stringtie.boolean
 	num_threads has a value which is an int
 	junction_base has a value which is an int
@@ -399,6 +403,8 @@ a string
 required params:
 alignment_object_ref: Alignment or AlignmentSet object reference
 workspace_name: the name of the workspace it gets saved to
+expression_set_suffix: suffix append to expression set object name
+expression_suffix: suffix append to expression object name
 
 optional params:
 num_threads: number of processing threads
@@ -426,6 +432,8 @@ ref: http://ccb.jhu.edu/software/stringtie/index.shtml?t=manual
 a reference to a hash where the following keys are defined:
 alignment_object_ref has a value which is a kb_stringtie.obj_ref
 workspace_name has a value which is a string
+expression_set_suffix has a value which is a string
+expression_suffix has a value which is a string
 merge has a value which is a kb_stringtie.boolean
 num_threads has a value which is an int
 junction_base has a value which is an int
@@ -449,6 +457,8 @@ min_isoform_abundance has a value which is a float
 a reference to a hash where the following keys are defined:
 alignment_object_ref has a value which is a kb_stringtie.obj_ref
 workspace_name has a value which is a string
+expression_set_suffix has a value which is a string
+expression_suffix has a value which is a string
 merge has a value which is a kb_stringtie.boolean
 num_threads has a value which is an int
 junction_base has a value which is an int

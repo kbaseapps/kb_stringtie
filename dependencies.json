@@ -1,0 +1,9 @@
+[ {
+  "module_name" : "ExpressionUtils",
+  "type" : "sdk",
+  "version_tag" : "release"
+}, {
+  "module_name" : "SetAPI",
+  "type" : "sdk",
+  "version_tag" : "release"
+} ]
