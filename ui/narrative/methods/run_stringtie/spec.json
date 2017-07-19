@@ -33,6 +33,17 @@
     "default_values" : [ "_stringtie_expression_set" ],
     "field_type" : "text"
   },{
+    "id": "merge",
+    "optional":true,
+    "advanced":false,
+    "allow_multiple":false,
+    "default_values":["0"],
+    "field_type" : "checkbox",
+    "checkbox_options":{
+        "checked_value": 1,
+        "unchecked_value": 0
+    }
+  },{
    "id" : "min_isoform_abundance",
     "optional" : true,
     "advanced" : true,
