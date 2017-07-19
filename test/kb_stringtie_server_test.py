@@ -211,94 +211,165 @@ class kb_stringtieTest(unittest.TestCase):
     def getContext(self):
         return self.__class__.ctx
 
-    def test_bad_run_stringtie_app_params(self):
-        invalidate_input_params = {'missing_alignment_object_ref': 'alignment_object_ref',
-                                   'workspace_name': 'workspace_name'}
-        with self.assertRaisesRegexp(ValueError, 
-                                     '"alignment_object_ref" parameter is required, but missing'):
-            self.getImpl().run_stringtie_app(self.getContext(), invalidate_input_params)
+    # def test_bad_run_stringtie_app_params(self):
+    #     invalidate_input_params = {'missing_alignment_object_ref': 'alignment_object_ref',
+    #                                'workspace_name': 'workspace_name'}
+    #     with self.assertRaisesRegexp(ValueError, 
+    #                                  '"alignment_object_ref" parameter is required, but missing'):
+    #         self.getImpl().run_stringtie_app(self.getContext(), invalidate_input_params)
 
-        invalidate_input_params = {'alignment_object_ref': 'alignment_object_ref',
-                                   'missing_workspace_name': 'workspace_name'}
-        with self.assertRaisesRegexp(ValueError, 
-                                     '"workspace_name" parameter is required, but missing'):
-            self.getImpl().run_stringtie_app(self.getContext(), invalidate_input_params)
+    #     invalidate_input_params = {'alignment_object_ref': 'alignment_object_ref',
+    #                                'missing_workspace_name': 'workspace_name'}
+    #     with self.assertRaisesRegexp(ValueError, 
+    #                                  '"workspace_name" parameter is required, but missing'):
+    #         self.getImpl().run_stringtie_app(self.getContext(), invalidate_input_params)
 
-    def test_StringTieUtil_generate_command(self):
-        command_params = {
-            'num_threads': 4,
-            'junction_base': 8,
-            'junction_coverage': 0.8,
-            'disable_trimming': True,
-            'min_locus_gap_sep_value': 60,
-            'maximum_fraction': 0.8,
-            'label': 'Lable',
-            'min_length': 100,
-            'min_read_coverage': 1.6,
-            'min_isoform_abundance': 0.6,
-            'output_transcripts': 'output_transcripts_file',
-            'gene_abundances_file': 'gene_abundances_file',
-            'input_file': 'input_file',
-            'ballgown_mode': True,
-            'skip_reads_with_no_ref': True,
-            'gtf_file': 'gtf_file',
-            'cov_refs_file': 'cov_refs_file'
-        }
+    # def test_StringTieUtil_generate_command(self):
+    #     command_params = {
+    #         'num_threads': 4,
+    #         'junction_base': 8,
+    #         'junction_coverage': 0.8,
+    #         'disable_trimming': True,
+    #         'min_locus_gap_sep_value': 60,
+    #         'maximum_fraction': 0.8,
+    #         'label': 'Lable',
+    #         'min_length': 100,
+    #         'min_read_coverage': 1.6,
+    #         'min_isoform_abundance': 0.6,
+    #         'output_transcripts': 'output_transcripts_file',
+    #         'gene_abundances_file': 'gene_abundances_file',
+    #         'input_file': 'input_file',
+    #         'ballgown_mode': True,
+    #         'skip_reads_with_no_ref': True,
+    #         'gtf_file': 'gtf_file',
+    #         'cov_refs_file': 'cov_refs_file'
+    #     }
 
-        expect_command = '/kb/deployment/bin/StringTie/stringtie '
-        expect_command += '-p 4 -B   -C cov_refs_file -e   -G gtf_file -m 100 '
-        expect_command += '-o output_transcripts_file -A gene_abundances_file '
-        expect_command += '-f 0.6 -j 0.8 -a 8 -t   -c 1.6 -l Lable -g 60 -M 0.8 input_file '
+    #     expect_command = '/kb/deployment/bin/StringTie/stringtie '
+    #     expect_command += '-p 4 -B   -C cov_refs_file -e   -G gtf_file -m 100 '
+    #     expect_command += '-o output_transcripts_file -A gene_abundances_file '
+    #     expect_command += '-f 0.6 -j 0.8 -a 8 -t   -c 1.6 -l Lable -g 60 -M 0.8 input_file '
 
-        command = self.stringtie_runner._generate_command(command_params)
-        self.assertEquals(command, expect_command)
+    #     command = self.stringtie_runner._generate_command(command_params)
+    #     self.assertEquals(command, expect_command)
 
-    def test_run_stringtie_app_alignment(self):
+    # def test_run_stringtie_app_alignment(self):
 
-        input_params = {
-            'alignment_object_ref': self.alignment_ref_1,
-            'workspace_name': self.getWsName(),
-            'expression_suffix': '_stringtie_expression',
-            'expression_set_suffix': '_stringtie_expression_set',
+    #     input_params = {
+    #         'alignment_object_ref': self.alignment_ref_1,
+    #         'workspace_name': self.getWsName(),
+    #         'expression_suffix': '_stringtie_expression',
+    #         'expression_set_suffix': '_stringtie_expression_set',
 
-            "min_read_coverage": 2.5,
-            "junction_base": 10,
-            "num_threads": 4,
-            "min_isoform_abundance": 0.1,
-            "min_length": 200,
-            "skip_reads_with_no_ref": 1,
-            "merge": 0,
-            "junction_coverage": 1,
-            "ballgown_mode": 1,
-            "min_locus_gap_sep_value": 50,
-            "disable_trimming": 1
-        }
+    #         "min_read_coverage": 2.5,
+    #         "junction_base": 10,
+    #         "num_threads": 4,
+    #         "min_isoform_abundance": 0.1,
+    #         "min_length": 200,
+    #         "skip_reads_with_no_ref": 1,
+    #         "merge": 0,
+    #         "junction_coverage": 1,
+    #         "ballgown_mode": 1,
+    #         "min_locus_gap_sep_value": 50,
+    #         "disable_trimming": 1
+    #     }
 
-        result = self.getImpl().run_stringtie_app(self.getContext(), input_params)[0]
+    #     result = self.getImpl().run_stringtie_app(self.getContext(), input_params)[0]
 
-        self.assertTrue('result_directory' in result)
-        result_files = os.listdir(result['result_directory'])
-        print result_files
-        expect_result_files = ['genes.fpkm_tracking', 'transcripts.gtf',
-                               'e2t.ctab', 'e_data.ctab', 'i2t.ctab', 'i_data.ctab', 't_data.ctab']
-        self.assertTrue(all(x in result_files for x in expect_result_files))
-        self.assertTrue('expression_obj_ref' in result)
-        self.assertTrue('report_name' in result)
-        self.assertTrue('report_ref' in result)
-        expression_data = self.ws.get_objects2({'objects': 
-                                               [{'ref': result.get('expression_obj_ref')}]}
-                                               )['data'][0]['data']
-        self.assertEqual(expression_data.get('genome_id'), self.genome_ref)
-        self.assertEqual(expression_data.get('condition'), self.condition_1)
-        self.assertEqual(expression_data.get('id'), 'test_stringtie_expression_1')
+    #     self.assertTrue('result_directory' in result)
+    #     result_files = os.listdir(result['result_directory'])
+    #     print result_files
+    #     expect_result_files = ['genes.fpkm_tracking', 'transcripts.gtf',
+    #                            'e2t.ctab', 'e_data.ctab', 'i2t.ctab', 'i_data.ctab', 't_data.ctab']
+    #     self.assertTrue(all(x in result_files for x in expect_result_files))
+    #     self.assertTrue('expression_obj_ref' in result)
+    #     self.assertTrue('report_name' in result)
+    #     self.assertTrue('report_ref' in result)
+    #     expression_data = self.ws.get_objects2({'objects': 
+    #                                            [{'ref': result.get('expression_obj_ref')}]}
+    #                                            )['data'][0]['data']
+    #     self.assertEqual(expression_data.get('genome_id'), self.genome_ref)
+    #     self.assertEqual(expression_data.get('condition'), self.condition_1)
+    #     self.assertEqual(expression_data.get('id'), 'test_stringtie_expression_1')
 
-    def test_run_stringtie_app_reads_alignment_set(self):
+    # def test_run_stringtie_app_rnaseq_alignment_set(self):
+
+    #     input_params = {
+    #         'alignment_object_ref': self.rnaseq_alignment_set_ref,
+    #         'workspace_name': self.getWsName(),
+    #         'expression_suffix': '_stringtie_expression',
+    #         'expression_set_suffix': '_stringtie_expression_set',
+
+    #         "min_read_coverage": 2.5,
+    #         "junction_base": 10,
+    #         "num_threads": 4,
+    #         "min_isoform_abundance": 0.1,
+    #         "min_length": 200,
+    #         "skip_reads_with_no_ref": 1,
+    #         "merge": 0,
+    #         "junction_coverage": 1,
+    #         "ballgown_mode": 1,
+    #         "min_locus_gap_sep_value": 50,
+    #         "disable_trimming": 1
+    #     }
+
+    #     result = self.getImpl().run_stringtie_app(self.getContext(), input_params)[0]
+
+    #     self.assertTrue('result_directory' in result)
+    #     result_files = os.listdir(result['result_directory'])
+    #     print result_files
+    #     self.assertTrue('expression_obj_ref' in result)
+    #     self.assertTrue('report_name' in result)
+    #     self.assertTrue('report_ref' in result)
+    #     expression_data = self.ws.get_objects2({'objects': 
+    #                                            [{'ref': result.get('expression_obj_ref')}]}
+    #                                            )['data'][0]['data']
+    #     self.assertTrue('items' in expression_data)
+    #     self.assertTrue('description' in expression_data)
+
+    # def test_run_stringtie_app_reads_alignment_set(self):
+
+    #     input_params = {
+    #         'alignment_object_ref': self.reads_alignment_set_ref,
+    #         'workspace_name': self.getWsName(),
+    #         'expression_suffix': '_stringtie_expression',
+    #         'expression_set_suffix': '_stringtie_expression_set',
+
+    #         "min_read_coverage": 2.5,
+    #         "junction_base": 10,
+    #         "num_threads": 4,
+    #         "min_isoform_abundance": 0.1,
+    #         "min_length": 200,
+    #         "skip_reads_with_no_ref": 1,
+    #         "merge": 0,
+    #         "junction_coverage": 1,
+    #         "ballgown_mode": 1,
+    #         "min_locus_gap_sep_value": 50,
+    #         "disable_trimming": 1
+    #     }
+
+    #     result = self.getImpl().run_stringtie_app(self.getContext(), input_params)[0]
+
+    #     self.assertTrue('result_directory' in result)
+    #     result_files = os.listdir(result['result_directory'])
+    #     print result_files
+    #     self.assertTrue('expression_obj_ref' in result)
+    #     self.assertTrue('report_name' in result)
+    #     self.assertTrue('report_ref' in result)
+    #     expression_data = self.ws.get_objects2({'objects': 
+    #                                            [{'ref': result.get('expression_obj_ref')}]}
+    #                                            )['data'][0]['data']
+    #     self.assertTrue('items' in expression_data)
+    #     self.assertTrue('description' in expression_data)
+
+    def test_run_stringtie_app_merge(self):
 
         input_params = {
             'alignment_object_ref': self.reads_alignment_set_ref,
             'workspace_name': self.getWsName(),
             'expression_suffix': '_stringtie_expression',
             'expression_set_suffix': '_stringtie_expression_set',
+            'merge': 1,
 
             "min_read_coverage": 2.5,
             "junction_base": 10,
@@ -317,41 +388,7 @@ class kb_stringtieTest(unittest.TestCase):
 
         self.assertTrue('result_directory' in result)
         result_files = os.listdir(result['result_directory'])
-        print result_files
-        self.assertTrue('expression_obj_ref' in result)
-        self.assertTrue('report_name' in result)
-        self.assertTrue('report_ref' in result)
-        expression_data = self.ws.get_objects2({'objects': 
-                                               [{'ref': result.get('expression_obj_ref')}]}
-                                               )['data'][0]['data']
-        self.assertTrue('items' in expression_data)
-        self.assertTrue('description' in expression_data)
-
-    def test_run_stringtie_app_rnaseq_alignment_set(self):
-
-        input_params = {
-            'alignment_object_ref': self.rnaseq_alignment_set_ref,
-            'workspace_name': self.getWsName(),
-            'expression_suffix': '_stringtie_expression',
-            'expression_set_suffix': '_stringtie_expression_set',
-
-            "min_read_coverage": 2.5,
-            "junction_base": 10,
-            "num_threads": 4,
-            "min_isoform_abundance": 0.1,
-            "min_length": 200,
-            "skip_reads_with_no_ref": 1,
-            "merge": 0,
-            "junction_coverage": 1,
-            "ballgown_mode": 1,
-            "min_locus_gap_sep_value": 50,
-            "disable_trimming": 1
-        }
-
-        result = self.getImpl().run_stringtie_app(self.getContext(), input_params)[0]
-
-        self.assertTrue('result_directory' in result)
-        result_files = os.listdir(result['result_directory'])
+        print result['result_directory']
         print result_files
         self.assertTrue('expression_obj_ref' in result)
         self.assertTrue('report_name' in result)

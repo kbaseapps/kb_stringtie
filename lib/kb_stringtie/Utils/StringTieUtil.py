@@ -84,8 +84,8 @@ class StringTieUtil:
 
         command = self.STRINGTIE_TOOLKIT_PATH + '/stringtie '
 
-        if params.get('merge'):
-            command += '--merge '
+        # if params.get('merge'):
+        #     command += '--merge '
 
         for key, option in self.OPTIONS_MAP.items():
             option_value = params.get(key)
@@ -497,12 +497,12 @@ class StringTieUtil:
         returnVal = {'result_directory': result_directory,
                      'expression_obj_ref': expression_obj_ref}
 
-        report_output = self._generate_report(expression_obj_ref,
-                                              params.get('workspace_name'),
-                                              result_directory)
-        returnVal.update(report_output)
-
         return returnVal
+
+    def _run_merge_option(self, result_directory, params):
+
+        log('start running merge option')
+        pass
 
     def __init__(self, config):
         self.ws_url = config["workspace-url"]
@@ -572,6 +572,12 @@ class StringTieUtil:
               re.match('KBaseSets.ReadsAlignmentSet-\d.\d', alignment_object_type)):
             params.update({'alignment_set_ref': alignment_object_ref})
             returnVal = self._process_alignment_set_object(params)
+            if params.get('merge'):
+                self._run_merge_option(returnVal.get('result_directory'), params)
+            report_output = self._generate_report(returnVal.get('expression_obj_ref'),
+                                                  params.get('workspace_name'),
+                                                  returnVal.get('result_directory'))
+            returnVal.update(report_output)
         else:
             error_msg = 'Invalid input object type\nObject info:\n{}'.format(alignment_object_info)
             raise ValueError(error_msg)
