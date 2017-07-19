@@ -128,6 +128,10 @@
             "target_property" : "expression_set_suffix"
         },
         {
+            "input_parameter" : "merge",
+            "target_property" : "merge"
+        },
+        {
           "constant_value"  : 1,
           "target_property" : "ballgown_mode"
         },        
