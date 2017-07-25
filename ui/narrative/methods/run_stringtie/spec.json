@@ -21,21 +21,21 @@
   },{
     "id" : "expression_suffix",
     "optional" : false,
-    "advanced" : false,
+    "advanced" : true,
     "allow_multiple" : false,
-    "default_values" : [ "_stringtie_expression" ],
+    "default_values" : [ "_expression" ],
     "field_type" : "text"
   },{
     "id" : "expression_set_suffix",
     "optional" : true,
-    "advanced" : false,
+    "advanced" : true,
     "allow_multiple" : false,
-    "default_values" : [ "_stringtie_expression_set" ],
+    "default_values" : [ "_expression_set" ],
     "field_type" : "text"
   },{
     "id": "merge",
     "optional":true,
-    "advanced":false,
+    "advanced":true,
     "allow_multiple":false,
     "default_values":["0"],
     "field_type" : "checkbox",
