@@ -212,7 +212,10 @@ class StringTieUtil:
                                                      [{'ref': alignment_ref}]})['data'][0]
 
         alignment_name = alignment_data_object['info'][1]
-        expression_obj_name = re.sub('_[Aa]lignment', expression_suffix, alignment_name)
+        if re.match('.*_*[Aa]lignment', alignment_name):
+            expression_obj_name = re.sub('_*[Aa]lignment', expression_suffix, alignment_name)
+        else:
+            expression_obj_name = alignment_name + expression_suffix
         destination_ref = workspace_name + '/' + expression_obj_name
         upload_expression_params = {'destination_ref': destination_ref,
                                     'source_dir': result_directory,
@@ -236,16 +239,19 @@ class StringTieUtil:
         for alignment_expression in alignment_expression_map:
             items.append({'ref': alignment_expression.get('expression_obj_ref')})
 
-        expression_set_data = {'description': 'ExpressionSet using DESeq2', 
+        expression_set_data = {'description': 'ExpressionSet using StringTie', 
                                'items': items}
 
         alignment_set_data_object = self.ws.get_objects2({'objects':
                                                          [{'ref': alignment_set_ref}]})['data'][0]
 
         alignment_set_name = alignment_set_data_object['info'][1]
-        expression_set_name = re.sub('_[Aa]lignment_*[Ss]et',
-                                     expression_set_suffix,
-                                     alignment_set_name)
+        if re.match('.*_*[Aa]lignment_*[Ss]et', alignment_set_name):
+            expression_set_name = re.sub('_*[Aa]lignment_*[Ss]et',
+                                         expression_set_suffix,
+                                         alignment_set_name)
+        else:
+            expression_set_name = alignment_set_name + expression_set_suffix
 
         expression_set_save_params = {'data': expression_set_data,
                                       'workspace': workspace_name,
@@ -511,17 +517,32 @@ class StringTieUtil:
 
         result_dirs = os.listdir(result_directory)
 
+        alignment_result_dir = result_dirs[0]
+        alignment_result_files = os.listdir(os.path.join(result_directory, alignment_result_dir))
+        regex = '(?!transcripts.gtf)(.*\.gtf)'
+        annotation_file = [x for x in alignment_result_files if re.match(regex, x)][0]
+
         merge_directory = os.path.join(result_directory, 'merge_result')
         self._mkdir_p(merge_directory)
 
         option_params = params.copy()
-        del option_params['ballgown_mode']
+
+        option_params.pop('num_threads', None)
+        option_params.pop('ballgown_mode', None)
+        option_params.pop('skip_reads_with_no_ref', None)
+        option_params.pop('junction_coverage', None)
+        option_params.pop('junction_base', None)
+        option_params.pop('min_read_coverage', None)
+        option_params.pop('min_locus_gap_sep_value', None)
 
         output_merge = 'stringtie_merge.gtf'
         option_params['output_transcripts'] = os.path.join(merge_directory, output_merge)
 
         command = self.STRINGTIE_TOOLKIT_PATH + '/stringtie '
         command += '--merge '
+        command += '-G {} '.format(os.path.join(result_directory, 
+                                                alignment_result_dir, 
+                                                annotation_file))
 
         for key, option in self.OPTIONS_MAP.items():
             option_value = option_params.get(key)

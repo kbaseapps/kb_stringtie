@@ -28,14 +28,14 @@ parameters :
         Select the RNA-seq Alignment or KBaseSets.ReadsAlignmentSet created by HISAT2, TopHat2 or Bowtie2.
   expression_suffix :
     ui-name : |
-            Expression Name Suffix
+        Expression Name Suffix
     short-hint : |
-            Suffix append to Alignment object name to form Expression name
+        Suffix append to Alignment object name to form Expression name
   expression_set_suffix :
     ui-name : |
-            ExpressionSet Name Suffix
+        ExpressionSet Name Suffix
     short-hint : |
-            Suffix append to Alignment Set object name to form ExpressionSet name
+        Suffix append to Alignment Set object name to form ExpressionSet name
   min_isoform_abundance :
     ui-name : |
       Minimum Isoform Abundance
@@ -60,18 +60,28 @@ parameters :
     ui-name : |
       Minimum Read Coverage
     short-hint : |
-      Select minimum read coverage allowed for predicted transcripts. Default is 2.5
+      Select minimum read coverage allowed for predicted transcripts. Default is 2.5.
   min_locus_gap_sep_value :
     ui-name : |
       Minimum Locus Gap
     short-hint : |
       Select minimum locus gap separation value. Default is 50.
+  ballgown_mode:
+    ui-name : |
+      Ballgown Mode
+    short-hint : |
+      Enables the output of Ballgown input table files
+  skip_reads_with_no_ref:
+    ui-name : |
+      Skip Reads With No Reference
+    short-hint : |
+      Read bundles with no reference transcripts will be entirely skipped
   merge :
     ui-name : |
       Transcript Merge Mode
     short-hint : |
       Merge result gtf files
-    
+
 description : |
     <p>This App assembles transcripts for a given sample or a sample set using StringTie so that you can view the relative abundances of the assembled transcripts in a histogram. </p>
     <p>STringTie is a successor of Cufflinks that is faster and provides more accurate reconstruction of genes and expression level. It accepts aligned RNA-seq reads from HISAT2, TopHat2 or Bowtie2 and assembles the alignments into a parsimonious set of transcripts. It then estimates the relative abundances of these transcripts based on how many reads support each one, taking into account biases in library preparation protocols.</p>
