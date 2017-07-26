@@ -103,6 +103,28 @@
     "text_options" : {
       "validate_as": "int"
     }
+  },{
+    "id": "ballgown_mode",
+    "optional":true,
+    "advanced":true,
+    "allow_multiple":false,
+    "default_values":["0"],
+    "field_type" : "checkbox",
+    "checkbox_options":{
+        "checked_value": 1,
+        "unchecked_value": 0
+    }
+  },{
+    "id": "skip_reads_with_no_ref",
+    "optional":true,
+    "advanced":true,
+    "allow_multiple":false,
+    "default_values":["0"],
+    "field_type" : "checkbox",
+    "checkbox_options":{
+        "checked_value": 1,
+        "unchecked_value": 0
+    }
   }],
   "behavior" : {
     "service-mapping" : {
@@ -132,11 +154,11 @@
             "target_property" : "merge"
         },
         {
-          "constant_value"  : 1,
+          "input_parameter" : "ballgown_mode",
           "target_property" : "ballgown_mode"
         },        
         {
-          "constant_value"  : 1,
+          "input_parameter" : "skip_reads_with_no_ref",
           "target_property" : "skip_reads_with_no_ref"
         },       
         {

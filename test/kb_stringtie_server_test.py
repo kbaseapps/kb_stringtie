@@ -387,12 +387,12 @@ class kb_stringtieTest(unittest.TestCase):
             "num_threads": 4,
             "min_isoform_abundance": 0.1,
             "min_length": 200,
-            "skip_reads_with_no_ref": 1,
-            "merge": 1,
             "junction_coverage": 1,
-            "ballgown_mode": 1,
             "min_locus_gap_sep_value": 50,
-            "disable_trimming": 1
+            "disable_trimming": 1,
+            "skip_reads_with_no_ref": 1,
+            "ballgown_mode": 1,
+            "merge": 1
         }
 
         result = self.getImpl().run_stringtie_app(self.getContext(), input_params)[0]
