@@ -19,20 +19,6 @@
       "valid_ws_types" : ["KBaseRNASeq.RNASeqAlignmentSet" , "KBaseRNASeq.RNASeqAlignment", "KBaseSets.ReadsAlignmentSet"]
     }
   },{
-    "id" : "expression_suffix",
-    "optional" : false,
-    "advanced" : true,
-    "allow_multiple" : false,
-    "default_values" : [ "_expression" ],
-    "field_type" : "text"
-  },{
-    "id" : "expression_set_suffix",
-    "optional" : true,
-    "advanced" : true,
-    "allow_multiple" : false,
-    "default_values" : [ "_expression_set" ],
-    "field_type" : "text"
-  },{
    "id" : "min_isoform_abundance",
     "optional" : true,
     "advanced" : true,
@@ -109,15 +95,15 @@
           "target_property" : "alignment_object_ref"
         },
         {
-            "input_parameter" : "expression_suffix",
+            "constant_value"  : "",
             "target_property" : "expression_suffix"
         },
         {
-            "input_parameter" : "expression_set_suffix",
+            "constant_value"  : "",
             "target_property" : "expression_set_suffix"
         },
         {
-            "constant_value"  : 0,
+            "constant_value"  : 1,
             "target_property" : "merge"
         },
         {

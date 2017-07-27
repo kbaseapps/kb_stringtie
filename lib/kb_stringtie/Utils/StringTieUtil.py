@@ -300,6 +300,51 @@ class StringTieUtil:
 
         return output_files
 
+    def _generate_merge_html_report(self, result_directory):
+        """
+        _generate_html_report: generate html summary report
+        """
+
+        log('start generating merge html report')
+        html_report = list()
+
+        output_directory = os.path.join(self.scratch, str(uuid.uuid4()))
+        self._mkdir_p(output_directory)
+        result_file_path = os.path.join(output_directory, 'report.html')
+
+        result_dirs = os.listdir(result_directory)
+
+        Overview_Content = ''
+        Overview_Content += '<br/><table><tr><th>Generated Files</th>'
+        Overview_Content += '<th></th></tr>'
+        Overview_Content += '<tr><th>Folder Name</th><th>File Name</th></tr>'
+        for result_dir in result_dirs:
+            result_files = os.listdir(os.path.join(result_directory, result_dir))
+            first_file = True
+            for file_name in result_files:
+                if first_file:
+                    Overview_Content += '<tr><td>{}</td>'.format(result_dir)
+                    Overview_Content += '<td>{}</td></tr>'.format(file_name)
+                    first_file = False
+                else:
+                    Overview_Content += '<tr><td>{}</td>'.format('')
+                    Overview_Content += '<td>{}</td></tr>'.format(file_name)
+        Overview_Content += '</table>'
+
+        with open(result_file_path, 'w') as result_file:
+            with open(os.path.join(os.path.dirname(__file__), 'report_template.html'),
+                      'r') as report_template_file:
+                report_template = report_template_file.read()
+                report_template = report_template.replace('<p>Overview_Content</p>',
+                                                          Overview_Content)
+                result_file.write(report_template)
+
+        html_report.append({'path': result_file_path,
+                            'name': os.path.basename(result_file_path),
+                            'label': os.path.basename(result_file_path),
+                            'description': 'HTML summary report for StringTie App'})
+        return html_report
+
     def _generate_html_report(self, result_directory, obj_ref):
         """
         _generate_html_report: generate html summary report
@@ -360,6 +405,31 @@ class StringTieUtil:
                             'label': os.path.basename(result_file_path),
                             'description': 'HTML summary report for StringTie App'})
         return html_report
+
+    def _generate_merge_report(self, workspace_name, result_directory):
+        """
+        _generate_report: generate summary report
+        """
+
+        log('creating merge report')
+
+        output_files = self._generate_output_file_list(result_directory)
+        output_html_files = self._generate_merge_html_report(result_directory)
+
+        report_params = {'message': '',
+                         'workspace_name': workspace_name,
+                         'file_links': output_files,
+                         'html_links': output_html_files,
+                         'direct_html_link_index': 0,
+                         'html_window_height': 366,
+                         'report_object_name': 'kb_stringtie_report_' + str(uuid.uuid4())}
+
+        kbase_report_client = KBaseReport(self.callback_url, token=self.token)
+        output = kbase_report_client.create_extended_report(report_params)
+
+        report_output = {'report_name': output['name'], 'report_ref': output['ref']}
+
+        return report_output
 
     def _generate_report(self, obj_ref, workspace_name, result_directory):
         """
@@ -428,6 +498,7 @@ class StringTieUtil:
             params['gtf_file'] = self._get_gtf_file(alignment_ref, result_directory)
         else:
             shutil.copy(params.get('gtf_file'), result_directory)
+        log('using {} as reference annotation file.'.format(params.get('gtf_file')))
 
         # output files
         self.output_transcripts = 'transcripts.gtf'
@@ -439,11 +510,15 @@ class StringTieUtil:
         command = self._generate_command(params)
         self._run_command(command)
 
-        expression_obj_ref = self._save_expression(result_directory,
-                                                   alignment_ref,
-                                                   params.get('workspace_name'),
-                                                   params['gtf_file'],
-                                                   params['expression_suffix'])
+        if not params.get('merge'):
+            expression_obj_ref = self._save_expression(result_directory,
+                                                       alignment_ref,
+                                                       params.get('workspace_name'),
+                                                       params['gtf_file'],
+                                                       params['expression_suffix'])
+        else:
+            log('skip generating expression object')
+            expression_obj_ref = ''
 
         returnVal = {'result_directory': result_directory,
                      'expression_obj_ref': expression_obj_ref,
@@ -501,11 +576,14 @@ class StringTieUtil:
             self._run_command('cp -R {} {}'.format(proc_alignment_return.get('result_directory'),
                                                    os.path.join(result_directory, 
                                                                 alignment_name)))
-
-        expression_obj_ref = self._save_expression_set(alignment_expression_map,
-                                                       alignment_set_ref,
-                                                       params.get('workspace_name'),
-                                                       params['expression_set_suffix'])
+        if not params.get('merge'):
+            expression_obj_ref = self._save_expression_set(alignment_expression_map,
+                                                           alignment_set_ref,
+                                                           params.get('workspace_name'),
+                                                           params['expression_set_suffix'])
+        else:
+            log('skip generating expression set object')
+            expression_obj_ref = ''
 
         annotation_file_name = os.path.basename(alignment_expression_map[0]['annotation_file'])
         annotation_file_path = os.path.join(result_directory, 
@@ -523,11 +601,6 @@ class StringTieUtil:
         log('start running stringtie merge')
 
         result_dirs = os.listdir(result_directory)
-
-        # alignment_result_dir = result_dirs[0]
-        # alignment_result_files = os.listdir(os.path.join(result_directory, alignment_result_dir))
-        # regex = '(?!transcripts.gtf)(.*\.gtf)'
-        # annotation_file = [x for x in alignment_result_files if re.match(regex, x)][0]
 
         merge_directory = os.path.join(result_directory, 'merge_result')
         self._mkdir_p(merge_directory)
@@ -629,13 +702,35 @@ class StringTieUtil:
         elif (re.match('KBaseRNASeq.RNASeqAlignmentSet-\d.\d', alignment_object_type) or
               re.match('KBaseSets.ReadsAlignmentSet-\d.\d', alignment_object_type)):
             params.update({'alignment_set_ref': alignment_object_ref})
-            returnVal = self._process_alignment_set_object(params)
             if params.get('merge'):
+                params.update({'ballgown_mode': 0})
+                params.update({'skip_reads_with_no_ref': 0})
+                log('running Stringtie the 1st time')
+                returnVal = self._process_alignment_set_object(params)
+                first_run_result_dir = returnVal.get('result_directory')
                 annotation_file = returnVal['annotation_file']
-                self._run_merge_option(returnVal.get('result_directory'), params, annotation_file)
-            report_output = self._generate_report(returnVal.get('expression_obj_ref'),
-                                                  params.get('workspace_name'),
-                                                  returnVal.get('result_directory'))
+                self._run_merge_option(first_run_result_dir, params, annotation_file)
+
+                merge_file = os.path.join(first_run_result_dir, 
+                                          'merge_result', 
+                                          'stringtie_merge.gtf')
+                log('running StringTie with stringtie_merge.gtf')
+                params.update({'gtf_file': merge_file})
+                params.update({'ballgown_mode': 1})
+                params.update({'skip_reads_with_no_ref': 1})
+                log('running Stringtie the 3rd time')
+                returnVal = self._process_alignment_set_object(params)
+
+                self._run_command('cp -R {} {}'.format(os.path.join(first_run_result_dir,
+                                                       'merge_result'),
+                                                       returnVal.get('result_directory')))
+                report_output = self._generate_merge_report(params.get('workspace_name'),
+                                                            returnVal.get('result_directory'))
+            else:
+                returnVal = self._process_alignment_set_object(params)
+                report_output = self._generate_report(returnVal.get('expression_obj_ref'),
+                                                      params.get('workspace_name'),
+                                                      returnVal.get('result_directory'))
             returnVal.update(report_output)
         else:
             error_msg = 'Invalid input object type\nObject info:\n{}'.format(alignment_object_info)

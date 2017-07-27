@@ -402,10 +402,6 @@ class kb_stringtieTest(unittest.TestCase):
         print result_dirs
         self.assertTrue('merge_result' in result_dirs)
         self.assertTrue('expression_obj_ref' in result)
+        self.assertTrue('' == result['expression_obj_ref'])
         self.assertTrue('report_name' in result)
         self.assertTrue('report_ref' in result)
-        expression_data = self.ws.get_objects2({'objects': 
-                                               [{'ref': result.get('expression_obj_ref')}]}
-                                               )['data'][0]['data']
-        self.assertTrue('items' in expression_data)
-        self.assertTrue('description' in expression_data)
