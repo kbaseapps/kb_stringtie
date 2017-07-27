@@ -638,9 +638,9 @@ class StringTieUtil:
                 params.update({'gtf_file': merge_file})
                 returnVal = self._process_alignment_set_object(params)
 
-            self._run_command('cp -R {} {}'.format(os.path.join(first_run_result_dir,
-                                                                'merge_result'),
-                                                   returnVal.get('result_directory')))
+                self._run_command('cp -R {} {}'.format(os.path.join(first_run_result_dir,
+                                                       'merge_result'),
+                                                       returnVal.get('result_directory')))
 
             report_output = self._generate_report(returnVal.get('expression_obj_ref'),
                                                   params.get('workspace_name'),
