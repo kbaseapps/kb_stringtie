@@ -314,9 +314,6 @@ class StringTieUtil:
 
         result_dirs = os.listdir(result_directory)
 
-        print 'fdasfs'
-        print result_dirs
-
         Overview_Content = ''
         Overview_Content += '<br/><table><tr><th>Generated Files</th>'
         Overview_Content += '<th></th></tr>'
