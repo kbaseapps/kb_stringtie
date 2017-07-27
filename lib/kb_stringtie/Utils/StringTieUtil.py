@@ -317,9 +317,10 @@ class StringTieUtil:
         Overview_Content = ''
         Overview_Content += '<br/><table><tr><th>Generated Files</th>'
         Overview_Content += '<th></th></tr>'
-        Overview_Content += '<tr><th>Folder Name</th><th>File Name</th></tr>'
+        Overview_Content += '<tr><th>Directory</th><th>File Name</th></tr>'
         for result_dir in result_dirs:
             result_files = os.listdir(os.path.join(result_directory, result_dir))
+            result_files.sort()
             first_file = True
             for file_name in result_files:
                 if first_file:
