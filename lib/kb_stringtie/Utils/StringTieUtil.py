@@ -626,16 +626,21 @@ class StringTieUtil:
               re.match('KBaseSets.ReadsAlignmentSet-\d.\d', alignment_object_type)):
             params.update({'alignment_set_ref': alignment_object_ref})
             returnVal = self._process_alignment_set_object(params)
+            first_run_result_dir = returnVal.get('result_directory')
             if params.get('merge'):
                 annotation_file = returnVal['annotation_file']
-                self._run_merge_option(returnVal.get('result_directory'), params, annotation_file)
+                self._run_merge_option(first_run_result_dir, params, annotation_file)
 
-                merge_file = os.path.join(returnVal.get('result_directory'), 
+                merge_file = os.path.join(first_run_result_dir, 
                                           'merge_result', 
                                           'stringtie_merge.gtf')
                 log('running StringTie with stringtie_merge.gtf')
                 params.update({'gtf_file': merge_file})
                 returnVal = self._process_alignment_set_object(params)
+
+            self._run_command('cp -R {} {}'.format(os.path.join(first_run_result_dir,
+                                                                'merge_result'),
+                                                   returnVal.get('result_directory')))
 
             report_output = self._generate_report(returnVal.get('expression_obj_ref'),
                                                   params.get('workspace_name'),
