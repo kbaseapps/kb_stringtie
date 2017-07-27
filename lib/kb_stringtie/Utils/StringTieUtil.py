@@ -428,6 +428,7 @@ class StringTieUtil:
             params['gtf_file'] = self._get_gtf_file(alignment_ref, result_directory)
         else:
             shutil.copy(params.get('gtf_file'), result_directory)
+        log('using {} as reference annotation file.'.format(params.get('gtf_file')))
 
         # output files
         self.output_transcripts = 'transcripts.gtf'
@@ -523,11 +524,6 @@ class StringTieUtil:
         log('start running stringtie merge')
 
         result_dirs = os.listdir(result_directory)
-
-        # alignment_result_dir = result_dirs[0]
-        # alignment_result_files = os.listdir(os.path.join(result_directory, alignment_result_dir))
-        # regex = '(?!transcripts.gtf)(.*\.gtf)'
-        # annotation_file = [x for x in alignment_result_files if re.match(regex, x)][0]
 
         merge_directory = os.path.join(result_directory, 'merge_result')
         self._mkdir_p(merge_directory)
@@ -633,6 +629,14 @@ class StringTieUtil:
             if params.get('merge'):
                 annotation_file = returnVal['annotation_file']
                 self._run_merge_option(returnVal.get('result_directory'), params, annotation_file)
+
+                merge_file = os.path.join(returnVal.get('result_directory'), 
+                                          'merge_result', 
+                                          'stringtie_merge.gtf')
+                log('running StringTie with stringtie_merge.gtf')
+                params.update({'gtf_file': merge_file})
+                returnVal = self._process_alignment_set_object(params)
+
             report_output = self._generate_report(returnVal.get('expression_obj_ref'),
                                                   params.get('workspace_name'),
                                                   returnVal.get('result_directory'))
