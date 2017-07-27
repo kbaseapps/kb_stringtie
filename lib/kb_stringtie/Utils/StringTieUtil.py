@@ -447,7 +447,8 @@ class StringTieUtil:
 
         returnVal = {'result_directory': result_directory,
                      'expression_obj_ref': expression_obj_ref,
-                     'alignment_ref': alignment_ref}
+                     'alignment_ref': alignment_ref,
+                     'annotation_file': params['gtf_file']}
 
         return returnVal
 
@@ -506,21 +507,27 @@ class StringTieUtil:
                                                        params.get('workspace_name'),
                                                        params['expression_set_suffix'])
 
+        annotation_file_name = os.path.basename(alignment_expression_map[0]['annotation_file'])
+        annotation_file_path = os.path.join(result_directory, 
+                                            os.listdir(result_directory)[0], 
+                                            annotation_file_name)
+
         returnVal = {'result_directory': result_directory,
-                     'expression_obj_ref': expression_obj_ref}
+                     'expression_obj_ref': expression_obj_ref,
+                     'annotation_file': annotation_file_path}
 
         return returnVal
 
-    def _run_merge_option(self, result_directory, params):
+    def _run_merge_option(self, result_directory, params, annotation_file):
 
         log('start running stringtie merge')
 
         result_dirs = os.listdir(result_directory)
 
-        alignment_result_dir = result_dirs[0]
-        alignment_result_files = os.listdir(os.path.join(result_directory, alignment_result_dir))
-        regex = '(?!transcripts.gtf)(.*\.gtf)'
-        annotation_file = [x for x in alignment_result_files if re.match(regex, x)][0]
+        # alignment_result_dir = result_dirs[0]
+        # alignment_result_files = os.listdir(os.path.join(result_directory, alignment_result_dir))
+        # regex = '(?!transcripts.gtf)(.*\.gtf)'
+        # annotation_file = [x for x in alignment_result_files if re.match(regex, x)][0]
 
         merge_directory = os.path.join(result_directory, 'merge_result')
         self._mkdir_p(merge_directory)
@@ -540,9 +547,7 @@ class StringTieUtil:
 
         command = self.STRINGTIE_TOOLKIT_PATH + '/stringtie '
         command += '--merge '
-        command += '-G {} '.format(os.path.join(result_directory, 
-                                                alignment_result_dir, 
-                                                annotation_file))
+        command += '-G {} '.format(annotation_file)
 
         for key, option in self.OPTIONS_MAP.items():
             option_value = option_params.get(key)
@@ -626,7 +631,8 @@ class StringTieUtil:
             params.update({'alignment_set_ref': alignment_object_ref})
             returnVal = self._process_alignment_set_object(params)
             if params.get('merge'):
-                self._run_merge_option(returnVal.get('result_directory'), params)
+                annotation_file = returnVal['annotation_file']
+                self._run_merge_option(returnVal.get('result_directory'), params, annotation_file)
             report_output = self._generate_report(returnVal.get('expression_obj_ref'),
                                                   params.get('workspace_name'),
                                                   returnVal.get('result_directory'))

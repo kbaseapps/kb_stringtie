@@ -384,7 +384,7 @@ class kb_stringtieTest(unittest.TestCase):
 
             "min_read_coverage": 2.5,
             "junction_base": 10,
-            "num_threads": 4,
+            "num_threads": 2,
             "min_isoform_abundance": 0.1,
             "min_length": 200,
             "junction_coverage": 1,
