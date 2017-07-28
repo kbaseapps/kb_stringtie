@@ -263,7 +263,7 @@ class kb_stringtieTest(unittest.TestCase):
 
             "min_read_coverage": 2.5,
             "junction_base": 10,
-            "num_threads": 4,
+            "num_threads": 2,
             "min_isoform_abundance": 0.1,
             "min_length": 200,
             "skip_reads_with_no_ref": 1,
@@ -290,7 +290,6 @@ class kb_stringtieTest(unittest.TestCase):
                                                )['data'][0]['data']
         self.assertEqual(expression_data.get('genome_id'), self.genome_ref)
         self.assertEqual(expression_data.get('condition'), self.condition_1)
-        self.assertEqual(expression_data.get('id'), 'test_stringtie_expression_1')
 
     def test_run_stringtie_app_rnaseq_alignment_set(self):
 
@@ -302,7 +301,7 @@ class kb_stringtieTest(unittest.TestCase):
 
             "min_read_coverage": 2.5,
             "junction_base": 10,
-            "num_threads": 4,
+            "num_threads": 2,
             "min_isoform_abundance": 0.1,
             "min_length": 200,
             "skip_reads_with_no_ref": 1,
@@ -343,7 +342,7 @@ class kb_stringtieTest(unittest.TestCase):
 
             "min_read_coverage": 2.5,
             "junction_base": 10,
-            "num_threads": 4,
+            "num_threads": 2,
             "min_isoform_abundance": 0.1,
             "min_length": 200,
             "skip_reads_with_no_ref": 1,
