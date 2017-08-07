@@ -615,6 +615,7 @@ class StringTieUtil:
         else:
             log('skip generating expression set object')
             expression_obj_ref = ''
+            expression_matrix_refs = {}
 
         annotation_file_name = os.path.basename(alignment_expression_map[0]['annotation_file'])
         annotation_file_path = os.path.join(result_directory, 
@@ -624,8 +625,8 @@ class StringTieUtil:
         returnVal = {'result_directory': result_directory,
                      'expression_obj_ref': expression_obj_ref,
                      'annotation_file': annotation_file_path,
-                     'exprMatrix_FPKM_ref': expression_matrix_refs['exprMatrix_FPKM_ref'],
-                     'exprMatrix_TPM_ref': expression_matrix_refs['exprMatrix_TPM_ref']}
+                     'exprMatrix_FPKM_ref': expression_matrix_refs.get('exprMatrix_FPKM_ref'),
+                     'exprMatrix_TPM_ref': expression_matrix_refs.get('exprMatrix_TPM_ref')}
 
         return returnVal
 
