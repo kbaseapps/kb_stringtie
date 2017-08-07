@@ -324,6 +324,8 @@ class kb_stringtieTest(unittest.TestCase):
                                    't_data.ctab']
             self.assertTrue(all(x in result_files for x in expect_result_files))
         self.assertTrue('expression_obj_ref' in result)
+        self.assertTrue('exprMatrix_FPKM_ref' in result)
+        self.assertTrue('exprMatrix_TPM_ref' in result)
         self.assertTrue('report_name' in result)
         self.assertTrue('report_ref' in result)
         expression_data = self.ws.get_objects2({'objects': 
@@ -355,6 +357,8 @@ class kb_stringtieTest(unittest.TestCase):
 
         result = self.getImpl().run_stringtie_app(self.getContext(), input_params)[0]
 
+        print result
+
         self.assertTrue('result_directory' in result)
         result_dirs = os.listdir(result['result_directory'])
         print result_dirs
@@ -365,6 +369,8 @@ class kb_stringtieTest(unittest.TestCase):
                                    't_data.ctab']
             self.assertTrue(all(x in result_files for x in expect_result_files))
         self.assertTrue('expression_obj_ref' in result)
+        self.assertTrue('exprMatrix_FPKM_ref' in result)
+        self.assertTrue('exprMatrix_TPM_ref' in result)
         self.assertTrue('report_name' in result)
         self.assertTrue('report_ref' in result)
         expression_data = self.ws.get_objects2({'objects': 

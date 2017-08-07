@@ -1,7 +1,7 @@
 #
 # Define basic display information
 #
-name     : Assemble Transcripts using StringTie with Novel Isoform - v1.0.6
+name     : Assemble Transcripts using StringTie with Novel Isoform - v1.0.7
 
 tooltip  : |
     Assemble the transcripts from RNA-seq reads using StringTie with Novel Isoform

@@ -14,4 +14,7 @@ Add merge option to merge result gtf files
 Add a third run using merge reference annotation
 
 1.0.6:
-Splite StringTie app and StringTie app with novel isoform 
+Split StringTie app and StringTie app with novel isoform 
+
+1.0.7:
+Generate ExpressionMatrix object
