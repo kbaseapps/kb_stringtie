@@ -455,7 +455,7 @@ class StringTieUtil:
         return report_output
 
     def _generate_report(self, obj_ref, workspace_name, result_directory,
-                         exprMatrix_TPM_ref=None, exprMatrix_FPKM_ref=None):
+                         exprMatrix_FPKM_ref=None, exprMatrix_TPM_ref=None):
         """
         _generate_report: generate summary report
         """
