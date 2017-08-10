@@ -605,7 +605,6 @@ class StringTieUtil:
         try:
             alignment_expression_map = pool.map(self._process_alignment_object, 
                                                 mul_processor_params)
-            pool.join()
         except Exception as e:
             print('Caught exception in worker')
             traceback.print_exc()
