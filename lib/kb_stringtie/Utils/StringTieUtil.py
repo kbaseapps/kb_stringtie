@@ -9,6 +9,7 @@ from pathos.multiprocessing import ProcessingPool as Pool
 import multiprocessing
 import zipfile
 import shutil
+import traceback
 
 from DataFileUtil.DataFileUtilClient import DataFileUtil
 from Workspace.WorkspaceClient import Workspace as Workspace
@@ -508,53 +509,61 @@ class StringTieUtil:
         _process_alignment_object: process KBaseRNASeq.RNASeqAlignment type input object
         """
 
-        log('start processing RNASeqAlignment object\nparams:\n{}'.format(json.dumps(params, 
-                                                                                     indent=1)))
-        alignment_ref = params.get('alignment_ref')
+        try:
 
-        alignment_object_info = self.ws.get_object_info3({"objects": 
-                                                         [{"ref": alignment_ref}]}
-                                                         )['infos'][0]
-        alignment_name = alignment_object_info[1]
+            log('start processing RNASeqAlignment object\n')
+            log('params:\n{}'.format(json.dumps(params, indent=1)))
+            alignment_ref = params.get('alignment_ref')
 
-        result_directory = os.path.join(self.scratch, 
-                                        alignment_name + '_' + str(int(time.time() * 100)))
-        self._mkdir_p(result_directory)
+            alignment_object_info = self.ws.get_object_info3({"objects": 
+                                                             [{"ref": alignment_ref}]}
+                                                             )['infos'][0]
+            alignment_name = alignment_object_info[1]
 
-        # input files
-        params['input_file'] = self._get_input_file(alignment_ref)
-        if not params.get('gtf_file'):
-            params['gtf_file'] = self._get_gtf_file(alignment_ref, result_directory)
-        else:
-            shutil.copy(params.get('gtf_file'), result_directory)
-        log('using {} as reference annotation file.'.format(params.get('gtf_file')))
+            result_directory = os.path.join(self.scratch, 
+                                            alignment_name + '_' + str(int(time.time() * 100)))
+            self._mkdir_p(result_directory)
 
-        # output files
-        self.output_transcripts = 'transcripts.gtf'
-        params['output_transcripts'] = os.path.join(result_directory, self.output_transcripts)
+            # input files
+            params['input_file'] = self._get_input_file(alignment_ref)
+            if not params.get('gtf_file'):
+                params['gtf_file'] = self._get_gtf_file(alignment_ref, result_directory)
+            else:
+                shutil.copy(params.get('gtf_file'), result_directory)
+            log('using {} as reference annotation file.'.format(params.get('gtf_file')))
 
-        self.gene_abundances_file = 'genes.fpkm_tracking'
-        params['gene_abundances_file'] = os.path.join(result_directory, self.gene_abundances_file)
+            # output files
+            self.output_transcripts = 'transcripts.gtf'
+            params['output_transcripts'] = os.path.join(result_directory, self.output_transcripts)
 
-        command = self._generate_command(params)
-        self._run_command(command)
+            self.gene_abundances_file = 'genes.fpkm_tracking'
+            params['gene_abundances_file'] = os.path.join(result_directory, 
+                                                          self.gene_abundances_file)
 
-        if not params.get('merge'):
-            expression_obj_ref = self._save_expression(result_directory,
-                                                       alignment_ref,
-                                                       params.get('workspace_name'),
-                                                       params['gtf_file'],
-                                                       params['expression_suffix'])
-        else:
-            log('skip generating expression object')
-            expression_obj_ref = ''
+            command = self._generate_command(params)
+            self._run_command(command)
 
-        returnVal = {'result_directory': result_directory,
-                     'expression_obj_ref': expression_obj_ref,
-                     'alignment_ref': alignment_ref,
-                     'annotation_file': params['gtf_file']}
+            if not params.get('merge'):
+                expression_obj_ref = self._save_expression(result_directory,
+                                                           alignment_ref,
+                                                           params.get('workspace_name'),
+                                                           params['gtf_file'],
+                                                           params['expression_suffix'])
+            else:
+                log('skip generating expression object')
+                expression_obj_ref = ''
 
-        return returnVal
+            returnVal = {'result_directory': result_directory,
+                         'expression_obj_ref': expression_obj_ref,
+                         'alignment_ref': alignment_ref,
+                         'annotation_file': params['gtf_file']}
+
+            return returnVal
+        except Exception as e:
+            print('Caught exception in worker')
+            traceback.print_exc()
+            print()
+            raise e
 
     def _process_alignment_set_object(self, params):
         """
@@ -594,6 +603,8 @@ class StringTieUtil:
         pool = Pool(ncpus=cpus)
         log('running _process_alignment_object with {} cpus'.format(cpus))
         alignment_expression_map = pool.map(self._process_alignment_object, mul_processor_params)
+        pool.close()
+        pool.join()
 
         result_directory = os.path.join(self.scratch, str(uuid.uuid4()))
         self._mkdir_p(result_directory)
