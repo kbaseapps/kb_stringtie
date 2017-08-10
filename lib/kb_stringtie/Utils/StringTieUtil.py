@@ -602,9 +602,14 @@ class StringTieUtil:
         cpus = min(params.get('num_threads'), multiprocessing.cpu_count())
         pool = Pool(ncpus=cpus)
         log('running _process_alignment_object with {} cpus'.format(cpus))
-        alignment_expression_map = pool.map(self._process_alignment_object, mul_processor_params)
-        pool.close()
-        pool.join()
+        try:
+            alignment_expression_map = pool.map(self._process_alignment_object, 
+                                                mul_processor_params)
+        except Exception as e:
+            print('Caught exception in worker')
+            traceback.print_exc()
+            print()
+            raise e
 
         result_directory = os.path.join(self.scratch, str(uuid.uuid4()))
         self._mkdir_p(result_directory)
