@@ -164,21 +164,8 @@ class StringTieUtil:
                                                [{'ref': alignment_ref}]})['data'][0]['data']
 
         genome_ref = alignment_data.get('genome_id')
-        # genome_name = self.ws.get_object_info([{"ref": genome_ref}], includeMetadata=None)[0][1]
-        # ws_gtf = genome_name+"_GTF_Annotation"
 
-        genome_data = self.ws.get_objects2({'objects':
-                                            [{'ref': genome_ref}]})['data'][0]['data']
-
-        gff_handle_ref = genome_data.get('gff_handle_ref')
-
-        if gff_handle_ref:
-            log('getting reference annotation file from genome')
-            annotation_file = self.dfu.shock_to_file({'handle_id': gff_handle_ref,
-                                                      'file_path': result_directory,
-                                                      'unpack': 'unpack'})['file_path']
-        else:
-            annotation_file = self._create_gtf_file(genome_ref, result_directory)
+        annotation_file = self._create_gtf_file(genome_ref, result_directory)
 
         return annotation_file
 
@@ -189,17 +176,11 @@ class StringTieUtil:
 
         log('start generating reference annotation file')
 
-        genome_gff_file = self.gfu.genome_to_gff({'genome_ref': genome_ref,
-                                                  'target_dir': result_directory})['file_path']
+        genome_gtf_file = self.gfu.genome_to_gff({'genome_ref': genome_ref,
+                                                  'target_dir': result_directory,
+                                                  'is_gtf': True})['file_path']
 
-        gtf_ext = '.gtf'
-        if not genome_gff_file.endswith(gtf_ext):
-            gtf_path = os.path.splitext(genome_gff_file)[0] + '.gtf'
-            self._run_gffread(genome_gff_file, gtf_path)
-        else:
-            gtf_path = genome_gff_file
-
-        return gtf_path
+        return genome_gtf_file
 
     def _save_expression(self, result_directory, alignment_ref, workspace_name, gtf_file, 
                          expression_suffix):
