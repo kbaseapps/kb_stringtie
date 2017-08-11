@@ -167,14 +167,15 @@ class StringTieUtil:
 
         annotation_file = self._create_gtf_file(genome_ref, result_directory)
 
-        gene_name_annotation_file = annotation_file.split('.gft')[0] + '_append_name.gft'
+        gene_name_annotation_file = annotation_file.split('.gtf')[0] + '_append_name.gtf'
 
         with open(gene_name_annotation_file, 'w') as output_file:
             with open(annotation_file, 'r') as input_file:
                 for line in input_file:
                     if ('gene_id \"' in line) and ('gene_name \"' not in line):
+                        line = line.replace("\n", "")
                         gene_id = line.split('gene_id \"')[1].split('"')[0]
-                        line += ' gene_name \"{}\";'.format(gene_id)
+                        line += ' gene_name \"{}\";\n'.format(gene_id)
                         output_file.write(line)
                     else:
                         output_file.write(line)
