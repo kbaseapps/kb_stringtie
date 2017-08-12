@@ -9,7 +9,7 @@ from pathos.multiprocessing import ProcessingPool as Pool
 import multiprocessing
 import zipfile
 import shutil
-import traceback
+import sys
 
 from DataFileUtil.DataFileUtilClient import DataFileUtil
 from Workspace.WorkspaceClient import Workspace as Workspace
@@ -551,12 +551,10 @@ class StringTieUtil:
                          'expression_obj_ref': expression_obj_ref,
                          'alignment_ref': alignment_ref,
                          'annotation_file': params['gtf_file']}
-
-            return returnVal
-        except Exception as e:
+        except BaseException as e:
             log('caught exception in worker')
             returnVal = {'exception': e}
-
+        finally:
             return returnVal
 
     def _process_alignment_set_object(self, params):
