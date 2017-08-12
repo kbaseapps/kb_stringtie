@@ -1,6 +1,55 @@
-language: 
+language: python
+python:
+- '2.7'
+sudo: required
+services:
+- docker
+notifications:
+  email:
+    recipients:
+    - tgu@anl.gov
+    on_success: never
+    on_failure: always
 env:
+  global:
+  - secure: JOt4tRUOWiR/MVn3HdYO/dRvr7Eiecv3VpTSnYhwIiVCzu2Tgaxj55NhpfBPfSl6vknJu9+7gMZTYIGbUxiUlhb55At48VmMBahvCRyHkt+QxFCF2JGdqJpAQKRTu6ECrrXmWiy5DuHYgLIxjWLdgym2Y+o6/aTrJblQbmih/dlCAZeIHD/DD0mhyHOg0OspftVIcADPAYg8nTAL/hbqYnNHwVzr+FvgYA4DiluW52Wmwdn2S9thEmDnk0zs+h1vYN8mZY9ZW7cJQOZACVYLyUuJtyqyR8CQL7yLW2sQePO0XQUs0cNEOIUf1OAqQLA81RngxUt7/IfINFXl/+PQgIa/Ia8ZOE4uD9VY/VGMcAoYNmmds/XaZ0oRs4e56GIycm5PBc/UvemYxTFClQ4DolLWmuv1u4IjqfjjnhG/HcjOP9Vs5uPg9p8owo+M8HOnKIzOF+2BqCislaOGQrEcR7tJSSSOOj3DiTh1Ln203YfdppowBdY5S2vcExyjt9MQ/Oj07vFt3ZPJ2jV62MnUh6yTn+S9U0Tfj8YBAoovw6SFI4ZkBpCochHm/yRzYG/gMDVWpp5PSAJBIgPLtBu2VQiQPCu0L3bACNQl29wj+V4Ir3h0udStkzkaviXiwt86WeJZAzvCFMLjWThaVC8kU6ujfhVI6bm8oSbpoKQ2KCI=
+branches:
+  only:
+  - master
 before_install:
+- docker version
+- python --version
+- javac -version
+- java -version
 install:
+- pip install coveralls
+- git clone https://github.com/kbase/jars
+- git clone https://github.com/kbase/kb_sdk
+- cd kb_sdk
+- make
+- make sdkbase
+- docker images
+- export PATH=$(pwd)/bin:$PATH
+- cd ../
+- git clone https://github.com/kbaseapps/kb_stringtie.git
+- cd kb_stringtie
+- kb-sdk test || true
+- sed -i "s/test_token=/test_token=$TEST_TOKEN/" test_local/test.cfg
+- sed -i 's/$(id -u)/0:0/' test_local/run_tests.sh
+- pwd=$(pwd)
+- echo "#!/bin/bash" >> test_local/run_subjob.sh
+- echo -e "$pwd/test_local/run_docker.sh run --rm --user 0:0 -v $pwd/test_local/subjobs/\$1/workdir:/kb/module/work
+  -v $pwd/test_local/workdir/tmp:/kb/module/work/tmp \$4 -e \"SDK_CALLBACK_URL=\$3\"
+  \$2 async" >> test_local/run_subjob.sh
+- cat test_local/run_subjob.sh
 script:
-after_script:
+- kb-sdk test
+after_success:
+- cp test_local/workdir/.coverage .
+- sudo mkdir -p /kb/module/lib/
+- sudo cp -R test_local/workdir/kb/module/lib/kb_stringtie /kb/module/lib/
+- pwd
+- ls -l /kb/module/lib/kb_stringtie
+- cat .coverage
+- coverage report -m
+- coveralls

@@ -1,4 +1,11 @@
 
+Build status:
+
+master: [![Coverage Status](https://coveralls.io/repos/github/kbaseapps/kb_stringtie/badge.svg?branch=master)](https://coveralls.io/github/kbaseapps/kb_stringtie?branch=master)
+
+master:  [![Build Status](https://travis-ci.org/kbaseapps/kb_stringtie.svg?branch=master)](https://travis-ci.org/kbaseapps/kb_stringtie)
+
+
 # kb_stringtie
 ---
 

@@ -24,7 +24,7 @@ class kb_stringtie:
     ######################################### noqa
     VERSION = "1.0.7"
     GIT_URL = "https://github.com/Tianhao-Gu/kb_stringtie.git"
-    GIT_COMMIT_HASH = "3587e52c4cc3913dd17a50ad6ec4677c2de32c6b"
+    GIT_COMMIT_HASH = "fe892c68cb2df021098c907959dbd0ffa8eb0c7a"
 
     #BEGIN_CLASS_HEADER
     #END_CLASS_HEADER
