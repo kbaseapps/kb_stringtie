@@ -10,6 +10,7 @@ import multiprocessing
 import zipfile
 import shutil
 import sys
+import traceback
 
 from DataFileUtil.DataFileUtilClient import DataFileUtil
 from Workspace.WorkspaceClient import Workspace as Workspace
@@ -551,9 +552,11 @@ class StringTieUtil:
                          'expression_obj_ref': expression_obj_ref,
                          'alignment_ref': alignment_ref,
                          'annotation_file': params['gtf_file']}
-        except BaseException as e:
+        except:
             log('caught exception in worker')
-            returnVal = {'exception': e}
+            e = sys.exc_info()[0]
+
+            returnVal = {'exception': '{}: {}'.format(e, ''.join(traceback.format_stack()))}
         finally:
             return returnVal
 
