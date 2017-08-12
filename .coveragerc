@@ -4,8 +4,8 @@ branch = True
 omit =
     /kb/module/lib/kb_stringtie/authclient.py
     /kb/module/lib/kb_stringtie/baseclient.py
-    /kb/module/lib/kb_stringtie/kb_ballgownClient.py
-    /kb/module/lib/kb_stringtie/kb_ballgownServer.py
+    /kb/module/lib/kb_stringtie/kb_stringtieClient.py
+    /kb/module/lib/kb_stringtie/kb_stringtieServer.py
 source = /kb/module/lib/kb_stringtie
 
 
