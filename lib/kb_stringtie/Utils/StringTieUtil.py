@@ -554,10 +554,10 @@ class StringTieUtil:
 
             return returnVal
         except Exception as e:
-            print('Caught exception in worker')
-            traceback.print_exc()
-            print()
-            raise e
+            log('caught exception in worker')
+            returnVal = {'exception': e}
+
+            return returnVal
 
     def _process_alignment_set_object(self, params):
         """
@@ -596,14 +596,14 @@ class StringTieUtil:
         cpus = min(params.get('num_threads'), multiprocessing.cpu_count())
         pool = Pool(ncpus=cpus)
         log('running _process_alignment_object with {} cpus'.format(cpus))
-        try:
-            alignment_expression_map = pool.map(self._process_alignment_object, 
-                                                mul_processor_params)
-        except Exception as e:
-            print('Caught exception in worker')
-            traceback.print_exc()
-            print()
-            raise e
+        alignment_expression_map = pool.map(self._process_alignment_object, 
+                                            mul_processor_params)
+
+        for proc_alignment_return in alignment_expression_map:
+            if 'exception' in proc_alignment_return:
+                error_msg = 'Caught exception in worker\n'
+                error_msg += 'Exception: {}'.format(proc_alignment_return['exception'])
+                raise ValueError('Caught exception in worker')
 
         result_directory = os.path.join(self.scratch, str(uuid.uuid4()))
         self._mkdir_p(result_directory)
