@@ -12,7 +12,8 @@ notifications:
     on_failure: always
 env:
   global:
-    secure: K5n332wVgKI/TbsnqjP8YQd9OM/ONPKP1ftOAzTHyv977Yc12jJUPHoAfPhP8pYm4doPiQ2V9PdPHrzEWXmgXweIY7SDBrEMe9PrKaH8GDJW8nKzpFfz/vKYqZQ5jJFVBygy0QJYlmgsGGTIIm7lGkS70rbiuAfx3y/dD8qYSBhZIwuI7sRs8/wIpMJtD6eymmIlPIHHjjcSBSHB5L++nXsCI7cfksS2rumyxX86XtSvf/IKAHP44vQ1tWgTKtR/8pekTU02XSYHpytPast6LUtDhpQGzxc/UcNGr+nb+6YHwl9UOz6HApZv+Di3gcN6bV6swnIG73FesF/DJVI/bD+fRM4DdjhPN1FQtfz3BWxTrcH7ujS+PJ+zEQRXJJ0vA9qcq9ExDYWCnh+3weMEeWnLkZb0L2VlhSQ7KCnsXvsiQ1VOmHoDymj/bUxZq8JRlHN+Ua+H4gQduUL658pGKs0QazL2qZ/U0cYQ/YsTESl1ETulSobsCpnVDvE1sydO/WJ21X1WwkxFxtNIJFwd9n8I4nHI4RVyEIiRGqy0ZV1i88wdNP9Y08pjElUbHv89n6xdJqgvAqjsUm0GbkNvG72U3LoIPXKGfuqmNe/lvmv5ivDrKhULSrzKy8Ixg4FyIQJ4NeSYO9Hn7KNpMftBDJyQMzU7JVMs689DKsd0/Kw=
+  - secure: oggkAEi2bEGSHEXi3wmtzAvvMHWal660oVfUWEIQt4Az/9ZTWvYa/mXx7SVpkUHn2Z7VS3l5xva8TWDg9DD2G7LSrFWGggQLC1S4f2i2yELdzzGRyAHkRHOMhq65sUmJGvvQozzl4Kx1cQFaiLqkyc2TIzl3TmvbPMZNiXvvl/YqD/UnQdA6cElFkUaF02roMv406lCLq5CiHJSefdVvorRF5jaG1wyXYackBPfWK8qa8ntVkIdMUkt+ELyyc7UeejkInH8bux2pPspJL7WS42AnYQSeO3keDJCt2GJIMnt2J48ehul2AHGQyBNhKEMUpwlhnGcArWG3ArAEehnN4pH0Q/LNl9H0B2Mrp3vtsjkmhNONjFmudis6G7hEqt4KnX472OSTULLi5tL3EGRcRkYMQM8A1ldPaJsJ/hQdGUQP6LnkYukhvYsqjRUIYoxIWVmiEyq5J4wGu6upvm72SvonOPd0w4B1xEFOjO7OQyja6UI5YpCqIAH+VobFpHuQvlXeFSY2Mo/HBTXh4+gHlP88IRcSx4ggFoRjvdO0MGwpdwulY4wmUzErs+JWsC2kaydr7/2nFy6SUGzcSQB3QyxRs1CKy1OxI3FbdTsCMCRM5FNhZiKAbt18wZo92Pn2nxjtoLVKVjEeyvUbQVHf0fBBHod2BKcm7UhA8uFz/qk=
+
 branches:
   only:
   - master
@@ -35,9 +36,6 @@ install:
 - cd kb_stringtie
 - kb-sdk test || true
 - sed -i "s/test_token=/test_token=$TEST_TOKEN/" test_local/test.cfg
-# - sed -i 's\https://appdev.kbase.us/services\https://ci.kbase.us/services\' test_local/test.cfg
-# - sed -i 's\https://appdev.kbase.us/services/auth/api/legacy/KBase/Sessions/Login\https://ci.kbase.us/services/auth/api/legacy/KBase/Sessions/Login\'
-#   test_local/test.cfg
 - sed -i 's/$(id -u)/0:0/' test_local/run_tests.sh
 - pwd=$(pwd)
 - echo "#!/bin/bash" >> test_local/run_subjob.sh
