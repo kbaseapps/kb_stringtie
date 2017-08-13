@@ -604,7 +604,7 @@ class StringTieUtil:
             if 'exception' in proc_alignment_return:
                 error_msg = 'Caught exception in worker\n'
                 error_msg += 'Exception: {}'.format(proc_alignment_return['exception'])
-                raise ValueError('Caught exception in worker')
+                raise ValueError(error_msg)
 
         result_directory = os.path.join(self.scratch, str(uuid.uuid4()))
         self._mkdir_p(result_directory)
