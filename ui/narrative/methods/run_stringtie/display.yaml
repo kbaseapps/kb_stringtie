@@ -72,8 +72,7 @@ description : |
     <p>STringTie is a successor of Cufflinks that is faster and provides more accurate reconstruction of genes and expression level. It accepts aligned RNA-seq reads from HISAT2, TopHat2 or Bowtie2 and assembles the alignments into a parsimonious set of transcripts. It then estimates the relative abundances of these transcripts based on how many reads support each one, taking into account biases in library preparation protocols.</p>
     <p>The StringTie output object contains GTF and FPKM files. The GTF file contains annotated transcripts assembled by StringTie whereas the FPKM file provides the normalized expression matrix objects (abundance of each transcript expressed in fragments per kilobase of exon per million fragments mapped (FPKM) and transcripts per kilobase million (TPM)). The StringTie Table Histogram tab displays the abundance of normalized gene expression value in both log2(FPKM+1) and log2(TPM+1).</p>
     <p>The StringTie output object can be used to identify differential expression either using Cuffdiff or Ballgown.</p>
-    <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
-    Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Vivek Kumar</p>
+    <p><strong>Team members who developed & deployed algorithm in KBase:</strong>Tianhao Gu</p>
     
 publications :
     -
