@@ -680,6 +680,28 @@ class StringTieUtil:
 
         self._run_command(command)
 
+    def _filter_merge_file(self, gtf_file):
+        """
+        _filter_merge_file: remove lines with no gene_name
+        """
+
+        log('start filtering merged gft file')
+        
+        dir_name = os.path.dirname(gtf_file)
+
+        filtered_file_name = 'filtered_stringtie_merge.gtf'
+        filtered_file_path = os.path.join(dir_name, filtered_file_name)
+       
+        with open(filtered_file_path, 'w') as output_file:
+            with open(gtf_file, 'r') as input_file:
+                for line in input_file:
+                    if line.startswith('#') or 'gene_name' in line:
+                        output_file.write(line)
+                    else:
+                        log('skipping line:\n{}'.format(line))
+
+        return filtered_file_path
+
     def __init__(self, config):
         self.ws_url = config["workspace-url"]
         self.callback_url = config['SDK_CALLBACK_URL']
@@ -759,8 +781,10 @@ class StringTieUtil:
                 merge_file = os.path.join(first_run_result_dir, 
                                           'merge_result', 
                                           'stringtie_merge.gtf')
+
+                filtered_merge_file = self._filter_merge_file(merge_file)
                 log('running StringTie with stringtie_merge.gtf')
-                params.update({'gtf_file': merge_file})
+                params.update({'gtf_file': filtered_merge_file})
                 params.update({'ballgown_mode': 1})
                 params.update({'skip_reads_with_no_ref': 1})
                 log('running Stringtie the 3rd time')
