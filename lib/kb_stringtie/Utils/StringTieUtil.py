@@ -524,7 +524,7 @@ class StringTieUtil:
             alignment_name = alignment_object_info[1]
 
             result_directory = os.path.join(self.scratch, 
-                                            alignment_name + '_' + str(int(time.time() * 100)))
+                                            alignment_name + '_' + str(uuid.uuid4()))
             self._mkdir_p(result_directory)
 
             # input files
@@ -795,29 +795,21 @@ class StringTieUtil:
                 params.update({'gtf_file': filtered_merge_file})
                 params.update({'ballgown_mode': 1})
                 params.update({'skip_reads_with_no_ref': 1})
-                # params.update({'merge': 0})
+                params.update({'merge': 0})
                 log('running Stringtie the 3rd time')
                 returnVal = self._process_alignment_set_object(params)
 
                 self._run_command('cp -R {} {}'.format(os.path.join(first_run_result_dir,
                                                        'merge_result'),
                                                        returnVal.get('result_directory')))
-
-                report_output = self._generate_merge_report(params.get('workspace_name'),
-                                                            returnVal.get('result_directory'))
-
-                # report_output = self._generate_report(returnVal.get('expression_obj_ref'),
-                #                                       params.get('workspace_name'),
-                #                                       returnVal.get('result_directory'),
-                #                                       returnVal.get('exprMatrix_FPKM_ref'),
-                #                                       returnVal.get('exprMatrix_TPM_ref'))
             else:
                 returnVal = self._process_alignment_set_object(params)
-                report_output = self._generate_report(returnVal.get('expression_obj_ref'),
-                                                      params.get('workspace_name'),
-                                                      returnVal.get('result_directory'),
-                                                      returnVal.get('exprMatrix_FPKM_ref'),
-                                                      returnVal.get('exprMatrix_TPM_ref'))
+
+            report_output = self._generate_report(returnVal.get('expression_obj_ref'),
+                                                  params.get('workspace_name'),
+                                                  returnVal.get('result_directory'),
+                                                  returnVal.get('exprMatrix_FPKM_ref'),
+                                                  returnVal.get('exprMatrix_TPM_ref'))
             returnVal.update(report_output)
         else:
             error_msg = 'Invalid input object type\nObject info:\n{}'.format(alignment_object_info)

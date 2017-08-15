@@ -407,6 +407,5 @@ class kb_stringtieTest(unittest.TestCase):
         print result_dirs
         self.assertTrue('merge_result' in result_dirs)
         self.assertTrue('expression_obj_ref' in result)
-        self.assertTrue('' == result['expression_obj_ref'])
         self.assertTrue('report_name' in result)
         self.assertTrue('report_ref' in result)
