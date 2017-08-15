@@ -109,11 +109,11 @@
           "target_property" : "alignment_object_ref"
         },
         {
-            "constant_value"  : "",
+            "input_parameter" : "expression_suffix",
             "target_property" : "expression_suffix"
         },
         {
-            "constant_value"  : "",
+            "input_parameter" : "expression_set_suffix",
             "target_property" : "expression_set_suffix"
         },
         {
