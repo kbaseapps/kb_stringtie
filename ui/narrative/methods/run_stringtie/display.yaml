@@ -1,7 +1,7 @@
 #
 # Define basic display information
 #
-name     : Assemble Transcripts using StringTie - v1.0.7
+name     : Assemble Transcripts using StringTie - v1.0.8
 
 tooltip  : |
     Assemble the transcripts from RNA-seq reads using StringTie
@@ -26,6 +26,14 @@ parameters :
         Reads Alignment or Reads Alignment Set 
     short-hint : |
         Select the RNA-seq Alignment or KBaseSets.ReadsAlignmentSet created by HISAT2, TopHat2 or Bowtie2.
+  mode:
+    ui-name : |
+        StringTie mode
+    short-hint: |
+        Running stringtie in ['normal', 'merge', 'novel-isoform'] mode. 
+        Normal mode: Running stringtie once with -eB options enabled
+        Merge mode: Running stringtie to generate merged gtf and filter unknown features from reference genome. Then running stringtie again using filtered merge gtf.
+        Novel Isoform mode: Running stringtie to generate merged gtf and then run stringtie again using this merged gtf. No workspace object will be created.
   expression_suffix :
     ui-name : |
         Expression Name Suffix

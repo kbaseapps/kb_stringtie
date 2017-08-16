@@ -18,3 +18,6 @@ Split StringTie app and StringTie app with novel isoform
 
 1.0.7:
 Generate ExpressionMatrix object
+
+1.0.8:
+Having only one stringtie app that does merge and novel-isoform

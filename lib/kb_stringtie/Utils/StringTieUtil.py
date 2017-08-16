@@ -551,15 +551,15 @@ class StringTieUtil:
             command = self._generate_command(params)
             self._run_command(command)
 
-            if not params.get('merge'):
+            if ('generate_ws_object' in params and not params.get('generate_ws_object')):
+                log('skip generating expression object')
+                expression_obj_ref = ''
+            else:
                 expression_obj_ref = self._save_expression(result_directory,
                                                            alignment_ref,
                                                            params.get('workspace_name'),
                                                            params['gtf_file'],
                                                            params['expression_suffix'])
-            else:
-                log('skip generating expression object')
-                expression_obj_ref = ''
 
             returnVal = {'result_directory': result_directory,
                          'expression_obj_ref': expression_obj_ref,
@@ -630,17 +630,17 @@ class StringTieUtil:
             self._run_command('cp -R {} {}'.format(proc_alignment_return.get('result_directory'),
                                                    os.path.join(result_directory, 
                                                                 alignment_name)))
-        if not params.get('merge'):
+        if ('generate_ws_object' in params and not params.get('generate_ws_object')):
+            log('skip generating expression set object')
+            expression_obj_ref = ''
+            expression_matrix_refs = {}
+        else:
             expression_obj_ref = self._save_expression_set(alignment_expression_map,
                                                            alignment_set_ref,
                                                            params.get('workspace_name'),
                                                            params['expression_set_suffix'])
             expression_matrix_refs = self._save_expression_matrix(expression_obj_ref,
                                                                   params.get('workspace_name'))
-        else:
-            log('skip generating expression set object')
-            expression_obj_ref = ''
-            expression_matrix_refs = {}
 
         annotation_file_name = os.path.basename(alignment_expression_map[0]['annotation_file'])
         annotation_file_path = os.path.join(result_directory, 
@@ -783,39 +783,65 @@ class StringTieUtil:
         elif (re.match('KBaseRNASeq.RNASeqAlignmentSet-\d.\d', alignment_object_type) or
               re.match('KBaseSets.ReadsAlignmentSet-\d.\d', alignment_object_type)):
             params.update({'alignment_set_ref': alignment_object_ref})
-            if params.get('merge'):
-                params.update({'ballgown_mode': 0})
-                params.update({'skip_reads_with_no_ref': 0})
+            if params.get('mode') in ['merge', 'novel_isoform']:
+
                 log('running Stringtie the 1st time')
+                if params.get('mode') == 'novel_isoform':
+                    params.update({'ballgown_mode': 0})
+                    params.update({'skip_reads_with_no_ref': 0})
+                elif params.get('mode') == 'merge':
+                    params.update({'ballgown_mode': 1})
+                    params.update({'skip_reads_with_no_ref': 1})
+
+                params['generate_ws_object'] = False
                 returnVal = self._process_alignment_set_object(params)
                 first_run_result_dir = returnVal.get('result_directory')
                 annotation_file = returnVal['annotation_file']
+
+                log('running StringTie merge')
                 self._run_merge_option(first_run_result_dir, params, annotation_file)
 
                 merge_file = os.path.join(first_run_result_dir, 
                                           'merge_result', 
                                           'stringtie_merge.gtf')
 
-                filtered_merge_file = self._filter_merge_file(merge_file)
-                log('running StringTie with stringtie_merge.gtf')
-                params.update({'gtf_file': filtered_merge_file})
+                log('running StringTie the 3rd time with merged gtf')
+                if params.get('mode') == 'novel_isoform':
+                    params.update({'gtf_file': merge_file})
+                elif params.get('mode') == 'merge':
+                    filtered_merge_file = self._filter_merge_file(merge_file)
+                    params.update({'gtf_file': filtered_merge_file})
+                    params.update({'generate_ws_object': True})
+
                 params.update({'ballgown_mode': 1})
                 params.update({'skip_reads_with_no_ref': 1})
-                params.update({'merge': 0})
-                log('running Stringtie the 3rd time')
+
                 returnVal = self._process_alignment_set_object(params)
 
                 self._run_command('cp -R {} {}'.format(os.path.join(first_run_result_dir,
                                                        'merge_result'),
                                                        returnVal.get('result_directory')))
+
+                if params.get('mode') == 'novel_isoform':
+                    report_output = self._generate_merge_report(params.get('workspace_name'),
+                                                                returnVal.get('result_directory'))
+                elif params.get('mode') == 'merge':
+                    report_output = self._generate_report(returnVal.get('expression_obj_ref'),
+                                                          params.get('workspace_name'),
+                                                          returnVal.get('result_directory'),
+                                                          returnVal.get('exprMatrix_FPKM_ref'),
+                                                          returnVal.get('exprMatrix_TPM_ref'))
             else:
+                params.update({'ballgown_mode': 1})
+                params.update({'skip_reads_with_no_ref': 1})
+
                 returnVal = self._process_alignment_set_object(params)
 
-            report_output = self._generate_report(returnVal.get('expression_obj_ref'),
-                                                  params.get('workspace_name'),
-                                                  returnVal.get('result_directory'),
-                                                  returnVal.get('exprMatrix_FPKM_ref'),
-                                                  returnVal.get('exprMatrix_TPM_ref'))
+                report_output = self._generate_report(returnVal.get('expression_obj_ref'),
+                                                      params.get('workspace_name'),
+                                                      returnVal.get('result_directory'),
+                                                      returnVal.get('exprMatrix_FPKM_ref'),
+                                                      returnVal.get('exprMatrix_TPM_ref'))
             returnVal.update(report_output)
         else:
             error_msg = 'Invalid input object type\nObject info:\n{}'.format(alignment_object_info)
