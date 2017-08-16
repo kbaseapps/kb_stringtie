@@ -22,9 +22,9 @@ class kb_stringtie:
     # state. A method could easily clobber the state set by another while
     # the latter method is running.
     ######################################### noqa
-    VERSION = "1.0.7"
+    VERSION = "1.0.8"
     GIT_URL = "https://github.com/Tianhao-Gu/kb_stringtie.git"
-    GIT_COMMIT_HASH = "02fb88046c87ec586aa74529de0c7475ae351bfc"
+    GIT_COMMIT_HASH = "98d9ea7c5c0e6cd6004da454565513370af0b73e"
 
     #BEGIN_CLASS_HEADER
     #END_CLASS_HEADER

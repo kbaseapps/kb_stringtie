@@ -298,6 +298,7 @@ class kb_stringtieTest(unittest.TestCase):
             'workspace_name': self.getWsName(),
             'expression_suffix': '_stringtie_expression',
             'expression_set_suffix': '_stringtie_expression_set',
+            'mode': 'normal',
 
             "min_read_coverage": 2.5,
             "junction_base": 10,
@@ -341,6 +342,7 @@ class kb_stringtieTest(unittest.TestCase):
             'workspace_name': self.getWsName(),
             'expression_suffix': '_stringtie_expression',
             'expression_set_suffix': '_stringtie_expression_set',
+            'mode': 'normal',
 
             "min_read_coverage": 2.5,
             "junction_base": 10,
@@ -386,6 +388,52 @@ class kb_stringtieTest(unittest.TestCase):
             'workspace_name': self.getWsName(),
             'expression_suffix': '_stringtie_expression',
             'expression_set_suffix': '_stringtie_expression_set',
+            'mode': 'merge',
+
+            "min_read_coverage": 2.5,
+            "junction_base": 10,
+            "num_threads": 2,
+            "min_isoform_abundance": 0.1,
+            "min_length": 200,
+            "junction_coverage": 1,
+            "min_locus_gap_sep_value": 50,
+            "disable_trimming": 1,
+            "skip_reads_with_no_ref": 1,
+            "ballgown_mode": 1,
+            "merge": 1
+        }
+
+        result = self.getImpl().run_stringtie_app(self.getContext(), input_params)[0]
+
+        self.assertTrue('result_directory' in result)
+        result_dirs = os.listdir(result['result_directory'])
+        print result_dirs
+        self.assertTrue('merge_result' in result_dirs)
+        # for result_dir in result_dirs:
+        #     result_files = os.listdir(os.path.join(result['result_directory'], result_dir))
+        #     expect_result_files = ['genes.fpkm_tracking', 'transcripts.gtf',
+        #                            'e2t.ctab', 'e_data.ctab', 'i2t.ctab', 'i_data.ctab', 
+        #                            't_data.ctab']
+        #     self.assertTrue(all(x in result_files for x in expect_result_files))
+        self.assertTrue('expression_obj_ref' in result)
+        self.assertTrue('exprMatrix_FPKM_ref' in result)
+        self.assertTrue('exprMatrix_TPM_ref' in result)
+        self.assertTrue('report_name' in result)
+        self.assertTrue('report_ref' in result)
+        expression_data = self.ws.get_objects2({'objects': 
+                                               [{'ref': result.get('expression_obj_ref')}]}
+                                               )['data'][0]['data']
+        self.assertTrue('items' in expression_data)
+        self.assertTrue('description' in expression_data)
+
+    def test_run_stringtie_app_novel_isoform(self):
+
+        input_params = {
+            'alignment_object_ref': self.reads_alignment_set_ref,
+            'workspace_name': self.getWsName(),
+            'expression_suffix': '_stringtie_expression',
+            'expression_set_suffix': '_stringtie_expression_set',
+            'mode': 'novel_isoform',
 
             "min_read_coverage": 2.5,
             "junction_base": 10,
@@ -407,5 +455,6 @@ class kb_stringtieTest(unittest.TestCase):
         print result_dirs
         self.assertTrue('merge_result' in result_dirs)
         self.assertTrue('expression_obj_ref' in result)
+        self.assertTrue('' == result['expression_obj_ref'])
         self.assertTrue('report_name' in result)
         self.assertTrue('report_ref' in result)
