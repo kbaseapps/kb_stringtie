@@ -233,7 +233,8 @@ class StringTieUtil:
 
         items = []
         for alignment_expression in alignment_expression_map:
-            items.append({'ref': alignment_expression.get('expression_obj_ref')})
+            items.append({'ref': alignment_expression.get('expression_obj_ref'),
+                          'lable': alignment_expression.get('alignment_label')})
 
         expression_set_data = {'description': 'ExpressionSet using StringTie', 
                                'items': items}
@@ -518,10 +519,14 @@ class StringTieUtil:
             log('params:\n{}'.format(json.dumps(params, indent=1)))
             alignment_ref = params.get('alignment_ref')
 
-            alignment_object_info = self.ws.get_object_info3({"objects": 
-                                                             [{"ref": alignment_ref}]}
-                                                             )['infos'][0]
-            alignment_name = alignment_object_info[1]
+            alignment_set_object = self.ws.get_objects2({'objects':
+                                                        [{'ref': alignment_ref}]})['data'][0]
+
+            alignment_info = alignment_set_object['info']
+            alignment_data = alignment_set_object['data']
+
+            alignment_name = alignment_info[1]
+            alignment_label = alignment_data['condition']
 
             result_directory = os.path.join(self.scratch, 
                                             alignment_name + '_' + str(uuid.uuid4()))
@@ -559,7 +564,8 @@ class StringTieUtil:
             returnVal = {'result_directory': result_directory,
                          'expression_obj_ref': expression_obj_ref,
                          'alignment_ref': alignment_ref,
-                         'annotation_file': params['gtf_file']}
+                         'annotation_file': params['gtf_file'],
+                         'alignment_label': alignment_label}
         except:
             log('caught exception in worker')
             e = sys.exc_info()[0]
