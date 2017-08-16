@@ -234,7 +234,7 @@ class StringTieUtil:
         items = []
         for alignment_expression in alignment_expression_map:
             items.append({'ref': alignment_expression.get('expression_obj_ref'),
-                          'lable': alignment_expression.get('alignment_label')})
+                          'label': alignment_expression.get('alignment_label')})
 
         expression_set_data = {'description': 'ExpressionSet using StringTie', 
                                'items': items}
