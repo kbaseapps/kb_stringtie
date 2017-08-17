@@ -24,7 +24,7 @@ class kb_stringtie:
     ######################################### noqa
     VERSION = "1.0.8"
     GIT_URL = "https://github.com/Tianhao-Gu/kb_stringtie.git"
-    GIT_COMMIT_HASH = "98d9ea7c5c0e6cd6004da454565513370af0b73e"
+    GIT_COMMIT_HASH = "30fe5fd062ad8cb9600db4789d80273ee9745a5a"
 
     #BEGIN_CLASS_HEADER
     #END_CLASS_HEADER
@@ -48,28 +48,26 @@ class kb_stringtie:
            alignment_object_ref: Alignment or AlignmentSet object reference
            workspace_name: the name of the workspace it gets saved to
            expression_set_suffix: suffix append to expression set object name
-           expression_suffix: suffix append to expression object name
-           optional params: num_threads: number of processing threads
-           junction_base: junctions that don't have spliced reads
-           junction_coverage: junction coverage disable_trimming: disables
-           trimming at the ends of the assembled transcripts
-           min_locus_gap_sep_value: minimum locus gap separation value
-           ballgown_mode: enables the output of Ballgown input table files
-           skip_reads_with_no_ref: reads with no reference will be skipped
-           maximum_fraction: maximum fraction of muliple-location-mapped
-           reads label: prefix for the name of the output transcripts
-           min_length: minimum length allowed for the predicted transcripts
-           min_read_coverage: minimum input transcript coverage
-           min_isoform_abundance: minimum isoform abundance merge: set
-           transcript merge mode ref:
+           expression_suffix: suffix append to expression object name mode:
+           one of ['normal', 'merge', 'novel_isoform'] optional params:
+           num_threads: number of processing threads junction_base: junctions
+           that don't have spliced reads junction_coverage: junction coverage
+           disable_trimming: disables trimming at the ends of the assembled
+           transcripts min_locus_gap_sep_value: minimum locus gap separation
+           value ballgown_mode: enables the output of Ballgown input table
+           files skip_reads_with_no_ref: reads with no reference will be
+           skipped maximum_fraction: maximum fraction of
+           muliple-location-mapped reads label: prefix for the name of the
+           output transcripts min_length: minimum length allowed for the
+           predicted transcripts min_read_coverage: minimum input transcript
+           coverage min_isoform_abundance: minimum isoform abundance ref:
            http://ccb.jhu.edu/software/stringtie/index.shtml?t=manual) ->
            structure: parameter "alignment_object_ref" of type "obj_ref" (An
            X/Y/Z style reference), parameter "workspace_name" of String,
            parameter "expression_set_suffix" of String, parameter
-           "expression_suffix" of String, parameter "merge" of type "boolean"
-           (A boolean - 0 for false, 1 for true. @range (0, 1)), parameter
-           "num_threads" of Long, parameter "junction_base" of Long,
-           parameter "junction_coverage" of Double, parameter
+           "expression_suffix" of String, parameter "mode" of String,
+           parameter "num_threads" of Long, parameter "junction_base" of
+           Long, parameter "junction_coverage" of Double, parameter
            "disable_trimming" of type "boolean" (A boolean - 0 for false, 1
            for true. @range (0, 1)), parameter "min_locus_gap_sep_value" of
            Long, parameter "ballgown_mode" of type "boolean" (A boolean - 0

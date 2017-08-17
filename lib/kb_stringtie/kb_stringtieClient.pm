@@ -126,7 +126,7 @@ StringTieInput is a reference to a hash where the following keys are defined:
 	workspace_name has a value which is a string
 	expression_set_suffix has a value which is a string
 	expression_suffix has a value which is a string
-	merge has a value which is a kb_stringtie.boolean
+	mode has a value which is a string
 	num_threads has a value which is an int
 	junction_base has a value which is an int
 	junction_coverage has a value which is a float
@@ -162,7 +162,7 @@ StringTieInput is a reference to a hash where the following keys are defined:
 	workspace_name has a value which is a string
 	expression_set_suffix has a value which is a string
 	expression_suffix has a value which is a string
-	merge has a value which is a kb_stringtie.boolean
+	mode has a value which is a string
 	num_threads has a value which is an int
 	junction_base has a value which is an int
 	junction_coverage has a value which is a float
@@ -409,6 +409,7 @@ alignment_object_ref: Alignment or AlignmentSet object reference
 workspace_name: the name of the workspace it gets saved to
 expression_set_suffix: suffix append to expression set object name
 expression_suffix: suffix append to expression object name
+mode: one of ['normal', 'merge', 'novel_isoform']
 
 optional params:
 num_threads: number of processing threads
@@ -423,7 +424,6 @@ label: prefix for the name of the output transcripts
 min_length: minimum length allowed for the predicted transcripts
 min_read_coverage: minimum input transcript coverage
 min_isoform_abundance: minimum isoform abundance
-merge: set transcript merge mode
 
 ref: http://ccb.jhu.edu/software/stringtie/index.shtml?t=manual
 
@@ -438,7 +438,7 @@ alignment_object_ref has a value which is a kb_stringtie.obj_ref
 workspace_name has a value which is a string
 expression_set_suffix has a value which is a string
 expression_suffix has a value which is a string
-merge has a value which is a kb_stringtie.boolean
+mode has a value which is a string
 num_threads has a value which is an int
 junction_base has a value which is an int
 junction_coverage has a value which is a float
@@ -463,7 +463,7 @@ alignment_object_ref has a value which is a kb_stringtie.obj_ref
 workspace_name has a value which is a string
 expression_set_suffix has a value which is a string
 expression_suffix has a value which is a string
-merge has a value which is a kb_stringtie.boolean
+mode has a value which is a string
 num_threads has a value which is an int
 junction_base has a value which is an int
 junction_coverage has a value which is a float
