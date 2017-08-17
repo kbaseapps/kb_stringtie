@@ -19,6 +19,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  * workspace_name: the name of the workspace it gets saved to
  * expression_set_suffix: suffix append to expression set object name
  * expression_suffix: suffix append to expression object name
+ * mode: one of ['normal', 'merge', 'novel_isoform']
  * optional params:
  * num_threads: number of processing threads
  * junction_base: junctions that don't have spliced reads
@@ -32,7 +33,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  * min_length: minimum length allowed for the predicted transcripts
  * min_read_coverage: minimum input transcript coverage
  * min_isoform_abundance: minimum isoform abundance
- * merge: set transcript merge mode
  * ref: http://ccb.jhu.edu/software/stringtie/index.shtml?t=manual
  * </pre>
  * 
@@ -44,7 +44,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "workspace_name",
     "expression_set_suffix",
     "expression_suffix",
-    "merge",
+    "mode",
     "num_threads",
     "junction_base",
     "junction_coverage",
@@ -68,8 +68,8 @@ public class StringTieInput {
     private String expressionSetSuffix;
     @JsonProperty("expression_suffix")
     private String expressionSuffix;
-    @JsonProperty("merge")
-    private Long merge;
+    @JsonProperty("mode")
+    private String mode;
     @JsonProperty("num_threads")
     private Long numThreads;
     @JsonProperty("junction_base")
@@ -156,18 +156,18 @@ public class StringTieInput {
         return this;
     }
 
-    @JsonProperty("merge")
-    public Long getMerge() {
-        return merge;
+    @JsonProperty("mode")
+    public String getMode() {
+        return mode;
     }
 
-    @JsonProperty("merge")
-    public void setMerge(Long merge) {
-        this.merge = merge;
+    @JsonProperty("mode")
+    public void setMode(String mode) {
+        this.mode = mode;
     }
 
-    public StringTieInput withMerge(Long merge) {
-        this.merge = merge;
+    public StringTieInput withMode(String mode) {
+        this.mode = mode;
         return this;
     }
 
@@ -363,7 +363,7 @@ public class StringTieInput {
 
     @Override
     public String toString() {
-        return ((((((((((((((((((((((((((((((((((((("StringTieInput"+" [alignmentObjectRef=")+ alignmentObjectRef)+", workspaceName=")+ workspaceName)+", expressionSetSuffix=")+ expressionSetSuffix)+", expressionSuffix=")+ expressionSuffix)+", merge=")+ merge)+", numThreads=")+ numThreads)+", junctionBase=")+ junctionBase)+", junctionCoverage=")+ junctionCoverage)+", disableTrimming=")+ disableTrimming)+", minLocusGapSepValue=")+ minLocusGapSepValue)+", ballgownMode=")+ ballgownMode)+", skipReadsWithNoRef=")+ skipReadsWithNoRef)+", maximumFraction=")+ maximumFraction)+", label=")+ label)+", minLength=")+ minLength)+", minReadCoverage=")+ minReadCoverage)+", minIsoformAbundance=")+ minIsoformAbundance)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((((((((((((((((((((((((((("StringTieInput"+" [alignmentObjectRef=")+ alignmentObjectRef)+", workspaceName=")+ workspaceName)+", expressionSetSuffix=")+ expressionSetSuffix)+", expressionSuffix=")+ expressionSuffix)+", mode=")+ mode)+", numThreads=")+ numThreads)+", junctionBase=")+ junctionBase)+", junctionCoverage=")+ junctionCoverage)+", disableTrimming=")+ disableTrimming)+", minLocusGapSepValue=")+ minLocusGapSepValue)+", ballgownMode=")+ ballgownMode)+", skipReadsWithNoRef=")+ skipReadsWithNoRef)+", maximumFraction=")+ maximumFraction)+", label=")+ label)+", minLength=")+ minLength)+", minReadCoverage=")+ minReadCoverage)+", minIsoformAbundance=")+ minIsoformAbundance)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

@@ -18,6 +18,7 @@ module kb_stringtie {
         workspace_name: the name of the workspace it gets saved to
         expression_set_suffix: suffix append to expression set object name
         expression_suffix: suffix append to expression object name
+        mode: one of ['normal', 'merge', 'novel_isoform']
 
         optional params:
         num_threads: number of processing threads
@@ -32,7 +33,6 @@ module kb_stringtie {
         min_length: minimum length allowed for the predicted transcripts
         min_read_coverage: minimum input transcript coverage
         min_isoform_abundance: minimum isoform abundance
-        merge: set transcript merge mode
 
         ref: http://ccb.jhu.edu/software/stringtie/index.shtml?t=manual
     */
@@ -41,8 +41,8 @@ module kb_stringtie {
         string workspace_name;
         string expression_set_suffix;
         string expression_suffix;
+        string mode;
 
-        boolean merge;
         int num_threads;
         int junction_base;
         float junction_coverage;
