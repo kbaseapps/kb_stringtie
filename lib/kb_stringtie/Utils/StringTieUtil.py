@@ -11,6 +11,7 @@ import zipfile
 import shutil
 import sys
 import traceback
+import contig_id_mapping as c_mapping
 
 from DataFileUtil.DataFileUtilClient import DataFileUtil
 from Workspace.WorkspaceClient import Workspace as Workspace
@@ -18,6 +19,7 @@ from KBaseReport.KBaseReportClient import KBaseReport
 from GenomeFileUtil.GenomeFileUtilClient import GenomeFileUtil
 from ReadsAlignmentUtils.ReadsAlignmentUtilsClient import ReadsAlignmentUtils
 from ExpressionUtils. ExpressionUtilsClient import ExpressionUtils
+from AssemblyUtil.AssemblyUtilClient import AssemblyUtil
 from SetAPI.SetAPIServiceClient import SetAPI
 
 
@@ -166,7 +168,8 @@ class StringTieUtil:
 
         genome_ref = alignment_data.get('genome_id')
 
-        annotation_file = self._create_gtf_file(genome_ref, result_directory)
+        # annotation_file = self._create_gtf_file(genome_ref, result_directory)
+        annotation_file = self._create_gtf_annotation_from_genome(genome_ref, result_directory)
 
         gene_name_annotation_file = annotation_file.split('.gtf')[0] + '_append_name.gtf'
 
@@ -182,6 +185,49 @@ class StringTieUtil:
                         output_file.write(line)
                     
         return gene_name_annotation_file
+
+    def _create_gtf_annotation_from_genome(self, genome_ref, result_directory):
+        """
+         Create reference annotation file from genome
+        """
+        ref = self.ws.get_object_subset(
+            [{'ref': genome_ref, 'included': ['contigset_ref', 'assembly_ref']}])
+        if 'contigset_ref' in ref[0]['data']:
+            contig_id = ref[0]['data']['contigset_ref']
+        elif 'assembly_ref' in ref[0]['data']:
+            contig_id = ref[0]['data']['assembly_ref']
+        if contig_id is None:
+            raise ValueError(
+                "Genome at {0} does not have reference to the assembly object".format(
+                    genome_ref))
+        print contig_id
+        log("Generating GFF file from Genome")
+        try:
+            ret = self.au.get_assembly_as_fasta({'ref': contig_id})
+            output_file = ret['path']
+            mapping_filename = c_mapping.create_sanitized_contig_ids(output_file)
+            os.remove(output_file)
+            # get the GFF
+            ret = self.gfu.genome_to_gff({'genome_ref': genome_ref,
+                                          'target_dir': result_directory})
+            genome_gff_file = ret['file_path']
+            c_mapping.replace_gff_contig_ids(genome_gff_file, mapping_filename, to_modified=True)
+            gtf_ext = ".gtf"
+
+            if not genome_gff_file.endswith(gtf_ext):
+                gtf_path = os.path.splitext(genome_gff_file)[0] + '.gtf'
+                self._run_gffread(genome_gff_file, gtf_path)
+            else:
+                gtf_path = genome_gff_file
+
+            log("gtf file : " + gtf_path)
+
+        except Exception:
+            raise ValueError(
+                "Generating GTF file from Genome Annotation object Failed :  {}".format(
+                    "".join(traceback.format_exc())))
+
+        return gtf_path
 
     def _create_gtf_file(self, genome_ref, result_directory):
         """
@@ -726,6 +772,7 @@ class StringTieUtil:
         self.dfu = DataFileUtil(self.callback_url)
         self.gfu = GenomeFileUtil(self.callback_url)
         self.rau = ReadsAlignmentUtils(self.callback_url)
+        self.au = AssemblyUtil(self.callback_url)
         self.eu = ExpressionUtils(self.callback_url, service_ver='dev')
         self.ws = Workspace(self.ws_url, token=self.token)
         self.set_client = SetAPI(self.srv_wiz_url)

@@ -1,4 +1,8 @@
 [ {
+  "module_name" : "AssemblyUtil",
+  "type" : "sdk",
+  "version_tag" : "release"
+}, {
   "module_name" : "ExpressionUtils",
   "type" : "sdk",
   "version_tag" : "release"
