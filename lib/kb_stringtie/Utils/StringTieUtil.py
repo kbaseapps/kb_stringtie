@@ -19,6 +19,7 @@ from KBaseReport.KBaseReportClient import KBaseReport
 from GenomeFileUtil.GenomeFileUtilClient import GenomeFileUtil
 from ReadsAlignmentUtils.ReadsAlignmentUtilsClient import ReadsAlignmentUtils
 from ExpressionUtils. ExpressionUtilsClient import ExpressionUtils
+from AssemblyUtil.AssemblyUtilClient import AssemblyUtil
 from SetAPI.SetAPIServiceClient import SetAPI
 
 
@@ -771,6 +772,7 @@ class StringTieUtil:
         self.dfu = DataFileUtil(self.callback_url)
         self.gfu = GenomeFileUtil(self.callback_url)
         self.rau = ReadsAlignmentUtils(self.callback_url)
+        self.au = AssemblyUtil(self.callback_url)
         self.eu = ExpressionUtils(self.callback_url, service_ver='dev')
         self.ws = Workspace(self.ws_url, token=self.token)
         self.set_client = SetAPI(self.srv_wiz_url)
