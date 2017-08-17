@@ -168,8 +168,8 @@ class StringTieUtil:
 
         genome_ref = alignment_data.get('genome_id')
 
-        # annotation_file = self._create_gtf_file(genome_ref, result_directory)
-        annotation_file = self._create_gtf_annotation_from_genome(genome_ref, result_directory)
+        annotation_file = self._create_gtf_file(genome_ref, result_directory)
+        # annotation_file = self._create_gtf_annotation_from_genome(genome_ref, result_directory)
 
         gene_name_annotation_file = annotation_file.split('.gtf')[0] + '_append_name.gtf'
 
@@ -221,7 +221,6 @@ class StringTieUtil:
                 gtf_path = genome_gff_file
 
             log("gtf file : " + gtf_path)
-
         except Exception:
             raise ValueError(
                 "Generating GTF file from Genome Annotation object Failed :  {}".format(
@@ -877,7 +876,7 @@ class StringTieUtil:
                                                           returnVal.get('exprMatrix_FPKM_ref'),
                                                           returnVal.get('exprMatrix_TPM_ref'))
             else:
-                params.update({'ballgown_mode': 0})
+                params.update({'ballgown_mode': 1})
                 params.update({'skip_reads_with_no_ref': 1})
 
                 returnVal = self._process_alignment_set_object(params)
