@@ -838,8 +838,10 @@ class StringTieUtil:
 
                 log('running Stringtie the 1st time')
                 if params.get('mode') == 'novel_isoform':
+                    params.update({'ballgown_mode': 0})
                     params.update({'skip_reads_with_no_ref': 0})
                 elif params.get('mode') == 'merge':
+                    params.update({'ballgown_mode': 1})
                     params.update({'skip_reads_with_no_ref': 1})
 
                 params['generate_ws_object'] = False
@@ -862,7 +864,7 @@ class StringTieUtil:
                     params.update({'gtf_file': filtered_merge_file})
                     params.update({'generate_ws_object': True})
 
-                params.update({'ballgown_mode': 0})
+                params.update({'ballgown_mode': 1})
                 params.update({'skip_reads_with_no_ref': 1})
 
                 returnVal = self._process_alignment_set_object(params)
