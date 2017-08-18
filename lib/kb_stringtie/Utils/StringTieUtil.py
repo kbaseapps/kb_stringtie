@@ -168,8 +168,8 @@ class StringTieUtil:
 
         genome_ref = alignment_data.get('genome_id')
 
-        annotation_file = self._create_gtf_file(genome_ref, result_directory)
-        # annotation_file = self._create_gtf_annotation_from_genome(genome_ref, result_directory)
+        # annotation_file = self._create_gtf_file(genome_ref, result_directory)
+        annotation_file = self._create_gtf_annotation_from_genome(genome_ref, result_directory)
 
         gene_name_annotation_file = annotation_file.split('.gtf')[0] + '_append_name.gtf'
 
@@ -204,9 +204,14 @@ class StringTieUtil:
         log("Generating GFF file from Genome")
         try:
             ret = self.au.get_assembly_as_fasta({'ref': contig_id})
-            output_file = ret['path']
-            mapping_filename = c_mapping.create_sanitized_contig_ids(output_file)
-            os.remove(output_file)
+            fa_output_file = ret['path']
+
+            shutil.copy(fa_output_file, result_directory)
+            fa_output_name = os.path.basename(fa_output_file)
+            fa_output_file = os.path.join(result_directory, fa_output_name)
+
+            mapping_filename = c_mapping.create_sanitized_contig_ids(fa_output_file)
+
             # get the GFF
             ret = self.gfu.genome_to_gff({'genome_ref': genome_ref,
                                           'target_dir': result_directory})
@@ -613,9 +618,9 @@ class StringTieUtil:
                          'alignment_label': alignment_label}
         except:
             log('caught exception in worker')
-            e = sys.exc_info()[0]
+            exctype, value = sys.exc_info()[:2]
 
-            returnVal = {'exception': '{}: {}'.format(e, ''.join(traceback.format_stack()))}
+            returnVal = {'exception': '{}: {}'.format(exctype, value)}
         finally:
             return returnVal
 
