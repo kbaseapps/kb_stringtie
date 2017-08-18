@@ -141,7 +141,7 @@
           "target_property" : "mode"
         },
         {
-          "constant_value"  : 0,
+          "constant_value"  : 1,
           "target_property" : "ballgown_mode"
         },        
         {
