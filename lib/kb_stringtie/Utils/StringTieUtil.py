@@ -601,6 +601,9 @@ class StringTieUtil:
             command = self._generate_command(params)
             self._run_command(command)
 
+            if params.get('exchange_gene_ids'):
+                self._exchange_gene_ids(result_directory)
+
             if ('generate_ws_object' in params and not params.get('generate_ws_object')):
                 log('skip generating expression object')
                 expression_obj_ref = ''
@@ -766,6 +769,66 @@ class StringTieUtil:
 
         return filtered_file_path
 
+    def _exchange_gene_ids(self, result_directory):
+        """
+        _exchange_gene_ids: exchange gene_ids with gene_name
+        """
+
+        log('starting exchanging gene_ids with gene_name')
+
+        result_files = os.listdir(result_directory)
+
+        for result_file_name in result_files:
+            if result_file_name == 'transcripts.gtf':
+                log('updating transcripts.gtf gene_ids')
+                os.rename(os.path.join(result_directory, 'transcripts.gtf'),
+                          os.path.join(result_directory, 'original_transcripts.gtf'))
+                original_transcript_path = os.path.join(result_directory, 
+                                                        'original_transcripts.gtf')
+                exchange_transcript_path = os.path.join(result_directory, 
+                                                        result_file_name)
+
+                with open(exchange_transcript_path, 'w') as output_file:
+                    with open(original_transcript_path, 'r') as input_file:
+                        for line in input_file:
+                            if 'gene_id \"' in line and 'ref_gene_name \"' in line:
+                                gene_id = line.split('gene_id \"')[1].split('"')[0]
+                                gene_name = line.split('ref_gene_name \"')[1].split('"')[0]
+                                line = line.replace(gene_id, gene_name)
+                                output_file.write(line)
+                            elif 'gene_id \"' in line and 'gene_name \"' in line:
+                                gene_id = line.split('gene_id \"')[1].split('"')[0]
+                                gene_name = line.split('gene_name \"')[1].split('"')[0]
+                                line = line.replace(gene_id, gene_name)
+                                output_file.write(line)
+                            else:
+                                output_file.write(line)
+            elif result_file_name == 't_data.ctab':
+                log('updating t_data.ctab gene_ids')
+                os.rename(os.path.join(result_directory, 't_data.ctab'),
+                          os.path.join(result_directory, 'original_t_data.ctab'))
+                original_tdata_path = os.path.join(result_directory, 
+                                                   'original_t_data.ctab')
+                exchange_tdata_path = os.path.join(result_directory, 
+                                                   result_file_name)
+
+                first_line = True
+                with open(exchange_tdata_path, 'w') as output_file:
+                    with open(original_tdata_path, 'r') as input_file:
+                        for line in input_file:
+                            if first_line:
+                                gene_id_index = line.split('\t').index('gene_id')
+                                gene_name_index = line.split('\t').index('gene_name')
+                                first_line = False
+                            else:
+                                line_list = line.split('\t')
+                                if len(line_list) >= max(gene_id_index, gene_name_index):
+                                    line_list[gene_id_index] = line_list[gene_name_index]
+                                    line = '\t'.join(line_list)
+                                    output_file.write(line)
+                                else:
+                                    output_file.write(line)
+
     def __init__(self, config):
         self.ws_url = config["workspace-url"]
         self.callback_url = config['SDK_CALLBACK_URL']
@@ -845,6 +908,7 @@ class StringTieUtil:
                     params.update({'skip_reads_with_no_ref': 1})
 
                 params['generate_ws_object'] = False
+                params['exchange_gene_ids'] = False
                 returnVal = self._process_alignment_set_object(params)
                 first_run_result_dir = returnVal.get('result_directory')
                 annotation_file = returnVal['annotation_file']
@@ -866,7 +930,7 @@ class StringTieUtil:
 
                 params.update({'ballgown_mode': 1})
                 params.update({'skip_reads_with_no_ref': 1})
-
+                params.update({'exchange_gene_ids': 1})
                 returnVal = self._process_alignment_set_object(params)
 
                 self._run_command('cp -R {} {}'.format(os.path.join(first_run_result_dir,
@@ -885,6 +949,7 @@ class StringTieUtil:
             else:
                 params.update({'ballgown_mode': 1})
                 params.update({'skip_reads_with_no_ref': 1})
+                params.update({'exchange_gene_ids': 0})
 
                 returnVal = self._process_alignment_set_object(params)
 
