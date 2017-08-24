@@ -820,6 +820,7 @@ class StringTieUtil:
                                 gene_id_index = line.split('\t').index('gene_id')
                                 gene_name_index = line.split('\t').index('gene_name')
                                 first_line = False
+                                output_file.write(line)
                             else:
                                 line_list = line.split('\t')
                                 if len(line_list) >= max(gene_id_index, gene_name_index):
@@ -927,10 +928,10 @@ class StringTieUtil:
                     filtered_merge_file = self._filter_merge_file(merge_file)
                     params.update({'gtf_file': filtered_merge_file})
                     params.update({'generate_ws_object': True})
+                    params.update({'exchange_gene_ids': 1})
 
                 params.update({'ballgown_mode': 1})
                 params.update({'skip_reads_with_no_ref': 1})
-                params.update({'exchange_gene_ids': 1})
                 returnVal = self._process_alignment_set_object(params)
 
                 self._run_command('cp -R {} {}'.format(os.path.join(first_run_result_dir,
