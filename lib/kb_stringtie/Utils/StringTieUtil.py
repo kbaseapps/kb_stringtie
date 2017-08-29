@@ -829,6 +829,32 @@ class StringTieUtil:
                                     output_file.write(line)
                                 else:
                                     output_file.write(line)
+            elif result_file_name == 'genes.fpkm_tracking':
+                log('updating genes.fpkm_tracking gene_ids')
+                os.rename(os.path.join(result_directory, 'genes.fpkm_tracking'),
+                          os.path.join(result_directory, 'original_genes.fpkm_tracking'))
+                original_fpkm_tracking_path = os.path.join(result_directory, 
+                                                           'original_genes.fpkm_tracking')
+                exchange_fpkm_tracking_path = os.path.join(result_directory, 
+                                                           result_file_name)
+
+                first_line = True
+                with open(exchange_fpkm_tracking_path, 'w') as output_file:
+                    with open(original_fpkm_tracking_path, 'r') as input_file:
+                        for line in input_file:
+                            if first_line:
+                                first_line = False
+                                output_file.write(line)
+                            else:
+                                gene_id_index = 0
+                                gene_name_index = 1
+                                line_list = line.split('\t')
+                                if len(line_list) >= max(gene_id_index, gene_name_index):
+                                    line_list[gene_id_index] = line_list[gene_name_index]
+                                    line = '\t'.join(line_list)
+                                    output_file.write(line)
+                                else:
+                                    output_file.write(line)
 
     def __init__(self, config):
         self.ws_url = config["workspace-url"]
