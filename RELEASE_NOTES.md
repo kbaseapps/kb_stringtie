@@ -21,3 +21,6 @@ Generate ExpressionMatrix object
 
 1.0.8:
 Having only one stringtie app that does merge and novel-isoform
+
+1.0.9:
+Update display yaml file
