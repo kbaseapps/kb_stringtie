@@ -25,27 +25,27 @@ method-suggestions :
 parameters :
   alignment_object_ref :
     ui-name : |
-        Reads Alignment or Reads Alignment Set 
+        Reads Alignment or Reads AlignmentSet 
     short-hint : |
-        Select the RNA-seq Alignment or KBaseSets.ReadsAlignmentSet created by HISAT2, TopHat2 or Bowtie2.
+        Select the RNASeqAlignment or AlignmentSet created by HISAT2, TopHat2 or Bowtie2.
   mode:
     ui-name : |
         StringTie mode
     short-hint: |
         Running stringtie in ['normal', 'merge', 'novel-isoform'] mode. 
-        Normal mode: Running stringtie once with -eB options enabled
+        Normal mode: Running stringtie once with -eB options enabled.
         Merge mode: Running stringtie to generate merged gtf and filter unknown features from reference genome. Then running stringtie again using filtered merge gtf.
-        Novel Isoform mode: Running stringtie to generate merged gtf and then run stringtie again using this merged gtf. No workspace object will be created.
+        Novel Isoform mode: Running stringtie to generate merged gtf and then run stringtie again using this merged gtf. No workspace object will be created. Only choose this option to get Novel Isoforms.
   expression_suffix :
     ui-name : |
         Expression Name Suffix
     short-hint : |
-        Suffix append to Alignment object name to form Expression name
+        Provide a suffix for the individual expression output object name
   expression_set_suffix :
     ui-name : |
         ExpressionSet Name Suffix
     short-hint : |
-        Suffix append to Alignment Set object name to form ExpressionSet name
+        Provide a suffix for the expression set output object name
   min_isoform_abundance :
     ui-name : |
       Minimum Isoform Abundance
@@ -78,12 +78,12 @@ parameters :
       Select minimum locus gap separation value. Default is 50.
 
 description : |
-    <p>This App assembles transcripts for a given sample or a sample set using StringTie so that you can view the relative abundances of the assembled transcripts in a histogram. </p>
+    <p>This App assembles transcripts for an individual Alignment or an AlignmentSet using StringTie so that you can view the relative abundances of the assembled transcripts in a histogram. </p>
     <p>StringTie is a successor of Cufflinks that is faster and provides more accurate reconstruction of genes and expression level. It accepts aligned RNA-seq reads from HISAT2, TopHat2 or Bowtie2 and assembles the alignments into a parsimonious set of transcripts. It then estimates the relative abundances of these transcripts based on how many reads support each one, taking into account biases in library preparation protocols.</p>
     <p>The StringTie output object contains GTF (transcripts.gtf) and FPKM (genes.fpkm_tracking) files. The GTF file contains annotated transcripts assembled by StringTie whereas the FPKM file provides the normalized expression matrix objects (abundance of each transcript expressed in fragments per kilobase of exon per million fragments mapped (FPKM) and transcripts per kilobase million (TPM)). The StringTie Table Histogram tab displays the abundance of normalized gene expression value in both log2(FPKM+1) and log2(TPM+1).</p>
     <p>The StringTie output object can be used to identify differential expression either using DESeq2, Cuffdiff or Ballgown.</p>
     <p>This method is one of the steps of the <a href= "http://kbase.us/rna-seq/"> KBase RNA-seq Pipeline </a>, however it can also be run standalone.</p>
-    <p><strong>Team members who developed & deployed algorithm in KBase:</strong> Tianhao Gu</p>
+    <p><strong>Team members who developed & deployed algorithm in KBase:</strong> Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Vivek Kumar, Tianhao Gu</p>
     
 publications :
     -
