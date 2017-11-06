@@ -639,11 +639,12 @@ class StringTieUtil:
 
         alignment_set = self.set_client.get_reads_alignment_set_v1({
                                                                     'ref': alignment_set_ref,
-                                                                    'include_item_info': 0
+                                                                    'include_item_info': 0,
+                                                                    'include_set_item_ref_paths': 1
                                                                     })
         mul_processor_params = []
         for alignment in alignment_set["data"]["items"]:
-            alignment_ref = alignment['ref']
+            alignment_ref = alignment['ref_path']
             alignment_upload_params = params.copy()
             alignment_upload_params['alignment_ref'] = alignment_ref
             mul_processor_params.append(alignment_upload_params)
@@ -665,8 +666,8 @@ class StringTieUtil:
 
         for proc_alignment_return in alignment_expression_map:
             alignment_ref = proc_alignment_return.get('alignment_ref')
-            alignment_name = self.ws.get_object_info([{"ref": alignment_ref}],
-                                                     includeMetadata=None)[0][1]
+            alignment_info = self.ws.get_object_info3({'objects': [{"ref": alignment_ref}]})
+            alignment_name = alignment_info['infos'][0][1]
             self._run_command('cp -R {} {}'.format(proc_alignment_return.get('result_directory'),
                                                    os.path.join(result_directory, 
                                                                 alignment_name)))
@@ -830,7 +831,7 @@ class StringTieUtil:
         self.au = AssemblyUtil(self.callback_url)
         self.eu = ExpressionUtils(self.callback_url)
         self.ws = Workspace(self.ws_url, token=self.token)
-        self.set_client = SetAPI(self.srv_wiz_url)
+        self.set_client = SetAPI(self.srv_wiz_url, service_ver='dev')
        
     def run_stringtie_app(self, params):
         """

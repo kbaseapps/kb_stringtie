@@ -62,7 +62,7 @@ class kb_stringtieTest(unittest.TestCase):
         cls.gfu = GenomeFileUtil(cls.callback_url)
         cls.dfu = DataFileUtil(cls.callback_url)
         cls.ru = ReadsUtils(cls.callback_url)
-        cls.rau = ReadsAlignmentUtils(cls.callback_url, service_ver='dev')
+        cls.rau = ReadsAlignmentUtils(cls.callback_url)
 
         cls.stringtie_runner = StringTieUtil(cls.cfg)
 
