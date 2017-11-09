@@ -12,6 +12,7 @@ import shutil
 import sys
 import traceback
 import contig_id_mapping as c_mapping
+from pprint import pprint
 
 from DataFileUtil.DataFileUtilClient import DataFileUtil
 from Workspace.WorkspaceClient import Workspace as Workspace
@@ -634,33 +635,20 @@ class StringTieUtil:
 
         log('start processing AlignmentSet object\nparams:\n{}'.format(json.dumps(params, 
                                                                                   indent=1)))
-
         alignment_set_ref = params.get('alignment_set_ref')
-        alignment_set_object = self.ws.get_objects2({'objects':
-                                                    [{'ref': alignment_set_ref}]}
-                                                    )['data'][0]
 
-        alignment_set_info = alignment_set_object['info']
-        alignment_set_data = alignment_set_object['data']
-
-        alignment_set_type = alignment_set_info[2]
-
+        alignment_set = self.set_client.get_reads_alignment_set_v1({
+                                                                    'ref': alignment_set_ref,
+                                                                    'include_item_info': 0,
+                                                                    'include_set_item_ref_paths': 1
+                                                                    })
         mul_processor_params = []
-        if re.match('KBaseRNASeq.RNASeqAlignmentSet-\d.\d', alignment_set_type):
-            mapped_alignment_ids = alignment_set_data['mapped_alignments_ids']
-            for i in mapped_alignment_ids:
-                for sample_name, alignment_id in i.items():
-                    aliment_upload_params = params.copy()
-                    aliment_upload_params['alignment_ref'] = alignment_id
-                    mul_processor_params.append(aliment_upload_params)
-        elif re.match('KBaseSets.ReadsAlignmentSet-\d.\d', alignment_set_type):
-            items = alignment_set_data['items']
-            for item in items:
-                alignment_ref = item['ref']
-                aliment_upload_params = params.copy()
-                aliment_upload_params['alignment_ref'] = alignment_ref
-                mul_processor_params.append(aliment_upload_params)
-
+        for alignment in alignment_set["data"]["items"]:
+            alignment_ref = alignment['ref_path']
+            alignment_upload_params = params.copy()
+            alignment_upload_params['alignment_ref'] = alignment_ref
+            mul_processor_params.append(alignment_upload_params)
+        
         cpus = min(params.get('num_threads'), multiprocessing.cpu_count())
         pool = Pool(ncpus=cpus)
         log('running _process_alignment_object with {} cpus'.format(cpus))
@@ -678,8 +666,8 @@ class StringTieUtil:
 
         for proc_alignment_return in alignment_expression_map:
             alignment_ref = proc_alignment_return.get('alignment_ref')
-            alignment_name = self.ws.get_object_info([{"ref": alignment_ref}],
-                                                     includeMetadata=None)[0][1]
+            alignment_info = self.ws.get_object_info3({'objects': [{"ref": alignment_ref}]})
+            alignment_name = alignment_info['infos'][0][1]
             self._run_command('cp -R {} {}'.format(proc_alignment_return.get('result_directory'),
                                                    os.path.join(result_directory, 
                                                                 alignment_name)))
@@ -841,9 +829,9 @@ class StringTieUtil:
         self.gfu = GenomeFileUtil(self.callback_url)
         self.rau = ReadsAlignmentUtils(self.callback_url)
         self.au = AssemblyUtil(self.callback_url)
-        self.eu = ExpressionUtils(self.callback_url, service_ver='dev')
+        self.eu = ExpressionUtils(self.callback_url)
         self.ws = Workspace(self.ws_url, token=self.token)
-        self.set_client = SetAPI(self.srv_wiz_url)
+        self.set_client = SetAPI(self.srv_wiz_url, service_ver='dev')
        
     def run_stringtie_app(self, params):
         """
