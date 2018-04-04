@@ -1,27 +1,28 @@
-import time
-import json
-import os
-import uuid
 import errno
-import subprocess
-import re
-from pathos.multiprocessing import ProcessingPool as Pool
+import json
 import multiprocessing
-import zipfile
+import os
+import re
 import shutil
+import subprocess
 import sys
+import time
 import traceback
-import contig_id_mapping as c_mapping
-from pprint import pprint
+import uuid
+import zipfile
 
-from DataFileUtil.DataFileUtilClient import DataFileUtil
-from Workspace.WorkspaceClient import Workspace as Workspace
-from KBaseReport.KBaseReportClient import KBaseReport
-from GenomeFileUtil.GenomeFileUtilClient import GenomeFileUtil
-from ReadsAlignmentUtils.ReadsAlignmentUtilsClient import ReadsAlignmentUtils
-from ExpressionUtils. ExpressionUtilsClient import ExpressionUtils
+from pathos.multiprocessing import ProcessingPool as Pool
+
 from AssemblyUtil.AssemblyUtilClient import AssemblyUtil
+from DataFileUtil.DataFileUtilClient import DataFileUtil
+from ExpressionUtils.ExpressionUtilsClient import ExpressionUtils
+from GenomeFileUtil.GenomeFileUtilClient import GenomeFileUtil
+from KBaseReport.KBaseReportClient import KBaseReport
+from ReadsAlignmentUtils.ReadsAlignmentUtilsClient import ReadsAlignmentUtils
 from SetAPI.SetAPIServiceClient import SetAPI
+from Workspace.WorkspaceClient import Workspace as Workspace
+from . import contig_id_mapping as c_mapping
+from .file_utils import _exchange_gene_ids, _filter_merge_file
 
 
 def log(message, prefix_newline=False):
@@ -201,7 +202,7 @@ class StringTieUtil:
             raise ValueError(
                 "Genome at {0} does not have reference to the assembly object".format(
                     genome_ref))
-        print contig_id
+        print(contig_id)
         log("Generating GFF file from Genome")
         try:
             ret = self.au.get_assembly_as_fasta({'ref': contig_id})
@@ -247,8 +248,8 @@ class StringTieUtil:
 
         return genome_gtf_file
 
-    def _save_expression(self, result_directory, alignment_ref, workspace_name, gtf_file, 
-                         expression_suffix):
+    def _save_expression(self, result_directory, alignment_ref, workspace_name,
+                         expression_suffix, genome_ref='', transcripts=0):
         """
         _save_expression: save Expression object to workspace
         """
@@ -268,14 +269,17 @@ class StringTieUtil:
                                     'source_dir': result_directory,
                                     'alignment_ref': alignment_ref,
                                     'tool_used': 'StringTie',
-                                    'tool_version': '1.3.3'}
+                                    'tool_version': '1.3.3',
+                                    'genome_ref': genome_ref,
+                                    'transcripts': transcripts
+                                    }
 
         expression_ref = self.eu.upload_expression(upload_expression_params)['obj_ref']
 
         return expression_ref
 
     def _save_expression_set(self, alignment_expression_map, alignment_set_ref, workspace_name,
-                             expression_set_suffix):
+                             expression_set_suffix, genome_ref=None):
         """
         _save_expression_set: save ExpressionSet object to workspace
         """
@@ -303,6 +307,7 @@ class StringTieUtil:
 
         expression_set_save_params = {'data': expression_set_data,
                                       'workspace': workspace_name,
+                                      'genome_ref': genome_ref,
                                       'output_object_name': expression_set_name}
 
         save_result = self.set_client.save_expression_set_v1(expression_set_save_params)
@@ -603,17 +608,19 @@ class StringTieUtil:
             self._run_command(command)
 
             if params.get('exchange_gene_ids'):
-                self._exchange_gene_ids(result_directory)
+                _exchange_gene_ids(result_directory)
 
             if ('generate_ws_object' in params and not params.get('generate_ws_object')):
                 log('skip generating expression object')
                 expression_obj_ref = ''
             else:
-                expression_obj_ref = self._save_expression(result_directory,
-                                                           alignment_ref,
-                                                           params.get('workspace_name'),
-                                                           params['gtf_file'],
-                                                           params['expression_suffix'])
+                expression_obj_ref = self._save_expression(
+                    result_directory,
+                    alignment_ref,
+                    params.get('workspace_name'),
+                    params['expression_suffix'],
+                    params.get('genome_ref'),
+                    params.get('transcripts', 0))
 
             returnVal = {'result_directory': result_directory,
                          'expression_obj_ref': expression_obj_ref,
@@ -679,7 +686,8 @@ class StringTieUtil:
             expression_obj_ref = self._save_expression_set(alignment_expression_map,
                                                            alignment_set_ref,
                                                            params.get('workspace_name'),
-                                                           params['expression_set_suffix'])
+                                                           params['expression_set_suffix'],
+                                                           params.get('genome_ref'))
             expression_matrix_refs = self._save_expression_matrix(expression_obj_ref,
                                                                   params.get('workspace_name'))
 
@@ -735,88 +743,36 @@ class StringTieUtil:
 
         self._run_command(command)
 
-    def _filter_merge_file(self, gtf_file):
-        """
-        _filter_merge_file: remove lines with no gene_name
-        """
+    def _get_genome_ref(self, alignment_set_ref):
+        """Get a genome ref from an alignment set"""
+        alignment_set_data = self.dfu.get_objects(
+            {"object_refs": [alignment_set_ref]})['data'][0]['data']
 
-        log('start filtering merged gft file')
-        
-        dir_name = os.path.dirname(gtf_file)
+        for alignment in alignment_set_data['items']:
+            alignment_data = self.dfu.get_objects(
+                {"object_refs":[alignment['ref']]})['data'][0]['data']
+            return alignment_data['genome_id']
 
-        filtered_file_name = 'filtered_stringtie_merge.gtf'
-        filtered_file_path = os.path.join(dir_name, filtered_file_name)
-       
-        with open(filtered_file_path, 'w') as output_file:
-            with open(gtf_file, 'r') as input_file:
-                for line in input_file:
-                    if line.startswith('#') or 'gene_name' in line:
-                        output_file.write(line)
-                    else:
-                        log('skipping line:\n{}'.format(line))
-
-        return filtered_file_path
-
-    def _exchange_gene_ids(self, result_directory):
-        """
-        _exchange_gene_ids: exchange gene_ids with gene_name
-        """
-
-        log('starting exchanging gene_ids with gene_name')
-
-        result_files = os.listdir(result_directory)
-
-        for result_file_name in result_files:
-            if result_file_name == 'transcripts.gtf':
-                log('updating transcripts.gtf gene_ids')
-                os.rename(os.path.join(result_directory, 'transcripts.gtf'),
-                          os.path.join(result_directory, 'original_transcripts.gtf'))
-                original_transcript_path = os.path.join(result_directory, 
-                                                        'original_transcripts.gtf')
-                exchange_transcript_path = os.path.join(result_directory, 
-                                                        result_file_name)
-
-                with open(exchange_transcript_path, 'w') as output_file:
-                    with open(original_transcript_path, 'r') as input_file:
-                        for line in input_file:
-                            if 'gene_id \"' in line and 'ref_gene_name \"' in line:
-                                gene_id = line.split('gene_id \"')[1].split('"')[0]
-                                gene_name = line.split('ref_gene_name \"')[1].split('"')[0]
-                                line = line.replace(gene_id, gene_name)
-                                output_file.write(line)
-                            elif 'gene_id \"' in line and 'gene_name \"' in line:
-                                gene_id = line.split('gene_id \"')[1].split('"')[0]
-                                gene_name = line.split('gene_name \"')[1].split('"')[0]
-                                line = line.replace(gene_id, gene_name)
-                                output_file.write(line)
-                            else:
-                                output_file.write(line)
-            elif result_file_name == 't_data.ctab':
-                log('updating t_data.ctab gene_ids')
-                os.rename(os.path.join(result_directory, 't_data.ctab'),
-                          os.path.join(result_directory, 'original_t_data.ctab'))
-                original_tdata_path = os.path.join(result_directory, 
-                                                   'original_t_data.ctab')
-                exchange_tdata_path = os.path.join(result_directory, 
-                                                   result_file_name)
-
-                first_line = True
-                with open(exchange_tdata_path, 'w') as output_file:
-                    with open(original_tdata_path, 'r') as input_file:
-                        for line in input_file:
-                            if first_line:
-                                gene_id_index = line.split('\t').index('gene_id')
-                                gene_name_index = line.split('\t').index('gene_name')
-                                first_line = False
-                                output_file.write(line)
-                            else:
-                                line_list = line.split('\t')
-                                if len(line_list) >= max(gene_id_index, gene_name_index):
-                                    line_list[gene_id_index] = line_list[gene_name_index]
-                                    line = '\t'.join(line_list)
-                                    output_file.write(line)
-                                else:
-                                    output_file.write(line)
+    def _update_genome_with_novel_isoforms(self, workspace, genome_ref, gff_file):
+        """"""
+        genome_data = self.dfu.get_objects(
+            {"object_refs": [genome_ref]})['data'][0]['data']
+        if 'assembly_ref' in genome_data:
+            assembly_ref = genome_data['assembly_ref']
+        elif 'contigset_ref' in genome_data:
+            assembly_ref = genome_data['contigset_ref']
+        else:
+            raise ValueError("Genome missing assembly")
+        fasta_file = self.au.get_assembly_as_fasta(
+            {'ref': assembly_ref})['path']
+        new_genome_ref = self.gfu.fasta_gff_to_genome({
+                'workspace_name': workspace,
+                'genome_name': genome_data['id'] + "_stringtie",
+                'fasta_file': {'path': fasta_file},
+                'gff_file': {'path': gff_file},
+                'source': 'StringTie'
+            })
+        return new_genome_ref
 
     def __init__(self, config):
         self.ws_url = config["workspace-url"]
@@ -912,8 +868,14 @@ class StringTieUtil:
                 log('running StringTie the 3rd time with merged gtf')
                 if params.get('mode') == 'novel_isoform':
                     params.update({'gtf_file': merge_file})
+                    """params.update({'generate_ws_object': True})
+                    old_genome_ref = self._get_genome_ref(alignment_object_ref)
+                    params['genome_ref'] = self._update_genome_with_novel_isoforms(
+                        params['workspace_name'], old_genome_ref, merge_file)
+                    params['transcripts'] = 1"""
+
                 elif params.get('mode') == 'merge':
-                    filtered_merge_file = self._filter_merge_file(merge_file)
+                    filtered_merge_file = _filter_merge_file(merge_file)
                     params.update({'gtf_file': filtered_merge_file})
                     params.update({'generate_ws_object': True})
                     params.update({'exchange_gene_ids': 1})
