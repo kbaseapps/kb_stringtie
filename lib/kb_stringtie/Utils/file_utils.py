@@ -46,16 +46,16 @@ def _make_gff(file_path):
             for line in input_file:
                 if line[0] == "#":
                     continue
-                if 'gene_id \"' in line and 'gene_name \"' in line:
+                if 'gene_id \"' in line and 'ref_gene_id \"' in line:
                     gene_id = line.split('gene_id \"')[1].split('"')[0]
-                    gene_name = line.split('gene_name \"')[1].split('"')[0]
-                    gene_id_dict[gene_id] = gene_name
-                    if gene_name not in written_genes:
+                    ref_gene = line.split('ref_gene_id \"')[1].split('"')[0]
+                    gene_id_dict[gene_id] = ref_gene
+                    if ref_gene not in written_genes:
                         sl = line.split('\t')
                         sl[type_idx] = 'gene'
-                        sl[-1] = 'ID={}\n'.format(gene_name)
+                        sl[-1] = 'ID={}\n'.format(ref_gene)
                         output_file.write("\t".join(sl))
-                        written_genes.add(gene_name)
+                        written_genes.add(ref_gene)
 
             # now we write the transcripts.
             input_file.seek(0)

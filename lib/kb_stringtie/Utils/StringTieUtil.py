@@ -22,7 +22,7 @@ from ReadsAlignmentUtils.ReadsAlignmentUtilsClient import ReadsAlignmentUtils
 from SetAPI.SetAPIServiceClient import SetAPI
 from Workspace.WorkspaceClient import Workspace as Workspace
 from . import contig_id_mapping as c_mapping
-from .file_utils import _exchange_gene_ids, _filter_merge_file
+from .file_utils import exchange_gene_ids, _filter_merge_file, _make_gff
 
 
 def log(message, prefix_newline=False):
@@ -264,6 +264,10 @@ class StringTieUtil:
             expression_obj_name = re.sub('_*[Aa]lignment', expression_suffix, alignment_name)
         else:
             expression_obj_name = alignment_name + expression_suffix
+
+        if transcripts:
+            expression_obj_name += "_transcripts"
+
         destination_ref = workspace_name + '/' + expression_obj_name
         upload_expression_params = {'destination_ref': destination_ref,
                                     'source_dir': result_directory,
@@ -278,8 +282,9 @@ class StringTieUtil:
 
         return expression_ref
 
-    def _save_expression_set(self, alignment_expression_map, alignment_set_ref, workspace_name,
-                             expression_set_suffix, genome_ref=None):
+    def _save_expression_set(self, alignment_expression_map, alignment_set_ref,
+                             workspace_name, expression_set_suffix,
+                             genome_ref=None, transcripts=0):
         """
         _save_expression_set: save ExpressionSet object to workspace
         """
@@ -305,6 +310,9 @@ class StringTieUtil:
         else:
             expression_set_name = alignment_set_name + expression_set_suffix
 
+        if transcripts:
+            expression_set_name += "_transcripts"
+
         expression_set_save_params = {'data': expression_set_data,
                                       'workspace': workspace_name,
                                       'genome_ref': genome_ref,
@@ -315,7 +323,7 @@ class StringTieUtil:
 
         return expression_set_ref
 
-    def _save_expression_matrix(self, expressionset_ref, workspace_name):
+    def _save_expression_matrix(self, expressionset_ref, workspace_name, transcripts=0):
         """
         _save_expression_matrix: save FPKM and TPM ExpressionMatrix
         """
@@ -328,6 +336,8 @@ class StringTieUtil:
         output_obj_name_prefix = re.sub('_*[Ee]xpression_*[Ss]et',
                                         '',
                                         expression_set_name)
+        if transcripts:
+            output_obj_name_prefix += "_transcripts"
 
         upload_expression_matrix_params = {'expressionset_ref': expressionset_ref,
                                            'output_obj_name': output_obj_name_prefix,
@@ -608,7 +618,8 @@ class StringTieUtil:
             self._run_command(command)
 
             if params.get('exchange_gene_ids'):
-                _exchange_gene_ids(result_directory)
+                exchange_gene_ids(result_directory,
+                                  params.get('transcript_translation'))
 
             if ('generate_ws_object' in params and not params.get('generate_ws_object')):
                 log('skip generating expression object')
@@ -687,9 +698,11 @@ class StringTieUtil:
                                                            alignment_set_ref,
                                                            params.get('workspace_name'),
                                                            params['expression_set_suffix'],
-                                                           params.get('genome_ref'))
+                                                           params.get('genome_ref'),
+                                                           params.get('transcripts'))
             expression_matrix_refs = self._save_expression_matrix(expression_obj_ref,
-                                                                  params.get('workspace_name'))
+                                                                  params.get('workspace_name'),
+                                                                  params.get('transcripts'))
 
         annotation_file_name = os.path.basename(alignment_expression_map[0]['annotation_file'])
         annotation_file_path = os.path.join(result_directory, 
@@ -753,8 +766,10 @@ class StringTieUtil:
                 {"object_refs":[alignment['ref']]})['data'][0]['data']
             return alignment_data['genome_id']
 
-    def _update_genome_with_novel_isoforms(self, workspace, genome_ref, gff_file):
+    def _update_genome_with_novel_isoforms(self, workspace, genome_ref,
+                                           gff_file):
         """"""
+        log('Saving genome with novel isoforms')
         genome_data = self.dfu.get_objects(
             {"object_refs": [genome_ref]})['data'][0]['data']
         if 'assembly_ref' in genome_data:
@@ -765,13 +780,22 @@ class StringTieUtil:
             raise ValueError("Genome missing assembly")
         fasta_file = self.au.get_assembly_as_fasta(
             {'ref': assembly_ref})['path']
-        new_genome_ref = self.gfu.fasta_gff_to_genome({
+        new_genome_data = self.gfu.fasta_gff_to_genome_json({
                 'workspace_name': workspace,
                 'genome_name': genome_data['id'] + "_stringtie",
                 'fasta_file': {'path': fasta_file},
                 'gff_file': {'path': gff_file},
                 'source': 'StringTie'
-            })
+            })[0]
+        novel_isoforms = [x for x in new_genome_data['non_coding_features']
+                          if x['type'] != 'gene']
+        log("Adding {} novel isoforms".format(len(novel_isoforms)))
+        genome_data['non_coding_features'].extend(novel_isoforms)
+        info = self.gfu.save_one_genome(
+            {'workspace': workspace,
+             'name': genome_data['id'] + "_stringtie",
+             'data': genome_data})['info']
+        new_genome_ref = "%s/%s/%s" % (info[6], info[0], info[4])
         return new_genome_ref
 
     def __init__(self, config):
@@ -868,11 +892,13 @@ class StringTieUtil:
                 log('running StringTie the 3rd time with merged gtf')
                 if params.get('mode') == 'novel_isoform':
                     params.update({'gtf_file': merge_file})
-                    """params.update({'generate_ws_object': True})
+                    params.update({'generate_ws_object': True})
+                    params.update({'exchange_gene_ids': 1})
                     old_genome_ref = self._get_genome_ref(alignment_object_ref)
+                    params['transcript_translation'], merge_file = _make_gff(merge_file)
                     params['genome_ref'] = self._update_genome_with_novel_isoforms(
                         params['workspace_name'], old_genome_ref, merge_file)
-                    params['transcripts'] = 1"""
+                    params['transcripts'] = 1
 
                 elif params.get('mode') == 'merge':
                     filtered_merge_file = _filter_merge_file(merge_file)
