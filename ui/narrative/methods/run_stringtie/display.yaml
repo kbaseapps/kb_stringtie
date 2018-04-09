@@ -85,11 +85,6 @@ parameter-groups :
         Make Transcripts
     short-hint : |
         Output transcript expression matrices with novel isoforms
-  stringtie_params :
-    ui-name : |
-        StringTie Configuration
-    short-hint : |
-        Configure StringTies transcript mapping
 
 description : |
     <p>This App assembles transcripts for an individual Alignment or an AlignmentSet using StringTie so that you can view the relative abundances of the assembled transcripts in a histogram. </p>

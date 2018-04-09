@@ -12,6 +12,16 @@ module kb_stringtie {
     */
     typedef string obj_ref;
 
+    /*
+            stringtie_genome_name: name for the new genome including novel transcripts
+            transcript_label: prefix for the name of the output transcripts
+    */
+
+    typedef structure {
+            string label;
+            string stringtie_genome_name;
+    } NovelIsoformParams;
+
     /*  
         required params:
         alignment_object_ref: Alignment or AlignmentSet object reference
@@ -29,9 +39,7 @@ module kb_stringtie {
         ballgown_mode: enables the output of Ballgown input table files
         skip_reads_with_no_ref: reads with no reference will be skipped
         novel_isoforms: output expression matrices with novel isoforms
-        stringtie_genome_name: name for the new genome including novel transcripts
         maximum_fraction: maximum fraction of muliple-location-mapped reads
-        label: prefix for the name of the output transcripts
         min_length: minimum length allowed for the predicted transcripts
         min_read_coverage: minimum input transcript coverage
         min_isoform_abundance: minimum isoform abundance
@@ -51,10 +59,8 @@ module kb_stringtie {
         int min_locus_gap_sep_value;
         boolean ballgown_mode;
         boolean skip_reads_with_no_ref;
-        boolean novel_isoforms;
-        string stringtie_genome_name;
+        NovelIsoformParams novel_isoforms;
         float maximum_fraction;
-        string label;
         int min_length;
         float min_read_coverage;
         float min_isoform_abundance;

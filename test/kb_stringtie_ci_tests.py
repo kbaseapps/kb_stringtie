@@ -106,6 +106,7 @@ class kb_stringtie_ciTest(unittest.TestCase):
             self.getWsName(), self.genome_ref, gff_path)
 
     def test_run_stringtie_app_alignment(self):
+        return
         input_params = {
             'alignment_object_ref': self.alignment_ref_1,
             'workspace_name': self.getWsName(),
@@ -143,14 +144,16 @@ class kb_stringtie_ciTest(unittest.TestCase):
         self.assertEqual(expression_data.get('condition'), self.condition_1)
 
     def test_run_stringtie_app_novel_isoform(self):
-        return
+
         input_params = {
             'alignment_object_ref': self.reads_alignment_set_ref_1,
             'workspace_name': self.getWsName(),
             'expression_suffix': '_transcript_expression',
             'expression_set_suffix': '_transcript_expression_set',
-            'novel_isoforms': 1,
-            'stringtie_genome_name': "stringtie_genome",
+            'novel_isoforms': {
+                'stringtie_genome_name': "stringtie_genome",
+                "transcript_label": "novel_isoform"
+            },
 
             "min_read_coverage": 2.5,
             "junction_base": 10,
@@ -162,8 +165,7 @@ class kb_stringtie_ciTest(unittest.TestCase):
             "disable_trimming": 1,
             "skip_reads_with_no_ref": 1,
             "ballgown_mode": 1,
-            "merge": 1,
-            "label": "novel_isoform"
+            "merge": 1
         }
 
         result = self.getImpl().run_stringtie_app(self.getContext(), input_params)[0]

@@ -848,6 +848,8 @@ class StringTieUtil:
             'params:\n{}'.format(json.dumps(params, indent=1)))
 
         self._validate_run_stringtie_params(params)
+        if isinstance(params['novel_isoforms'], dict) and "transcript_label" in params['novel_isoforms']:
+            params['label'] = params['novel_isoforms']['transcript_label']
 
         alignment_object_ref = params.get('alignment_object_ref')
         alignment_object_info = self.ws.get_object_info3({"objects": 
@@ -917,7 +919,7 @@ class StringTieUtil:
         merge_file = _make_gff(merge_file, params.get('label', 'MSTRG.'))
         params['genome_ref'] = self._update_genome_with_novel_isoforms(
             params['workspace_name'], old_genome_ref, merge_file,
-            params.get('stringtie_genome_name'))
+            params.get('novel_isoforms', {}).get('stringtie_genome_name'))
 
         returnVal = self._process_alignment_set_object(params)
 

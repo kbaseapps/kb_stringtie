@@ -101,10 +101,10 @@
     "field_type" : "text"
    },{
     "id" : "transcript_label",
-    "optional" : true,
+    "optional" : false,
     "advanced" : false,
     "allow_multiple" : false,
-    "default_values" : [ "novel" ],
+    "default_values" : [ "" ],
     "field_type" : "text"
   }],
   "parameter-groups": [
@@ -112,14 +112,6 @@
 	      "id": "novel_isoforms",
 	      "parameters": ["stringtie_genome_name", "transcript_label"],
 	      "optional": true,
-	      "allow_multiple": false,
-	      "with_border": true
-      },
-      {
-	      "id": "stringtie_params",
-	      "parameters": ["min_isoform_abundance", "min_length", "junction_base",
-            "junction_coverage", "min_read_coverage", "min_locus_gap_sep_value"],
-	      "optional": false,
 	      "allow_multiple": false,
 	      "with_border": true
       }
@@ -150,14 +142,6 @@
         {
           "input_parameter" : "novel_isoforms",
           "target_property" : "novel_isoforms"
-        },
-        {
-          "input_parameter" : "stringtie_genome_name",
-          "target_property" : "stringtie_genome_name"
-        },
-        {
-          "input_parameter" : "transcript_label",
-          "target_property" : "label"
         },
         {
           "constant_value"  : 1,
