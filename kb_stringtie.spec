@@ -28,6 +28,8 @@ module kb_stringtie {
         min_locus_gap_sep_value: minimum locus gap separation value
         ballgown_mode: enables the output of Ballgown input table files
         skip_reads_with_no_ref: reads with no reference will be skipped
+        novel_isoforms: output expression matrices with novel isoforms
+        stringtie_genome_name: name for the new genome including novel transcripts
         maximum_fraction: maximum fraction of muliple-location-mapped reads
         label: prefix for the name of the output transcripts
         min_length: minimum length allowed for the predicted transcripts
@@ -41,7 +43,6 @@ module kb_stringtie {
         string workspace_name;
         string expression_set_suffix;
         string expression_suffix;
-        string mode;
 
         int num_threads;
         int junction_base;
@@ -50,6 +51,8 @@ module kb_stringtie {
         int min_locus_gap_sep_value;
         boolean ballgown_mode;
         boolean skip_reads_with_no_ref;
+        boolean novel_isoforms;
+        string stringtie_genome_name;
         float maximum_fraction;
         string label;
         int min_length;

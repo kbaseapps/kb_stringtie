@@ -28,6 +28,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  * min_locus_gap_sep_value: minimum locus gap separation value
  * ballgown_mode: enables the output of Ballgown input table files
  * skip_reads_with_no_ref: reads with no reference will be skipped
+ * novel_isoforms: output expression matrices with novel isoforms
+ * stringtie_genome_name: name for the new genome including novel transcripts
  * maximum_fraction: maximum fraction of muliple-location-mapped reads
  * label: prefix for the name of the output transcripts
  * min_length: minimum length allowed for the predicted transcripts
@@ -44,7 +46,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "workspace_name",
     "expression_set_suffix",
     "expression_suffix",
-    "mode",
     "num_threads",
     "junction_base",
     "junction_coverage",
@@ -52,6 +53,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "min_locus_gap_sep_value",
     "ballgown_mode",
     "skip_reads_with_no_ref",
+    "novel_isoforms",
+    "stringtie_genome_name",
     "maximum_fraction",
     "label",
     "min_length",
@@ -68,8 +71,6 @@ public class StringTieInput {
     private String expressionSetSuffix;
     @JsonProperty("expression_suffix")
     private String expressionSuffix;
-    @JsonProperty("mode")
-    private String mode;
     @JsonProperty("num_threads")
     private Long numThreads;
     @JsonProperty("junction_base")
@@ -84,6 +85,10 @@ public class StringTieInput {
     private Long ballgownMode;
     @JsonProperty("skip_reads_with_no_ref")
     private Long skipReadsWithNoRef;
+    @JsonProperty("novel_isoforms")
+    private Long novelIsoforms;
+    @JsonProperty("stringtie_genome_name")
+    private String stringtieGenomeName;
     @JsonProperty("maximum_fraction")
     private Double maximumFraction;
     @JsonProperty("label")
@@ -153,21 +158,6 @@ public class StringTieInput {
 
     public StringTieInput withExpressionSuffix(String expressionSuffix) {
         this.expressionSuffix = expressionSuffix;
-        return this;
-    }
-
-    @JsonProperty("mode")
-    public String getMode() {
-        return mode;
-    }
-
-    @JsonProperty("mode")
-    public void setMode(String mode) {
-        this.mode = mode;
-    }
-
-    public StringTieInput withMode(String mode) {
-        this.mode = mode;
         return this;
     }
 
@@ -276,6 +266,36 @@ public class StringTieInput {
         return this;
     }
 
+    @JsonProperty("novel_isoforms")
+    public Long getNovelIsoforms() {
+        return novelIsoforms;
+    }
+
+    @JsonProperty("novel_isoforms")
+    public void setNovelIsoforms(Long novelIsoforms) {
+        this.novelIsoforms = novelIsoforms;
+    }
+
+    public StringTieInput withNovelIsoforms(Long novelIsoforms) {
+        this.novelIsoforms = novelIsoforms;
+        return this;
+    }
+
+    @JsonProperty("stringtie_genome_name")
+    public String getStringtieGenomeName() {
+        return stringtieGenomeName;
+    }
+
+    @JsonProperty("stringtie_genome_name")
+    public void setStringtieGenomeName(String stringtieGenomeName) {
+        this.stringtieGenomeName = stringtieGenomeName;
+    }
+
+    public StringTieInput withStringtieGenomeName(String stringtieGenomeName) {
+        this.stringtieGenomeName = stringtieGenomeName;
+        return this;
+    }
+
     @JsonProperty("maximum_fraction")
     public Double getMaximumFraction() {
         return maximumFraction;
@@ -363,7 +383,7 @@ public class StringTieInput {
 
     @Override
     public String toString() {
-        return ((((((((((((((((((((((((((((((((((((("StringTieInput"+" [alignmentObjectRef=")+ alignmentObjectRef)+", workspaceName=")+ workspaceName)+", expressionSetSuffix=")+ expressionSetSuffix)+", expressionSuffix=")+ expressionSuffix)+", mode=")+ mode)+", numThreads=")+ numThreads)+", junctionBase=")+ junctionBase)+", junctionCoverage=")+ junctionCoverage)+", disableTrimming=")+ disableTrimming)+", minLocusGapSepValue=")+ minLocusGapSepValue)+", ballgownMode=")+ ballgownMode)+", skipReadsWithNoRef=")+ skipReadsWithNoRef)+", maximumFraction=")+ maximumFraction)+", label=")+ label)+", minLength=")+ minLength)+", minReadCoverage=")+ minReadCoverage)+", minIsoformAbundance=")+ minIsoformAbundance)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((((((((((((((((((((((((((((("StringTieInput"+" [alignmentObjectRef=")+ alignmentObjectRef)+", workspaceName=")+ workspaceName)+", expressionSetSuffix=")+ expressionSetSuffix)+", expressionSuffix=")+ expressionSuffix)+", numThreads=")+ numThreads)+", junctionBase=")+ junctionBase)+", junctionCoverage=")+ junctionCoverage)+", disableTrimming=")+ disableTrimming)+", minLocusGapSepValue=")+ minLocusGapSepValue)+", ballgownMode=")+ ballgownMode)+", skipReadsWithNoRef=")+ skipReadsWithNoRef)+", novelIsoforms=")+ novelIsoforms)+", stringtieGenomeName=")+ stringtieGenomeName)+", maximumFraction=")+ maximumFraction)+", label=")+ label)+", minLength=")+ minLength)+", minReadCoverage=")+ minReadCoverage)+", minIsoformAbundance=")+ minIsoformAbundance)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

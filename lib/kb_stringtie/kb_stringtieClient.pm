@@ -126,7 +126,6 @@ StringTieInput is a reference to a hash where the following keys are defined:
 	workspace_name has a value which is a string
 	expression_set_suffix has a value which is a string
 	expression_suffix has a value which is a string
-	mode has a value which is a string
 	num_threads has a value which is an int
 	junction_base has a value which is an int
 	junction_coverage has a value which is a float
@@ -134,6 +133,8 @@ StringTieInput is a reference to a hash where the following keys are defined:
 	min_locus_gap_sep_value has a value which is an int
 	ballgown_mode has a value which is a kb_stringtie.boolean
 	skip_reads_with_no_ref has a value which is a kb_stringtie.boolean
+	novel_isoforms has a value which is a kb_stringtie.boolean
+	stringtie_genome_name has a value which is a string
 	maximum_fraction has a value which is a float
 	label has a value which is a string
 	min_length has a value which is an int
@@ -162,7 +163,6 @@ StringTieInput is a reference to a hash where the following keys are defined:
 	workspace_name has a value which is a string
 	expression_set_suffix has a value which is a string
 	expression_suffix has a value which is a string
-	mode has a value which is a string
 	num_threads has a value which is an int
 	junction_base has a value which is an int
 	junction_coverage has a value which is a float
@@ -170,6 +170,8 @@ StringTieInput is a reference to a hash where the following keys are defined:
 	min_locus_gap_sep_value has a value which is an int
 	ballgown_mode has a value which is a kb_stringtie.boolean
 	skip_reads_with_no_ref has a value which is a kb_stringtie.boolean
+	novel_isoforms has a value which is a kb_stringtie.boolean
+	stringtie_genome_name has a value which is a string
 	maximum_fraction has a value which is a float
 	label has a value which is a string
 	min_length has a value which is an int
@@ -419,6 +421,8 @@ disable_trimming: disables trimming at the ends of the assembled transcripts
 min_locus_gap_sep_value: minimum locus gap separation value
 ballgown_mode: enables the output of Ballgown input table files
 skip_reads_with_no_ref: reads with no reference will be skipped
+novel_isoforms: output expression matrices with novel isoforms
+stringtie_genome_name: name for the new genome including novel transcripts
 maximum_fraction: maximum fraction of muliple-location-mapped reads
 label: prefix for the name of the output transcripts
 min_length: minimum length allowed for the predicted transcripts
@@ -438,7 +442,6 @@ alignment_object_ref has a value which is a kb_stringtie.obj_ref
 workspace_name has a value which is a string
 expression_set_suffix has a value which is a string
 expression_suffix has a value which is a string
-mode has a value which is a string
 num_threads has a value which is an int
 junction_base has a value which is an int
 junction_coverage has a value which is a float
@@ -446,6 +449,8 @@ disable_trimming has a value which is a kb_stringtie.boolean
 min_locus_gap_sep_value has a value which is an int
 ballgown_mode has a value which is a kb_stringtie.boolean
 skip_reads_with_no_ref has a value which is a kb_stringtie.boolean
+novel_isoforms has a value which is a kb_stringtie.boolean
+stringtie_genome_name has a value which is a string
 maximum_fraction has a value which is a float
 label has a value which is a string
 min_length has a value which is an int
@@ -463,7 +468,6 @@ alignment_object_ref has a value which is a kb_stringtie.obj_ref
 workspace_name has a value which is a string
 expression_set_suffix has a value which is a string
 expression_suffix has a value which is a string
-mode has a value which is a string
 num_threads has a value which is an int
 junction_base has a value which is an int
 junction_coverage has a value which is a float
@@ -471,6 +475,8 @@ disable_trimming has a value which is a kb_stringtie.boolean
 min_locus_gap_sep_value has a value which is an int
 ballgown_mode has a value which is a kb_stringtie.boolean
 skip_reads_with_no_ref has a value which is a kb_stringtie.boolean
+novel_isoforms has a value which is a kb_stringtie.boolean
+stringtie_genome_name has a value which is a string
 maximum_fraction has a value which is a float
 label has a value which is a string
 min_length has a value which is an int

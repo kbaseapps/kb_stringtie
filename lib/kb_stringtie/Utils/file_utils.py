@@ -1,5 +1,4 @@
 import csv
-import datetime
 import os
 import time
 
@@ -9,29 +8,10 @@ def log(message, prefix_newline=False):
     print(('\n' if prefix_newline else '') + '{0:.2f}'.format(time.time()) + ': ' + str(message))
 
 
-def exchange_gene_ids(result_directory, trans_id_dict=None):
-    """
-    exchange_gene_ids: exchange gene_ids with gene_name
-    """
-
-    log('starting exchanging gene_ids with gene_name')
-
-    result_files = os.listdir(result_directory)
-
-    if 'transcripts.gtf' in result_files:
-        _update_transcripts(result_directory)
-
-    if 't_data.ctab' in result_files:
-        _update_t_data(result_directory, trans_id_dict)
-
-
-def _make_gff(file_path):
-    """Works on the very narrow case of gtf files from stringtie.
-       Makes stringtie transcript IDs into timestamp IDs"""
+def _make_gff(file_path, novel_prefix='MSTRG.'):
+    """Works on the very narrow case of gtf files from stringtie."""
     type_idx = 2
-    timestamp = datetime.datetime.now().isoformat().split('.')[0]
     gene_id_dict = {}
-    trans_id_dict = {}
     written_genes = set()
 
     if not os.path.isfile(file_path):
@@ -66,12 +46,7 @@ def _make_gff(file_path):
                 gene_id = line.split('gene_id \"')[1].split('"')[0]
                 gene_id = gene_id_dict.get(gene_id)
                 transcript_id = line.split('transcript_id \"')[1].split('"')[0]
-                if "MSTRG." in transcript_id:
-                    if transcript_id not in trans_id_dict:
-                        trans_id_dict[transcript_id] = "_".join(
-                            [timestamp, str(len(trans_id_dict)+1)])
-                    transcript_id = trans_id_dict[transcript_id]
-
+                if novel_prefix in transcript_id:
                     if sl[type_idx] == 'exon':
                         sl[-1] = "Parent={}".format(transcript_id)
                     elif gene_id:
@@ -79,7 +54,23 @@ def _make_gff(file_path):
                     else:
                         sl[-1] = "ID={}".format(transcript_id)
                     output_file.write("\t".join(sl+['\n']))
-    return trans_id_dict, new_file_path
+    return new_file_path
+
+
+def exchange_gene_ids(result_directory):
+    """
+    exchange_gene_ids: exchange gene_ids with gene_name
+    """
+
+    log('starting exchanging gene_ids with gene_name')
+
+    result_files = os.listdir(result_directory)
+
+    if 'transcripts.gtf' in result_files:
+        _update_transcripts(result_directory)
+
+    if 't_data.ctab' in result_files:
+        _update_t_data(result_directory)
 
 
 def _update_transcripts(result_directory):
@@ -107,7 +98,7 @@ def _update_transcripts(result_directory):
                     output_file.write(line)
 
 
-def _update_t_data(result_directory, trans_id_dict=None):
+def _update_t_data(result_directory):
     log('updating t_data.ctab gene_ids')
     os.rename(os.path.join(result_directory, 't_data.ctab'),
               os.path.join(result_directory, 'original_t_data.ctab'))
@@ -122,8 +113,6 @@ def _update_t_data(result_directory, trans_id_dict=None):
     for line in reader:
         if "gene_name" in line:
             line['gene_id'] = line['gene_name']
-        if trans_id_dict and line.get('t_name') in trans_id_dict:
-            line['t_name'] = trans_id_dict[line['t_name']]
         writer.writerow(line)
 
 

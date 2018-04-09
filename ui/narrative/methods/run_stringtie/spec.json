@@ -19,26 +19,6 @@
       "valid_ws_types" : ["KBaseRNASeq.RNASeqAlignmentSet" , "KBaseRNASeq.RNASeqAlignment", "KBaseSets.ReadsAlignmentSet"]
     }
   },{
-    "id" : "mode",
-    "optional" : false,
-    "advanced" : true,
-    "allow_multiple" : false,
-    "default_values" : [ "normal" ],
-    "field_type" : "dropdown",
-    "dropdown_options" : {
-      "options": [
-        {
-          "value": "normal",
-          "display": "Normal"
-        },{
-          "value": "merge",
-          "display": "Merge"
-        },{
-          "value": "novel_isoform",
-          "display": "Novel Isoform"
-        }
-    ]}
-  },{
     "id" : "expression_suffix",
     "optional" : false,
     "advanced" : true,
@@ -112,7 +92,38 @@
     "text_options" : {
       "validate_as": "int"
     }
+   },{
+    "id" : "stringtie_genome_name",
+    "optional" : true,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text"
+   },{
+    "id" : "transcript_label",
+    "optional" : true,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "novel" ],
+    "field_type" : "text"
   }],
+  "parameter-groups": [
+      {
+	      "id": "novel_isoforms",
+	      "parameters": ["stringtie_genome_name", "transcript_label"],
+	      "optional": true,
+	      "allow_multiple": false,
+	      "with_border": true
+      },
+      {
+	      "id": "stringtie_params",
+	      "parameters": ["min_isoform_abundance", "min_length", "junction_base",
+            "junction_coverage", "min_read_coverage", "min_locus_gap_sep_value"],
+	      "optional": false,
+	      "allow_multiple": false,
+	      "with_border": true
+      }
+  ],
   "behavior" : {
     "service-mapping" : {
       "url" : "",
@@ -137,8 +148,16 @@
             "target_property" : "expression_set_suffix"
         },
         {
-          "input_parameter" : "mode",
-          "target_property" : "mode"
+          "input_parameter" : "novel_isoforms",
+          "target_property" : "novel_isoforms"
+        },
+        {
+          "input_parameter" : "stringtie_genome_name",
+          "target_property" : "stringtie_genome_name"
+        },
+        {
+          "input_parameter" : "transcript_label",
+          "target_property" : "label"
         },
         {
           "constant_value"  : 1,

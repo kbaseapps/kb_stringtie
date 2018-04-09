@@ -71,7 +71,6 @@ class kb_stringtie_ciTest(unittest.TestCase):
 
     @classmethod
     def prepare_data(cls):
-        """
         cls.genome_ref_1 = "30957/3/1"
         cls.condition_1 = 'Ecoli_WT'
         cls.alignment_ref_1 = "30957/13/2"
@@ -83,14 +82,15 @@ class kb_stringtie_ciTest(unittest.TestCase):
         cls.alignment_ref_1 = "30996/17/1"
         cls.sample_set_ref_1 = "30996/9/1"
         cls.reads_alignment_set_ref_1 = "30996/21/1"
+        """
 
 
     def getWsClient(self):
         return self.__class__.wsClient
 
     def getWsName(self):
-        #return "jjeffryes:narrative_1522765762916"
-        return "sunita:narrative_1522869877663"
+        return "jjeffryes:narrative_1522765762916"
+        # return "sunita:narrative_1522869877663"
 
     def getImpl(self):
         return self.__class__.serviceImpl
@@ -106,7 +106,6 @@ class kb_stringtie_ciTest(unittest.TestCase):
             self.getWsName(), self.genome_ref, gff_path)
 
     def test_run_stringtie_app_alignment(self):
-        return
         input_params = {
             'alignment_object_ref': self.alignment_ref_1,
             'workspace_name': self.getWsName(),
@@ -144,13 +143,14 @@ class kb_stringtie_ciTest(unittest.TestCase):
         self.assertEqual(expression_data.get('condition'), self.condition_1)
 
     def test_run_stringtie_app_novel_isoform(self):
-
+        return
         input_params = {
             'alignment_object_ref': self.reads_alignment_set_ref_1,
             'workspace_name': self.getWsName(),
-            'expression_suffix': '_stringtie_expression',
-            'expression_set_suffix': '_stringtie_expression_set',
-            'mode': 'novel_isoform',
+            'expression_suffix': '_transcript_expression',
+            'expression_set_suffix': '_transcript_expression_set',
+            'novel_isoforms': 1,
+            'stringtie_genome_name': "stringtie_genome",
 
             "min_read_coverage": 2.5,
             "junction_base": 10,
@@ -160,8 +160,10 @@ class kb_stringtie_ciTest(unittest.TestCase):
             "junction_coverage": 1,
             "min_locus_gap_sep_value": 50,
             "disable_trimming": 1,
+            "skip_reads_with_no_ref": 1,
             "ballgown_mode": 1,
-            "merge": 1
+            "merge": 1,
+            "label": "novel_isoform"
         }
 
         result = self.getImpl().run_stringtie_app(self.getContext(), input_params)[0]
