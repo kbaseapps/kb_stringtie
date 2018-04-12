@@ -13,7 +13,9 @@ class KBFileUtilsTest(unittest.TestCase):
         shutil.copytree('data', temp_data)
 
     def test_make_gff(self):
-        file_utils._make_gff(temp_data+"/stringtie_merge.gtf")
+        file_utils._make_gff(temp_data+"/gffcmp.annotated.gtf",
+                             temp_data + '/GCF_000005845.2_ASM584v2_genomic.gff',
+                             'novel_isoform')
 
     def test_update_t_data(self):
         file_utils._update_t_data(temp_data)

@@ -52,6 +52,17 @@ RUN cd /kb/dev_container/modules && \
 
 # -----------------------------------------
 
+# download gffcompare script
+RUN cd /kb/dev_container/modules && \
+    mkdir gffcompare && cd gffcompare && \
+    wget http://ccb.jhu.edu/software/stringtie/dl/gffcompare-0.10.4.Linux_x86_64.tar.gz	 &&\
+    tar xvfz gffcompare-0.10.4.Linux_x86_64.tar.gz	 && \
+    cd gffcompare-0.10.4.Linux_x86_64	 && \
+    mkdir /kb/deployment/bin/gffcompare && \
+    cp -R gffcompare /kb/deployment/bin/gffcompare/gffcompare
+
+# -----------------------------------------
+
 COPY ./ /kb/module
 RUN mkdir -p /kb/module/work
 RUN chmod -R a+rw /kb/module

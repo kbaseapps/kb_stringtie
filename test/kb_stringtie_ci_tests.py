@@ -71,6 +71,7 @@ class kb_stringtie_ciTest(unittest.TestCase):
 
     @classmethod
     def prepare_data(cls):
+
         cls.genome_ref_1 = "30957/3/1"
         cls.condition_1 = 'Ecoli_WT'
         cls.alignment_ref_1 = "30957/13/2"
@@ -84,13 +85,12 @@ class kb_stringtie_ciTest(unittest.TestCase):
         cls.reads_alignment_set_ref_1 = "30996/21/1"
         """
 
-
     def getWsClient(self):
         return self.__class__.wsClient
 
     def getWsName(self):
         return "jjeffryes:narrative_1522765762916"
-        # return "sunita:narrative_1522869877663"
+        #return "sunita:narrative_1522869877663"
 
     def getImpl(self):
         return self.__class__.serviceImpl
@@ -98,15 +98,7 @@ class kb_stringtie_ciTest(unittest.TestCase):
     def getContext(self):
         return self.__class__.ctx
 
-    def test_update_genome_with_novel_isoforms(self):
-        return
-        gff_path = self.scratch+'/example_stringtie_merge.gff'
-        shutil.copy('data/example_stringtie_merge.gff', gff_path)
-        print self.stringtie_runner._update_genome_with_novel_isoforms(
-            self.getWsName(), self.genome_ref, gff_path)
-
     def test_run_stringtie_app_alignment(self):
-        return
         input_params = {
             'alignment_object_ref': self.alignment_ref_1,
             'workspace_name': self.getWsName(),
@@ -140,7 +132,7 @@ class kb_stringtie_ciTest(unittest.TestCase):
         expression_data = self.ws.get_objects2({'objects': 
                                                [{'ref': result.get('expression_obj_ref')}]}
                                                )['data'][0]['data']
-        self.assertEqual(expression_data.get('genome_id'), self.genome_ref)
+        self.assertEqual(expression_data.get('genome_id'), self.genome_ref_1)
         self.assertEqual(expression_data.get('condition'), self.condition_1)
 
     def test_run_stringtie_app_novel_isoform(self):
@@ -175,6 +167,6 @@ class kb_stringtie_ciTest(unittest.TestCase):
         print(result_dirs)
         self.assertTrue('merge_result' in result_dirs)
         self.assertTrue('expression_obj_ref' in result)
-        self.assertTrue('' == result['expression_obj_ref'])
+        self.assertTrue(result['expression_obj_ref'])
         self.assertTrue('report_name' in result)
         self.assertTrue('report_ref' in result)

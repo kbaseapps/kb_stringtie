@@ -1,4 +1,5 @@
 import csv
+import datetime
 import os
 import time
 
@@ -8,53 +9,44 @@ def log(message, prefix_newline=False):
     print(('\n' if prefix_newline else '') + '{0:.2f}'.format(time.time()) + ': ' + str(message))
 
 
-def _make_gff(file_path, novel_prefix='MSTRG.'):
+def _make_gff(file_path, append_file, novel_prefix='MSTRG.'):
     """Works on the very narrow case of gtf files from stringtie."""
     type_idx = 2
-    gene_id_dict = {}
     written_genes = set()
+    timestamp = str(datetime.datetime.now()).split('.')[0]
 
     if not os.path.isfile(file_path):
         raise ValueError('{} is not a file'.format(file_path))
-    new_file_path = os.path.splitext(file_path)[0] + ".gff"
-    if new_file_path == file_path:
-        raise ValueError('{} appears to be a GFF file'.format(file_path))
 
-    with open(new_file_path, 'w') as output_file:
+    with open(append_file, 'a') as output_file:
         with open(file_path, 'r') as input_file:
-            # On first pass, just collect gene IDs and write dummy genes
-            for line in input_file:
-                if line[0] == "#":
-                    continue
-                if 'gene_id \"' in line and 'ref_gene_id \"' in line:
-                    gene_id = line.split('gene_id \"')[1].split('"')[0]
-                    ref_gene = line.split('ref_gene_id \"')[1].split('"')[0]
-                    gene_id_dict[gene_id] = ref_gene
-                    if ref_gene not in written_genes:
-                        sl = line.split('\t')
-                        sl[type_idx] = 'gene'
-                        sl[-1] = 'ID={}\n'.format(ref_gene)
-                        output_file.write("\t".join(sl))
-                        written_genes.add(ref_gene)
-
-            # now we write the transcripts.
-            input_file.seek(0)
             for line in input_file:
                 if line[0] == "#":
                     continue
                 sl = line.split('\t')
-                gene_id = line.split('gene_id \"')[1].split('"')[0]
-                gene_id = gene_id_dict.get(gene_id)
+                gene_id = sl[-1].split('gene_id \"')[1].split('"')[0]
                 transcript_id = line.split('transcript_id \"')[1].split('"')[0]
+                if 'ref_gene_id \"' in sl[-1]:
+                    gene_id = sl[-1].split('ref_gene_id \"')[1].split('"')[0]
+
+                # write dummy genes
+                elif sl[type_idx] == 'transcript' and gene_id not in written_genes:
+                    sl[type_idx] = 'gene'
+                    sl[-1] = 'ID={}; note="Spoofed gene for a RNASeq transcript\n'.format(gene_id)
+                    output_file.write("\t".join(sl))
+                    written_genes.add(gene_id)
+
+                # write transcripts and exons
                 if novel_prefix in transcript_id:
                     if sl[type_idx] == 'exon':
                         sl[-1] = "Parent={}".format(transcript_id)
                     elif gene_id:
+                        sl[type_idx] = 'transcript'
                         sl[-1] = "ID={}; Parent={}".format(transcript_id, gene_id)
-                    else:
-                        sl[-1] = "ID={}".format(transcript_id)
-                    output_file.write("\t".join(sl+['\n']))
-    return new_file_path
+                    sl[-1] += "; note=Predicted transcript from RNASeq run on {}\n".format(
+                        timestamp)
+                    output_file.write("\t".join(sl))
+    return append_file
 
 
 def exchange_gene_ids(result_directory):
@@ -67,7 +59,9 @@ def exchange_gene_ids(result_directory):
     result_files = os.listdir(result_directory)
 
     if 'transcripts.gtf' in result_files:
-        _update_transcripts(result_directory)
+        pass
+        # this is breaking deseq downstream for transcript runs
+        #_update_transcripts(result_directory)
 
     if 't_data.ctab' in result_files:
         _update_t_data(result_directory)
