@@ -146,7 +146,7 @@ class StringTieUtil:
         """
 
         log('converting gff to gtf')
-        output = os.path.dirname(gff_path) + "/gffcmp"
+        output = os.path.dirname(gtf_path) + "/gffcmp"
 
         command = self.GFFCOMPARE_TOOLKIT_PATH + '/gffcompare '
         command += "-r {} -G -o {} {}".format(gff_path, output, gtf_path)
@@ -227,16 +227,16 @@ class StringTieUtil:
             fa_output_file = ret['path']
 
             shutil.copy(fa_output_file, result_directory)
-            fa_output_name = os.path.basename(fa_output_file)
-            fa_output_file = os.path.join(result_directory, fa_output_name)
+            #fa_output_name = os.path.basename(fa_output_file)
+            #fa_output_file = os.path.join(result_directory, fa_output_name)
 
-            mapping_filename = c_mapping.create_sanitized_contig_ids(fa_output_file)
+            #mapping_filename = c_mapping.create_sanitized_contig_ids(fa_output_file)
 
             # get the GFF
             ret = self.gfu.genome_to_gff({'genome_ref': genome_ref,
                                           'target_dir': result_directory})
             genome_gff_file = ret['file_path']
-            c_mapping.replace_gff_contig_ids(genome_gff_file, mapping_filename, to_modified=True)
+            #c_mapping.replace_gff_contig_ids(genome_gff_file, mapping_filename, to_modified=True)
             gtf_ext = ".gtf"
 
             if not genome_gff_file.endswith(gtf_ext):
@@ -374,8 +374,7 @@ class StringTieUtil:
                              allowZip64=True) as zip_file:
             for root, dirs, files in os.walk(result_directory):
                 for file in files:
-                    if not (file.endswith('.DS_Store') or
-                            os.path.basename(root) == 'merge_result'):
+                    if not file.endswith('.DS_Store'):
                         zip_file.write(os.path.join(root, file),
                                        os.path.join(os.path.basename(root), file))
 
@@ -929,7 +928,7 @@ class StringTieUtil:
         ret = self.gfu.genome_to_gff({'genome_ref': old_genome_ref,
                                       'target_dir': first_run_result_dir})
         self._run_gffcompare(ret['file_path'], merge_file)
-        comp_file = os.path.join(first_run_result_dir, "gffcmp.annotated.gtf")
+        comp_file = os.path.join(first_run_result_dir, 'merge_result', 'gffcmp.annotated.gtf')
         upload_file = _make_gff(comp_file, ret['file_path'], params.get('label', 'MSTRG.'))
         params['genome_ref'] = self._update_genome_with_novel_isoforms(
             params['workspace_name'], old_genome_ref, upload_file,

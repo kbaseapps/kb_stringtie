@@ -60,8 +60,7 @@ def exchange_gene_ids(result_directory):
 
     if 'transcripts.gtf' in result_files:
         pass
-        # this is breaking deseq downstream for transcript runs
-        #_update_transcripts(result_directory)
+        _update_transcripts(result_directory)
 
     if 't_data.ctab' in result_files:
         _update_t_data(result_directory)
@@ -78,18 +77,16 @@ def _update_transcripts(result_directory):
     with open(exchange_transcript_path, 'w') as output_file:
         with open(original_transcript_path, 'r') as input_file:
             for line in input_file:
-                if 'gene_id \"' in line and 'ref_gene_name \"' in line:
+                if 'transcript_id \"' in line and 'reference_id \"' in line:
+                    trans_id = line.split('transcript_id \"')[1].split('"')[0]
+                    ref_id = line.split('reference_id \"')[1].split('"')[0]
+                    line = line.replace(trans_id, ref_id)
+                if 'gene_id \"' in line and 'ref_gene_id \"' in line:
                     gene_id = line.split('gene_id \"')[1].split('"')[0]
-                    gene_name = line.split('ref_gene_name \"')[1].split('"')[0]
-                    line = line.replace(gene_id, gene_name)
-                    output_file.write(line)
-                elif 'gene_id \"' in line and 'gene_name \"' in line:
-                    gene_id = line.split('gene_id \"')[1].split('"')[0]
-                    gene_name = line.split('gene_name \"')[1].split('"')[0]
-                    line = line.replace(gene_id, gene_name)
-                    output_file.write(line)
-                else:
-                    output_file.write(line)
+                    ref_id = line.split('ref_gene_id \"')[1].split('"')[0]
+                    line = line.replace(gene_id, ref_id)
+
+                output_file.write(line)
 
 
 def _update_t_data(result_directory):
