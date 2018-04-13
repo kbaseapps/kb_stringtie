@@ -107,6 +107,30 @@ def _update_t_data(result_directory):
         writer.writerow(line)
 
 
+def _update_merge_file(original_transcript_path):
+    log('updating stringtie_merge.gtf ')
+    result_directory = os.path.dirname(original_transcript_path)
+    os.rename(os.path.join(result_directory, 'stringtie_merge.gtf'),
+              os.path.join(result_directory, 'original_stringtie_merge.gtf'))
+    original_transcript_path = os.path.join(result_directory,
+                                            'original_stringtie_merge.gtf')
+    exchange_transcript_path = os.path.join(result_directory,
+                                            'stringtie_merge.gtf')
+    with open(exchange_transcript_path, 'w') as output_file:
+        with open(original_transcript_path, 'r') as input_file:
+            for line in input_file:
+                if 'transcript_id \"' in line and 'reference_id \"' in line:
+                    trans_id = line.split('transcript_id \"')[1].split('"')[0]
+                    ref_id = line.split('reference_id \"')[1].split('"')[0]
+                    line = line.replace(trans_id, ref_id)
+                if 'gene_id \"' in line and 'ref_gene_id \"' in line:
+                    gene_id = line.split('gene_id \"')[1].split('"')[0]
+                    ref_id = line.split('ref_gene_id \"')[1].split('"')[0]
+                    line = line.replace(gene_id, ref_id)
+
+                output_file.write(line)
+
+
 def _filter_merge_file(gtf_file):
     """
     _filter_merge_file: remove lines with no gene_name

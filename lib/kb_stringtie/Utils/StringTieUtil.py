@@ -23,7 +23,7 @@ from ReadsAlignmentUtils.ReadsAlignmentUtilsClient import ReadsAlignmentUtils
 from SetAPI.SetAPIServiceClient import SetAPI
 from Workspace.WorkspaceClient import Workspace as Workspace
 from . import contig_id_mapping as c_mapping
-from .file_utils import exchange_gene_ids, _filter_merge_file, _make_gff
+from .file_utils import exchange_gene_ids, _update_merge_file, _make_gff
 
 
 def log(message, prefix_newline=False):
@@ -913,7 +913,7 @@ class StringTieUtil:
         params.update({'ballgown_mode': 0,
                        'skip_reads_with_no_ref': 0,
                        'generate_ws_object': False,
-                       'exchange_gene_ids': False})
+                       'exchange_gene_ids': 1})
         returnVal = self._process_alignment_set_object(params)
         first_run_result_dir = returnVal.get('result_directory')
         annotation_file = returnVal['annotation_file']
@@ -933,6 +933,7 @@ class StringTieUtil:
         params['genome_ref'] = self._update_genome_with_novel_isoforms(
             params['workspace_name'], old_genome_ref, upload_file,
             params.get('novel_isoforms', {}).get('stringtie_genome_name'))
+        _update_merge_file(merge_file)
 
         log('running StringTie the 3rd time with merged gtf')
         params.update({'gtf_file': merge_file,
