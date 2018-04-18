@@ -780,8 +780,8 @@ class StringTieUtil:
                 {"object_refs":[alignment['ref']]})['data'][0]['data']
             return alignment_data['genome_id']
 
-    def _update_genome_with_novel_isoforms(self, workspace, genome_ref,
-                                           gff_file, new_genome_name=None):
+    def _save_genome_with_novel_isoforms(self, workspace, genome_ref,
+                                         gff_file, new_genome_name=None):
         """"""
         log('Saving genome with novel isoforms')
         genome_data = self.dfu.get_objects(
@@ -803,19 +803,57 @@ class StringTieUtil:
                 'gff_file': {'path': gff_file},
                 'source': 'StringTie'
             })
-        """novel_isoforms = [x for x in new_genome_data['non_coding_features']
-                          if x['type'] != 'gene']
-        parent_updates = defaultdict(list)
-        for iso in novel_isoforms:
-            if 'parent' in iso:
-                parent_updates[iso['parent']].append(iso['id'])
-        log("Adding {} novel isoforms".format(len(novel_isoforms)))
-        genome_data['non_coding_features'].extend(novel_isoforms)
-        info = self.gfu.save_one_genome(
-            {'workspace': workspace,
-             'name': new_genome_name,
-             'data': genome_data})['info']"""
         return ret['genome_ref']
+
+    def _novel_isoform_mode(self, alignment_object_ref, params):
+        """This is a three step process: First, run StringTie on all the alignments individually
+          which will produce novel transcripts. Next, merge the resulting transcripts together.
+          Finally, rerun StringTie with the merged GTF file as the reference genome.
+          """
+        log('running Stringtie the 1st time')
+        params.update({'ballgown_mode': 0,
+                       'skip_reads_with_no_ref': 0,
+                       'generate_ws_object': False,
+                       'exchange_gene_ids': 1})
+        returnVal = self._process_alignment_set_object(params)
+        first_run_result_dir = returnVal.get('result_directory')
+        annotation_file = returnVal['annotation_file']
+
+        log('running StringTie merge')
+        self._run_merge_option(first_run_result_dir, params, annotation_file)
+        merge_file = os.path.join(first_run_result_dir,
+                                  'merge_result',
+                                  'stringtie_merge.gtf')
+
+        old_genome_ref = self._get_genome_ref(alignment_object_ref)
+        ret = self.gfu.genome_to_gff({'genome_ref': old_genome_ref,
+                                      'target_dir': first_run_result_dir})
+        self._run_gffcompare(ret['file_path'], merge_file)
+        comp_file = os.path.join(first_run_result_dir, 'merge_result', 'gffcmp.annotated.gtf')
+        upload_file = _make_gff(comp_file, ret['file_path'], params.get('label', 'MSTRG.'))
+        params['genome_ref'] = self._save_genome_with_novel_isoforms(
+            params['workspace_name'], old_genome_ref, upload_file,
+            params.get('novel_isoforms', {}).get('stringtie_genome_name'))
+        _update_merge_file(merge_file)
+
+        log('running StringTie the 3rd time with merged gtf')
+        params.update({'gtf_file': merge_file,
+                       'generate_ws_object': True,
+                       'exchange_gene_ids': 0,
+                       'ballgown_mode': 1,
+                       'skip_reads_with_no_ref': 1})
+        returnVal = self._process_alignment_set_object(params)
+
+        shutil.move(os.path.join(first_run_result_dir, 'merge_result'),
+                    returnVal.get('result_directory'))
+
+        report_output = self._generate_report(returnVal.get('expression_obj_ref'),
+                                              params.get('workspace_name'),
+                                              returnVal.get('result_directory'),
+                                              returnVal.get('exprMatrix_FPKM_ref'),
+                                              returnVal.get('exprMatrix_TPM_ref'),
+                                              params['genome_ref'])
+        return report_output, returnVal
 
     def __init__(self, config):
         self.ws_url = config["workspace-url"]
@@ -889,7 +927,7 @@ class StringTieUtil:
               re.match('KBaseSets.ReadsAlignmentSet-\d.\d', alignment_object_type)):
             params.update({'alignment_set_ref': alignment_object_ref})
             if params.get('novel_isoforms'):
-                report_output, returnVal = self.novel_isoform_mode(alignment_object_ref, params)
+                report_output, returnVal = self._novel_isoform_mode(alignment_object_ref, params)
             else:
                 params.update({'ballgown_mode': 1,
                                'skip_reads_with_no_ref': 1,
@@ -908,53 +946,3 @@ class StringTieUtil:
             raise ValueError(error_msg)
 
         return returnVal
-
-    def novel_isoform_mode(self, alignment_object_ref, params):
-        """This is a three step process: First, run StringTie on all the alignments individually
-          which will produce novel transcripts. Next, merge the resulting transcripts together.
-          Finally, rerun StringTie with the merged GTF file as the reference genome.
-          """
-        log('running Stringtie the 1st time')
-        params.update({'ballgown_mode': 0,
-                       'skip_reads_with_no_ref': 0,
-                       'generate_ws_object': False,
-                       'exchange_gene_ids': 1})
-        returnVal = self._process_alignment_set_object(params)
-        first_run_result_dir = returnVal.get('result_directory')
-        annotation_file = returnVal['annotation_file']
-
-        log('running StringTie merge')
-        self._run_merge_option(first_run_result_dir, params, annotation_file)
-        merge_file = os.path.join(first_run_result_dir,
-                                  'merge_result',
-                                  'stringtie_merge.gtf')
-
-        old_genome_ref = self._get_genome_ref(alignment_object_ref)
-        ret = self.gfu.genome_to_gff({'genome_ref': old_genome_ref,
-                                      'target_dir': first_run_result_dir})
-        self._run_gffcompare(ret['file_path'], merge_file)
-        comp_file = os.path.join(first_run_result_dir, 'merge_result', 'gffcmp.annotated.gtf')
-        upload_file = _make_gff(comp_file, ret['file_path'], params.get('label', 'MSTRG.'))
-        params['genome_ref'] = self._update_genome_with_novel_isoforms(
-            params['workspace_name'], old_genome_ref, upload_file,
-            params.get('novel_isoforms', {}).get('stringtie_genome_name'))
-        _update_merge_file(merge_file)
-
-        log('running StringTie the 3rd time with merged gtf')
-        params.update({'gtf_file': merge_file,
-                       'generate_ws_object': True,
-                       'exchange_gene_ids': 1,
-                       'ballgown_mode': 1,
-                       'skip_reads_with_no_ref': 1})
-        returnVal = self._process_alignment_set_object(params)
-
-        shutil.move(os.path.join(first_run_result_dir, 'merge_result'),
-                    returnVal.get('result_directory'))
-
-        report_output = self._generate_report(returnVal.get('expression_obj_ref'),
-                                              params.get('workspace_name'),
-                                              returnVal.get('result_directory'),
-                                              returnVal.get('exprMatrix_FPKM_ref'),
-                                              returnVal.get('exprMatrix_TPM_ref'),
-                                              params['genome_ref'])
-        return report_output, returnVal
