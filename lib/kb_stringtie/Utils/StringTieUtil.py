@@ -611,11 +611,16 @@ class StringTieUtil:
             self._mkdir_p(result_directory)
 
             # input files
-            params['input_file'] = self._get_input_file(alignment_ref)
             if not params.get('gtf_file'):
                 params['gtf_file'] = self._get_gtf_file(alignment_ref, result_directory)
+                if params.get('label'):
+                    if params['label'] in open(params['gtf_file']).read():
+                        raise ValueError("Provided prefix for transcripts matches an existing "
+                                         "feature ID. Please select a different label for "
+                                         "transcripts.")
             else:
                 shutil.copy(params.get('gtf_file'), result_directory)
+            params['input_file'] = self._get_input_file(alignment_ref)
             log('using {} as reference annotation file.'.format(params.get('gtf_file')))
 
             # output files

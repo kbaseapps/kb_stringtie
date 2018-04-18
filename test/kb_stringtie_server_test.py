@@ -381,14 +381,16 @@ class kb_stringtieTest(unittest.TestCase):
         self.assertTrue('items' in expression_data)
         self.assertTrue('description' in expression_data)
 
-    @unittest.skip("Need to update the reads_alignment_set to match the minimal genome")
-    def test_run_stringtie_app_novel_isoform(self):
+    def test_bad_novel_isoform_label(self):
         input_params = {
             'alignment_object_ref': self.reads_alignment_set_ref,
             'workspace_name': self.getWsName(),
             'expression_suffix': '_transcript_expression',
             'expression_set_suffix': '_transcript_expression_set',
-            'novel_isoforms': 1,
+            'novel_isoforms': {
+                'stringtie_genome_name': "stringtie_genome",
+                "transcript_label": "b2"
+            },
 
             "min_read_coverage": 2.5,
             "junction_base": 10,
@@ -401,16 +403,7 @@ class kb_stringtieTest(unittest.TestCase):
             "skip_reads_with_no_ref": 1,
             "ballgown_mode": 1,
             "merge": 1,
-            "label": "foobar"
         }
+        with self.assertRaisesRegexp(ValueError, "existing feature ID"):
+            result = self.getImpl().run_stringtie_app(self.getContext(), input_params)[0]
 
-        result = self.getImpl().run_stringtie_app(self.getContext(), input_params)[0]
-
-        self.assertTrue('result_directory' in result)
-        result_dirs = os.listdir(result['result_directory'])
-        print(result_dirs)
-        self.assertTrue('merge_result' in result_dirs)
-        self.assertTrue('expression_obj_ref' in result)
-        self.assertTrue('' == result['expression_obj_ref'])
-        self.assertTrue('report_name' in result)
-        self.assertTrue('report_ref' in result)

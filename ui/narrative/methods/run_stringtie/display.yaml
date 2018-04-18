@@ -82,7 +82,7 @@ parameters :
 parameter-groups :
   novel_isoforms :
     ui-name : |
-        Make Transcripts
+        Make Novel Transcripts
     short-hint : |
         Output transcript expression matrices with novel isoforms
 
