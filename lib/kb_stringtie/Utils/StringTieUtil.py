@@ -10,7 +10,6 @@ import time
 import traceback
 import uuid
 import zipfile
-from collections import defaultdict
 
 from pathos.multiprocessing import ProcessingPool as Pool
 
@@ -22,7 +21,6 @@ from KBaseReport.KBaseReportClient import KBaseReport
 from ReadsAlignmentUtils.ReadsAlignmentUtilsClient import ReadsAlignmentUtils
 from SetAPI.SetAPIServiceClient import SetAPI
 from Workspace.WorkspaceClient import Workspace as Workspace
-from . import contig_id_mapping as c_mapping
 from .file_utils import exchange_gene_ids, _update_merge_file, _make_gff
 
 
