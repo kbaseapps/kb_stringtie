@@ -225,16 +225,11 @@ class StringTieUtil:
             fa_output_file = ret['path']
 
             shutil.copy(fa_output_file, result_directory)
-            #fa_output_name = os.path.basename(fa_output_file)
-            #fa_output_file = os.path.join(result_directory, fa_output_name)
-
-            #mapping_filename = c_mapping.create_sanitized_contig_ids(fa_output_file)
 
             # get the GFF
             ret = self.gfu.genome_to_gff({'genome_ref': genome_ref,
                                           'target_dir': result_directory})
             genome_gff_file = ret['file_path']
-            #c_mapping.replace_gff_contig_ids(genome_gff_file, mapping_filename, to_modified=True)
             gtf_ext = ".gtf"
 
             if not genome_gff_file.endswith(gtf_ext):
