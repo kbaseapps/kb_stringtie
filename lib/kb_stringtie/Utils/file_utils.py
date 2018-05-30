@@ -98,8 +98,7 @@ def _update_t_data(result_directory):
     exchange_tdata_path = os.path.join(result_directory,
                                        't_data.ctab')
     reader = csv.DictReader(open(original_tdata_path), dialect='excel-tab')
-    writer = csv.DictWriter(open(exchange_tdata_path, 'w'), reader.fieldnames,
-                            dialect='excel-tab')
+    writer = csv.DictWriter(open(exchange_tdata_path, 'w'), reader.fieldnames, delimiter='\t')
     writer.writeheader()
     for line in reader:
         if "gene_name" in line:

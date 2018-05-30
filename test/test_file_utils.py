@@ -19,10 +19,10 @@ class KBFileUtilsTest(unittest.TestCase):
 
     def test_update_t_data(self):
         file_utils._update_t_data(temp_data)
-        assert filecmp.cmp(temp_data+"/t_data.ctab",
-                           temp_data+"/expected_t_data.ctab")
+        self.assertMultiLineEqual(open(temp_data+"/t_data.ctab").read(),
+                                  open(temp_data+"/expected_t_data.ctab").read())
 
     def test_update_transcripts(self):
         file_utils._update_transcripts(temp_data)
-        assert filecmp.cmp(temp_data+"/transcripts.gtf",
-                           temp_data+"/expected_transcripts.gtf")
+        self.assertMultiLineEqual(open(temp_data+"/transcripts.gtf").read(),
+                                  open(temp_data+"/expected_transcripts.gtf").read())
