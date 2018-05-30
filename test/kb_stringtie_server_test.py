@@ -147,6 +147,7 @@ class kb_stringtieTest(unittest.TestCase):
         sample_set_data = {'sampleset_id': sample_set_object_name,
                            'sampleset_desc': 'test sampleset object',
                            'Library_type': 'SingleEnd',
+                           'sample_ids': [cls.reads_ref_1, cls.reads_ref_2],
                            'condition': [cls.condition_1, cls.condition_2],
                            'domain': 'Unknown',
                            'num_samples': 2,
@@ -289,7 +290,7 @@ class kb_stringtieTest(unittest.TestCase):
         self.assertTrue('expression_obj_ref' in result)
         self.assertTrue('report_name' in result)
         self.assertTrue('report_ref' in result)
-        expression_data = self.ws.get_objects2({'objects': 
+        expression_data = self.ws.get_objects2({'objects':
                                                [{'ref': result.get('expression_obj_ref')}]}
                                                )['data'][0]['data']
         self.assertEqual(expression_data.get('genome_id'), self.genome_ref)
@@ -323,7 +324,7 @@ class kb_stringtieTest(unittest.TestCase):
         for result_dir in result_dirs:
             result_files = os.listdir(os.path.join(result['result_directory'], result_dir))
             expect_result_files = ['genes.fpkm_tracking', 'transcripts.gtf',
-                                   'e2t.ctab', 'e_data.ctab', 'i2t.ctab', 'i_data.ctab', 
+                                   'e2t.ctab', 'e_data.ctab', 'i2t.ctab', 'i_data.ctab',
                                    't_data.ctab']
             self.assertTrue(all(x in result_files for x in expect_result_files))
         self.assertTrue('expression_obj_ref' in result)
@@ -331,7 +332,7 @@ class kb_stringtieTest(unittest.TestCase):
         self.assertTrue('exprMatrix_TPM_ref' in result)
         self.assertTrue('report_name' in result)
         self.assertTrue('report_ref' in result)
-        expression_data = self.ws.get_objects2({'objects': 
+        expression_data = self.ws.get_objects2({'objects':
                                                [{'ref': result.get('expression_obj_ref')}]}
                                                )['data'][0]['data']
         self.assertTrue('items' in expression_data)
@@ -367,7 +368,7 @@ class kb_stringtieTest(unittest.TestCase):
         for result_dir in result_dirs:
             result_files = os.listdir(os.path.join(result['result_directory'], result_dir))
             expect_result_files = ['genes.fpkm_tracking', 'transcripts.gtf',
-                                   'e2t.ctab', 'e_data.ctab', 'i2t.ctab', 'i_data.ctab', 
+                                   'e2t.ctab', 'e_data.ctab', 'i2t.ctab', 'i_data.ctab',
                                    't_data.ctab']
             self.assertTrue(all(x in result_files for x in expect_result_files))
         self.assertTrue('expression_obj_ref' in result)
@@ -375,7 +376,7 @@ class kb_stringtieTest(unittest.TestCase):
         self.assertTrue('exprMatrix_TPM_ref' in result)
         self.assertTrue('report_name' in result)
         self.assertTrue('report_ref' in result)
-        expression_data = self.ws.get_objects2({'objects': 
+        expression_data = self.ws.get_objects2({'objects':
                                                [{'ref': result.get('expression_obj_ref')}]}
                                                )['data'][0]['data']
         self.assertTrue('items' in expression_data)

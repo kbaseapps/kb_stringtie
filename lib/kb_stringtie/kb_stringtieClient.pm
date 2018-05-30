@@ -133,15 +133,16 @@ StringTieInput is a reference to a hash where the following keys are defined:
 	min_locus_gap_sep_value has a value which is an int
 	ballgown_mode has a value which is a kb_stringtie.boolean
 	skip_reads_with_no_ref has a value which is a kb_stringtie.boolean
-	novel_isoforms has a value which is a kb_stringtie.boolean
-	stringtie_genome_name has a value which is a string
+	novel_isoforms has a value which is a kb_stringtie.NovelIsoformParams
 	maximum_fraction has a value which is a float
-	label has a value which is a string
 	min_length has a value which is an int
 	min_read_coverage has a value which is a float
 	min_isoform_abundance has a value which is a float
 obj_ref is a string
 boolean is an int
+NovelIsoformParams is a reference to a hash where the following keys are defined:
+	label has a value which is a string
+	stringtie_genome_name has a value which is a string
 StringTieResult is a reference to a hash where the following keys are defined:
 	result_directory has a value which is a string
 	expression_obj_ref has a value which is a kb_stringtie.obj_ref
@@ -170,15 +171,16 @@ StringTieInput is a reference to a hash where the following keys are defined:
 	min_locus_gap_sep_value has a value which is an int
 	ballgown_mode has a value which is a kb_stringtie.boolean
 	skip_reads_with_no_ref has a value which is a kb_stringtie.boolean
-	novel_isoforms has a value which is a kb_stringtie.boolean
-	stringtie_genome_name has a value which is a string
+	novel_isoforms has a value which is a kb_stringtie.NovelIsoformParams
 	maximum_fraction has a value which is a float
-	label has a value which is a string
 	min_length has a value which is an int
 	min_read_coverage has a value which is a float
 	min_isoform_abundance has a value which is a float
 obj_ref is a string
 boolean is an int
+NovelIsoformParams is a reference to a hash where the following keys are defined:
+	label has a value which is a string
+	stringtie_genome_name has a value which is a string
 StringTieResult is a reference to a hash where the following keys are defined:
 	result_directory has a value which is a string
 	expression_obj_ref has a value which is a kb_stringtie.obj_ref
@@ -398,6 +400,44 @@ a string
 
 
 
+=head2 NovelIsoformParams
+
+=over 4
+
+
+
+=item Description
+
+stringtie_genome_name: name for the new genome including novel transcripts
+transcript_label: prefix for the name of the output transcripts
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+label has a value which is a string
+stringtie_genome_name has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+label has a value which is a string
+stringtie_genome_name has a value which is a string
+
+
+=end text
+
+=back
+
+
+
 =head2 StringTieInput
 
 =over 4
@@ -422,9 +462,7 @@ min_locus_gap_sep_value: minimum locus gap separation value
 ballgown_mode: enables the output of Ballgown input table files
 skip_reads_with_no_ref: reads with no reference will be skipped
 novel_isoforms: output expression matrices with novel isoforms
-stringtie_genome_name: name for the new genome including novel transcripts
 maximum_fraction: maximum fraction of muliple-location-mapped reads
-label: prefix for the name of the output transcripts
 min_length: minimum length allowed for the predicted transcripts
 min_read_coverage: minimum input transcript coverage
 min_isoform_abundance: minimum isoform abundance
@@ -449,10 +487,8 @@ disable_trimming has a value which is a kb_stringtie.boolean
 min_locus_gap_sep_value has a value which is an int
 ballgown_mode has a value which is a kb_stringtie.boolean
 skip_reads_with_no_ref has a value which is a kb_stringtie.boolean
-novel_isoforms has a value which is a kb_stringtie.boolean
-stringtie_genome_name has a value which is a string
+novel_isoforms has a value which is a kb_stringtie.NovelIsoformParams
 maximum_fraction has a value which is a float
-label has a value which is a string
 min_length has a value which is an int
 min_read_coverage has a value which is a float
 min_isoform_abundance has a value which is a float
@@ -475,10 +511,8 @@ disable_trimming has a value which is a kb_stringtie.boolean
 min_locus_gap_sep_value has a value which is an int
 ballgown_mode has a value which is a kb_stringtie.boolean
 skip_reads_with_no_ref has a value which is a kb_stringtie.boolean
-novel_isoforms has a value which is a kb_stringtie.boolean
-stringtie_genome_name has a value which is a string
+novel_isoforms has a value which is a kb_stringtie.NovelIsoformParams
 maximum_fraction has a value which is a float
-label has a value which is a string
 min_length has a value which is an int
 min_read_coverage has a value which is a float
 min_isoform_abundance has a value which is a float

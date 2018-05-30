@@ -50,12 +50,11 @@ class kb_stringtie(object):
            value ballgown_mode: enables the output of Ballgown input table
            files skip_reads_with_no_ref: reads with no reference will be
            skipped novel_isoforms: output expression matrices with novel
-           isoforms stringtie_genome_name: name for the new genome including
-           novel transcripts maximum_fraction: maximum fraction of
-           muliple-location-mapped reads label: prefix for the name of the
-           output transcripts min_length: minimum length allowed for the
-           predicted transcripts min_read_coverage: minimum input transcript
-           coverage min_isoform_abundance: minimum isoform abundance ref:
+           isoforms maximum_fraction: maximum fraction of
+           muliple-location-mapped reads min_length: minimum length allowed
+           for the predicted transcripts min_read_coverage: minimum input
+           transcript coverage min_isoform_abundance: minimum isoform
+           abundance ref:
            http://ccb.jhu.edu/software/stringtie/index.shtml?t=manual) ->
            structure: parameter "alignment_object_ref" of type "obj_ref" (An
            X/Y/Z style reference), parameter "workspace_name" of String,
@@ -68,10 +67,12 @@ class kb_stringtie(object):
            type "boolean" (A boolean - 0 for false, 1 for true. @range (0,
            1)), parameter "skip_reads_with_no_ref" of type "boolean" (A
            boolean - 0 for false, 1 for true. @range (0, 1)), parameter
-           "novel_isoforms" of type "boolean" (A boolean - 0 for false, 1 for
-           true. @range (0, 1)), parameter "stringtie_genome_name" of String,
-           parameter "maximum_fraction" of Double, parameter "label" of
-           String, parameter "min_length" of Long, parameter
+           "novel_isoforms" of type "NovelIsoformParams"
+           (stringtie_genome_name: name for the new genome including novel
+           transcripts transcript_label: prefix for the name of the output
+           transcripts) -> structure: parameter "label" of String, parameter
+           "stringtie_genome_name" of String, parameter "maximum_fraction" of
+           Double, parameter "min_length" of Long, parameter
            "min_read_coverage" of Double, parameter "min_isoform_abundance"
            of Double
         :returns: instance of type "StringTieResult" (result_directory:

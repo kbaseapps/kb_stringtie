@@ -29,9 +29,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  * ballgown_mode: enables the output of Ballgown input table files
  * skip_reads_with_no_ref: reads with no reference will be skipped
  * novel_isoforms: output expression matrices with novel isoforms
- * stringtie_genome_name: name for the new genome including novel transcripts
  * maximum_fraction: maximum fraction of muliple-location-mapped reads
- * label: prefix for the name of the output transcripts
  * min_length: minimum length allowed for the predicted transcripts
  * min_read_coverage: minimum input transcript coverage
  * min_isoform_abundance: minimum isoform abundance
@@ -54,9 +52,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "ballgown_mode",
     "skip_reads_with_no_ref",
     "novel_isoforms",
-    "stringtie_genome_name",
     "maximum_fraction",
-    "label",
     "min_length",
     "min_read_coverage",
     "min_isoform_abundance"
@@ -85,14 +81,18 @@ public class StringTieInput {
     private Long ballgownMode;
     @JsonProperty("skip_reads_with_no_ref")
     private Long skipReadsWithNoRef;
+    /**
+     * <p>Original spec-file type: NovelIsoformParams</p>
+     * <pre>
+     * stringtie_genome_name: name for the new genome including novel transcripts
+     * transcript_label: prefix for the name of the output transcripts
+     * </pre>
+     * 
+     */
     @JsonProperty("novel_isoforms")
-    private Long novelIsoforms;
-    @JsonProperty("stringtie_genome_name")
-    private String stringtieGenomeName;
+    private NovelIsoformParams novelIsoforms;
     @JsonProperty("maximum_fraction")
     private Double maximumFraction;
-    @JsonProperty("label")
-    private String label;
     @JsonProperty("min_length")
     private Long minLength;
     @JsonProperty("min_read_coverage")
@@ -266,33 +266,34 @@ public class StringTieInput {
         return this;
     }
 
+    /**
+     * <p>Original spec-file type: NovelIsoformParams</p>
+     * <pre>
+     * stringtie_genome_name: name for the new genome including novel transcripts
+     * transcript_label: prefix for the name of the output transcripts
+     * </pre>
+     * 
+     */
     @JsonProperty("novel_isoforms")
-    public Long getNovelIsoforms() {
+    public NovelIsoformParams getNovelIsoforms() {
         return novelIsoforms;
     }
 
+    /**
+     * <p>Original spec-file type: NovelIsoformParams</p>
+     * <pre>
+     * stringtie_genome_name: name for the new genome including novel transcripts
+     * transcript_label: prefix for the name of the output transcripts
+     * </pre>
+     * 
+     */
     @JsonProperty("novel_isoforms")
-    public void setNovelIsoforms(Long novelIsoforms) {
+    public void setNovelIsoforms(NovelIsoformParams novelIsoforms) {
         this.novelIsoforms = novelIsoforms;
     }
 
-    public StringTieInput withNovelIsoforms(Long novelIsoforms) {
+    public StringTieInput withNovelIsoforms(NovelIsoformParams novelIsoforms) {
         this.novelIsoforms = novelIsoforms;
-        return this;
-    }
-
-    @JsonProperty("stringtie_genome_name")
-    public String getStringtieGenomeName() {
-        return stringtieGenomeName;
-    }
-
-    @JsonProperty("stringtie_genome_name")
-    public void setStringtieGenomeName(String stringtieGenomeName) {
-        this.stringtieGenomeName = stringtieGenomeName;
-    }
-
-    public StringTieInput withStringtieGenomeName(String stringtieGenomeName) {
-        this.stringtieGenomeName = stringtieGenomeName;
         return this;
     }
 
@@ -308,21 +309,6 @@ public class StringTieInput {
 
     public StringTieInput withMaximumFraction(Double maximumFraction) {
         this.maximumFraction = maximumFraction;
-        return this;
-    }
-
-    @JsonProperty("label")
-    public String getLabel() {
-        return label;
-    }
-
-    @JsonProperty("label")
-    public void setLabel(String label) {
-        this.label = label;
-    }
-
-    public StringTieInput withLabel(String label) {
-        this.label = label;
         return this;
     }
 
@@ -383,7 +369,7 @@ public class StringTieInput {
 
     @Override
     public String toString() {
-        return ((((((((((((((((((((((((((((((((((((((("StringTieInput"+" [alignmentObjectRef=")+ alignmentObjectRef)+", workspaceName=")+ workspaceName)+", expressionSetSuffix=")+ expressionSetSuffix)+", expressionSuffix=")+ expressionSuffix)+", numThreads=")+ numThreads)+", junctionBase=")+ junctionBase)+", junctionCoverage=")+ junctionCoverage)+", disableTrimming=")+ disableTrimming)+", minLocusGapSepValue=")+ minLocusGapSepValue)+", ballgownMode=")+ ballgownMode)+", skipReadsWithNoRef=")+ skipReadsWithNoRef)+", novelIsoforms=")+ novelIsoforms)+", stringtieGenomeName=")+ stringtieGenomeName)+", maximumFraction=")+ maximumFraction)+", label=")+ label)+", minLength=")+ minLength)+", minReadCoverage=")+ minReadCoverage)+", minIsoformAbundance=")+ minIsoformAbundance)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((((((((((((((((((((((((("StringTieInput"+" [alignmentObjectRef=")+ alignmentObjectRef)+", workspaceName=")+ workspaceName)+", expressionSetSuffix=")+ expressionSetSuffix)+", expressionSuffix=")+ expressionSuffix)+", numThreads=")+ numThreads)+", junctionBase=")+ junctionBase)+", junctionCoverage=")+ junctionCoverage)+", disableTrimming=")+ disableTrimming)+", minLocusGapSepValue=")+ minLocusGapSepValue)+", ballgownMode=")+ ballgownMode)+", skipReadsWithNoRef=")+ skipReadsWithNoRef)+", novelIsoforms=")+ novelIsoforms)+", maximumFraction=")+ maximumFraction)+", minLength=")+ minLength)+", minReadCoverage=")+ minReadCoverage)+", minIsoformAbundance=")+ minIsoformAbundance)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }
