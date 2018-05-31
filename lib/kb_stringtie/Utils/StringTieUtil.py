@@ -1,27 +1,27 @@
-import time
-import json
-import os
-import uuid
 import errno
-import subprocess
-import re
-from pathos.multiprocessing import ProcessingPool as Pool
+import json
 import multiprocessing
-import zipfile
+import os
+import re
 import shutil
+import subprocess
 import sys
+import time
 import traceback
-import contig_id_mapping as c_mapping
-from pprint import pprint
+import uuid
+import zipfile
 
-from DataFileUtil.DataFileUtilClient import DataFileUtil
-from Workspace.WorkspaceClient import Workspace as Workspace
-from KBaseReport.KBaseReportClient import KBaseReport
-from GenomeFileUtil.GenomeFileUtilClient import GenomeFileUtil
-from ReadsAlignmentUtils.ReadsAlignmentUtilsClient import ReadsAlignmentUtils
-from ExpressionUtils. ExpressionUtilsClient import ExpressionUtils
+from pathos.multiprocessing import ProcessingPool as Pool
+
 from AssemblyUtil.AssemblyUtilClient import AssemblyUtil
+from DataFileUtil.DataFileUtilClient import DataFileUtil
+from ExpressionUtils.ExpressionUtilsClient import ExpressionUtils
+from GenomeFileUtil.GenomeFileUtilClient import GenomeFileUtil
+from KBaseReport.KBaseReportClient import KBaseReport
+from ReadsAlignmentUtils.ReadsAlignmentUtilsClient import ReadsAlignmentUtils
 from SetAPI.SetAPIServiceClient import SetAPI
+from Workspace.WorkspaceClient import Workspace as Workspace
+from .file_utils import exchange_gene_ids, _update_merge_file, _make_gff
 
 
 def log(message, prefix_newline=False):
@@ -32,6 +32,7 @@ def log(message, prefix_newline=False):
 class StringTieUtil:
     STRINGTIE_TOOLKIT_PATH = '/kb/deployment/bin/StringTie'
     GFFREAD_TOOLKIT_PATH = '/kb/deployment/bin/gffread'
+    GFFCOMPARE_TOOLKIT_PATH = '/kb/deployment/bin/gffcompare'
 
     OPTIONS_MAP = {'output_transcripts': '-o',
                    'gene_abundances_file': '-A',
@@ -114,10 +115,10 @@ class StringTieUtil:
         exitCode = pipe.returncode
 
         if (exitCode == 0):
-            log('Executed commend:\n{}\n'.format(command) +
+            log('Executed command:\n{}\n'.format(command) +
                 'Exit Code: {}\nOutput:\n{}'.format(exitCode, output))
         else:
-            error_msg = 'Error running commend:\n{}\n'.format(command)
+            error_msg = 'Error running command:\n{}\n'.format(command)
             error_msg += 'Exit Code: {}\nOutput:\n{}'.format(exitCode, output)
             raise ValueError(error_msg)
 
@@ -132,6 +133,21 @@ class StringTieUtil:
 
         command = self.GFFREAD_TOOLKIT_PATH + '/gffread '
         command += "-E {0} -T -o {1}".format(gff_path, gtf_path)
+
+        self._run_command(command)
+
+    def _run_gffcompare(self, gff_path, gtf_path):
+        """
+        _run_gffcompare: run gffcompare script
+
+        ref: http://ccb.jhu.edu/software/stringtie/gff.shtml
+        """
+
+        log('converting gff to gtf')
+        output = os.path.dirname(gtf_path) + "/gffcmp"
+
+        command = self.GFFCOMPARE_TOOLKIT_PATH + '/gffcompare '
+        command += "-r {} -G -o {} {}".format(gff_path, output, gtf_path)
 
         self._run_command(command)
 
@@ -161,7 +177,7 @@ class StringTieUtil:
 
     def _get_gtf_file(self, alignment_ref, result_directory):
         """
-        _get_gtf_file: get the reference annotation file (in GTF or GFF3 format)
+        _get_gtf_file: get the reference annotation file (in GTF format)
         """
 
         alignment_data = self.ws.get_objects2({'objects':
@@ -184,7 +200,7 @@ class StringTieUtil:
                         output_file.write(line)
                     else:
                         output_file.write(line)
-                    
+
         return gene_name_annotation_file
 
     def _create_gtf_annotation_from_genome(self, genome_ref, result_directory):
@@ -193,6 +209,7 @@ class StringTieUtil:
         """
         ref = self.ws.get_object_subset(
             [{'ref': genome_ref, 'included': ['contigset_ref', 'assembly_ref']}])
+        contig_id = None
         if 'contigset_ref' in ref[0]['data']:
             contig_id = ref[0]['data']['contigset_ref']
         elif 'assembly_ref' in ref[0]['data']:
@@ -201,23 +218,18 @@ class StringTieUtil:
             raise ValueError(
                 "Genome at {0} does not have reference to the assembly object".format(
                     genome_ref))
-        print contig_id
+        print(contig_id)
         log("Generating GFF file from Genome")
         try:
             ret = self.au.get_assembly_as_fasta({'ref': contig_id})
             fa_output_file = ret['path']
 
             shutil.copy(fa_output_file, result_directory)
-            fa_output_name = os.path.basename(fa_output_file)
-            fa_output_file = os.path.join(result_directory, fa_output_name)
-
-            mapping_filename = c_mapping.create_sanitized_contig_ids(fa_output_file)
 
             # get the GFF
             ret = self.gfu.genome_to_gff({'genome_ref': genome_ref,
                                           'target_dir': result_directory})
             genome_gff_file = ret['file_path']
-            c_mapping.replace_gff_contig_ids(genome_gff_file, mapping_filename, to_modified=True)
             gtf_ext = ".gtf"
 
             if not genome_gff_file.endswith(gtf_ext):
@@ -247,8 +259,8 @@ class StringTieUtil:
 
         return genome_gtf_file
 
-    def _save_expression(self, result_directory, alignment_ref, workspace_name, gtf_file, 
-                         expression_suffix):
+    def _save_expression(self, result_directory, alignment_ref, workspace_name,
+                         expression_suffix, genome_ref='', transcripts=0):
         """
         _save_expression: save Expression object to workspace
         """
@@ -263,19 +275,23 @@ class StringTieUtil:
             expression_obj_name = re.sub('_*[Aa]lignment', expression_suffix, alignment_name)
         else:
             expression_obj_name = alignment_name + expression_suffix
+
         destination_ref = workspace_name + '/' + expression_obj_name
         upload_expression_params = {'destination_ref': destination_ref,
                                     'source_dir': result_directory,
                                     'alignment_ref': alignment_ref,
                                     'tool_used': 'StringTie',
-                                    'tool_version': '1.3.3'}
+                                    'tool_version': '1.3.3',
+                                    'genome_ref': genome_ref,
+                                    'transcripts': transcripts
+                                    }
 
         expression_ref = self.eu.upload_expression(upload_expression_params)['obj_ref']
 
         return expression_ref
 
-    def _save_expression_set(self, alignment_expression_map, alignment_set_ref, workspace_name,
-                             expression_set_suffix):
+    def _save_expression_set(self, alignment_expression_map, alignment_set_ref,
+                             workspace_name, expression_set_suffix, genome_ref=None):
         """
         _save_expression_set: save ExpressionSet object to workspace
         """
@@ -287,7 +303,7 @@ class StringTieUtil:
             items.append({'ref': alignment_expression.get('expression_obj_ref'),
                           'label': alignment_expression.get('alignment_label')})
 
-        expression_set_data = {'description': 'ExpressionSet using StringTie', 
+        expression_set_data = {'description': 'ExpressionSet using StringTie',
                                'items': items}
 
         alignment_set_data_object = self.ws.get_objects2({'objects':
@@ -303,6 +319,7 @@ class StringTieUtil:
 
         expression_set_save_params = {'data': expression_set_data,
                                       'workspace': workspace_name,
+                                      'genome_ref': genome_ref,
                                       'output_object_name': expression_set_name}
 
         save_result = self.set_client.save_expression_set_v1(expression_set_save_params)
@@ -350,8 +367,7 @@ class StringTieUtil:
                              allowZip64=True) as zip_file:
             for root, dirs, files in os.walk(result_directory):
                 for file in files:
-                    if not (file.endswith('.DS_Store') or 
-                            os.path.basename(root) == 'merge_result'):
+                    if not file.endswith('.DS_Store'):
                         zip_file.write(os.path.join(root, file),
                                        os.path.join(os.path.basename(root), file))
 
@@ -368,8 +384,8 @@ class StringTieUtil:
                                  'label': os.path.basename(merge_file),
                                  'description': 'merge file generated by StringTie App'})
 
-            filtered_merge_file = os.path.join(result_directory, 
-                                               'merge_result', 
+            filtered_merge_file = os.path.join(result_directory,
+                                               'merge_result',
                                                'filtered_stringtie_merge.gtf')
             output_files.append({'path': filtered_merge_file,
                                  'name': os.path.basename(filtered_merge_file),
@@ -511,7 +527,7 @@ class StringTieUtil:
         return report_output
 
     def _generate_report(self, obj_ref, workspace_name, result_directory,
-                         exprMatrix_FPKM_ref=None, exprMatrix_TPM_ref=None):
+                         exprMatrix_FPKM_ref=None, exprMatrix_TPM_ref=None, genome_ref=None):
         """
         _generate_report: generate summary report
         """
@@ -526,14 +542,15 @@ class StringTieUtil:
                                                  [{'ref': obj_ref}]})['data'][0]
         expression_info = expression_object['info']
         expression_data = expression_object['data']
+        objects_created = []
 
         expression_object_type = expression_info[2]
         if re.match('KBaseRNASeq.RNASeqExpression-\d+.\d+', expression_object_type):
-            objects_created = [{'ref': obj_ref,
-                                'description': 'Expression generated by StringTie'}]
+            objects_created.append({'ref': obj_ref,
+                                    'description': 'Expression generated by StringTie'})
         elif re.match('KBaseSets.ExpressionSet-\d+.\d+', expression_object_type):
-            objects_created = [{'ref': obj_ref,
-                                'description': 'ExpressionSet generated by StringTie'}]
+            objects_created.append({'ref': obj_ref,
+                                    'description': 'ExpressionSet generated by StringTie'})
             items = expression_data['items']
             for item in items:
                 objects_created.append({'ref': item['ref'],
@@ -542,6 +559,10 @@ class StringTieUtil:
                                     'description': 'FPKM ExpressionMatrix generated by StringTie'})
             objects_created.append({'ref': exprMatrix_TPM_ref,
                                     'description': 'TPM ExpressionMatrix generated by StringTie'})
+        if genome_ref:
+            objects_created.append({'ref': genome_ref,
+                                    'description': 'Genome containing novel transcripts generated '
+                                                   'by StringTie'})
 
         report_params = {'message': '',
                          'workspace_name': workspace_name,
@@ -579,16 +600,21 @@ class StringTieUtil:
             alignment_name = alignment_info[1]
             alignment_label = alignment_data['condition']
 
-            result_directory = os.path.join(self.scratch, 
+            result_directory = os.path.join(self.scratch,
                                             alignment_name + '_' + str(uuid.uuid4()))
             self._mkdir_p(result_directory)
 
             # input files
-            params['input_file'] = self._get_input_file(alignment_ref)
             if not params.get('gtf_file'):
                 params['gtf_file'] = self._get_gtf_file(alignment_ref, result_directory)
+                if params.get('label'):
+                    if params['label'] in open(params['gtf_file']).read():
+                        raise ValueError("Provided prefix for transcripts matches an existing "
+                                         "feature ID. Please select a different label for "
+                                         "transcripts.")
             else:
                 shutil.copy(params.get('gtf_file'), result_directory)
+            params['input_file'] = self._get_input_file(alignment_ref)
             log('using {} as reference annotation file.'.format(params.get('gtf_file')))
 
             # output files
@@ -596,24 +622,26 @@ class StringTieUtil:
             params['output_transcripts'] = os.path.join(result_directory, self.output_transcripts)
 
             self.gene_abundances_file = 'genes.fpkm_tracking'
-            params['gene_abundances_file'] = os.path.join(result_directory, 
+            params['gene_abundances_file'] = os.path.join(result_directory,
                                                           self.gene_abundances_file)
 
             command = self._generate_command(params)
             self._run_command(command)
 
             if params.get('exchange_gene_ids'):
-                self._exchange_gene_ids(result_directory)
+                exchange_gene_ids(result_directory)
 
             if ('generate_ws_object' in params and not params.get('generate_ws_object')):
                 log('skip generating expression object')
                 expression_obj_ref = ''
             else:
-                expression_obj_ref = self._save_expression(result_directory,
-                                                           alignment_ref,
-                                                           params.get('workspace_name'),
-                                                           params['gtf_file'],
-                                                           params['expression_suffix'])
+                expression_obj_ref = self._save_expression(
+                    result_directory,
+                    alignment_ref,
+                    params.get('workspace_name'),
+                    params['expression_suffix'],
+                    params.get('genome_ref'),
+                    params.get('novel_isoforms', 0))
 
             returnVal = {'result_directory': result_directory,
                          'expression_obj_ref': expression_obj_ref,
@@ -633,7 +661,7 @@ class StringTieUtil:
         _process_alignment_set_object: process KBaseRNASeq.RNASeqAlignmentSet type input object
         """
 
-        log('start processing AlignmentSet object\nparams:\n{}'.format(json.dumps(params, 
+        log('start processing AlignmentSet object\nparams:\n{}'.format(json.dumps(params,
                                                                                   indent=1)))
         alignment_set_ref = params.get('alignment_set_ref')
 
@@ -648,11 +676,11 @@ class StringTieUtil:
             alignment_upload_params = params.copy()
             alignment_upload_params['alignment_ref'] = alignment_ref
             mul_processor_params.append(alignment_upload_params)
-        
+
         cpus = min(params.get('num_threads'), multiprocessing.cpu_count())
         pool = Pool(ncpus=cpus)
         log('running _process_alignment_object with {} cpus'.format(cpus))
-        alignment_expression_map = pool.map(self._process_alignment_object, 
+        alignment_expression_map = pool.map(self._process_alignment_object,
                                             mul_processor_params)
 
         for proc_alignment_return in alignment_expression_map:
@@ -669,7 +697,7 @@ class StringTieUtil:
             alignment_info = self.ws.get_object_info3({'objects': [{"ref": alignment_ref}]})
             alignment_name = alignment_info['infos'][0][1]
             self._run_command('cp -R {} {}'.format(proc_alignment_return.get('result_directory'),
-                                                   os.path.join(result_directory, 
+                                                   os.path.join(result_directory,
                                                                 alignment_name)))
         if ('generate_ws_object' in params and not params.get('generate_ws_object')):
             log('skip generating expression set object')
@@ -679,13 +707,14 @@ class StringTieUtil:
             expression_obj_ref = self._save_expression_set(alignment_expression_map,
                                                            alignment_set_ref,
                                                            params.get('workspace_name'),
-                                                           params['expression_set_suffix'])
+                                                           params['expression_set_suffix'],
+                                                           params.get('genome_ref'))
             expression_matrix_refs = self._save_expression_matrix(expression_obj_ref,
                                                                   params.get('workspace_name'))
 
         annotation_file_name = os.path.basename(alignment_expression_map[0]['annotation_file'])
-        annotation_file_path = os.path.join(result_directory, 
-                                            os.listdir(result_directory)[0], 
+        annotation_file_path = os.path.join(result_directory,
+                                            os.listdir(result_directory)[0],
                                             annotation_file_name)
 
         returnVal = {'result_directory': result_directory,
@@ -735,88 +764,90 @@ class StringTieUtil:
 
         self._run_command(command)
 
-    def _filter_merge_file(self, gtf_file):
-        """
-        _filter_merge_file: remove lines with no gene_name
-        """
+    def _get_genome_ref(self, alignment_set_ref):
+        """Get a genome ref from an alignment set"""
+        alignment_set_data = self.dfu.get_objects(
+            {"object_refs": [alignment_set_ref]})['data'][0]['data']
 
-        log('start filtering merged gft file')
-        
-        dir_name = os.path.dirname(gtf_file)
+        for alignment in alignment_set_data['items']:
+            alignment_data = self.dfu.get_objects(
+                {"object_refs":[alignment['ref']]})['data'][0]['data']
+            return alignment_data['genome_id']
 
-        filtered_file_name = 'filtered_stringtie_merge.gtf'
-        filtered_file_path = os.path.join(dir_name, filtered_file_name)
-       
-        with open(filtered_file_path, 'w') as output_file:
-            with open(gtf_file, 'r') as input_file:
-                for line in input_file:
-                    if line.startswith('#') or 'gene_name' in line:
-                        output_file.write(line)
-                    else:
-                        log('skipping line:\n{}'.format(line))
+    def _save_genome_with_novel_isoforms(self, workspace, genome_ref,
+                                         gff_file, new_genome_name=None):
+        """"""
+        log('Saving genome with novel isoforms')
+        genome_data = self.dfu.get_objects(
+            {"object_refs": [genome_ref]})['data'][0]['data']
+        if 'assembly_ref' in genome_data:
+            assembly_ref = genome_data['assembly_ref']
+        elif 'contigset_ref' in genome_data:
+            assembly_ref = genome_data['contigset_ref']
+        else:
+            raise ValueError("Genome missing assembly")
+        fasta_file = self.au.get_assembly_as_fasta(
+            {'ref': assembly_ref})['path']
+        if not new_genome_name:
+            new_genome_name = genome_data['id'] + "_stringtie"
+        ret = self.gfu.fasta_gff_to_genome({
+                'workspace_name': workspace,
+                'genome_name': new_genome_name,
+                'fasta_file': {'path': fasta_file},
+                'gff_file': {'path': gff_file},
+                'source': 'StringTie'
+            })
+        return ret['genome_ref']
 
-        return filtered_file_path
+    def _novel_isoform_mode(self, alignment_object_ref, params):
+        """This is a three step process: First, run StringTie on all the alignments individually
+          which will produce novel transcripts. Next, merge the resulting transcripts together.
+          Finally, rerun StringTie with the merged GTF file as the reference genome.
+          """
+        log('running Stringtie the 1st time')
+        params.update({'ballgown_mode': 0,
+                       'skip_reads_with_no_ref': 0,
+                       'generate_ws_object': False,
+                       'exchange_gene_ids': 1})
+        returnVal = self._process_alignment_set_object(params)
+        first_run_result_dir = returnVal.get('result_directory')
+        annotation_file = returnVal['annotation_file']
 
-    def _exchange_gene_ids(self, result_directory):
-        """
-        _exchange_gene_ids: exchange gene_ids with gene_name
-        """
+        log('running StringTie merge')
+        self._run_merge_option(first_run_result_dir, params, annotation_file)
+        merge_file = os.path.join(first_run_result_dir,
+                                  'merge_result',
+                                  'stringtie_merge.gtf')
 
-        log('starting exchanging gene_ids with gene_name')
+        old_genome_ref = self._get_genome_ref(alignment_object_ref)
+        ret = self.gfu.genome_to_gff({'genome_ref': old_genome_ref,
+                                      'target_dir': first_run_result_dir})
+        self._run_gffcompare(ret['file_path'], merge_file)
+        comp_file = os.path.join(first_run_result_dir, 'merge_result', 'gffcmp.annotated.gtf')
+        upload_file = _make_gff(comp_file, ret['file_path'], params.get('label', 'MSTRG.'))
+        params['genome_ref'] = self._save_genome_with_novel_isoforms(
+            params['workspace_name'], old_genome_ref, upload_file,
+            params.get('novel_isoforms', {}).get('stringtie_genome_name'))
+        _update_merge_file(merge_file)
 
-        result_files = os.listdir(result_directory)
+        log('running StringTie the 3rd time with merged gtf')
+        params.update({'gtf_file': merge_file,
+                       'generate_ws_object': True,
+                       'exchange_gene_ids': 0,
+                       'ballgown_mode': 1,
+                       'skip_reads_with_no_ref': 1})
+        returnVal = self._process_alignment_set_object(params)
 
-        for result_file_name in result_files:
-            if result_file_name == 'transcripts.gtf':
-                log('updating transcripts.gtf gene_ids')
-                os.rename(os.path.join(result_directory, 'transcripts.gtf'),
-                          os.path.join(result_directory, 'original_transcripts.gtf'))
-                original_transcript_path = os.path.join(result_directory, 
-                                                        'original_transcripts.gtf')
-                exchange_transcript_path = os.path.join(result_directory, 
-                                                        result_file_name)
+        shutil.move(os.path.join(first_run_result_dir, 'merge_result'),
+                    returnVal.get('result_directory'))
 
-                with open(exchange_transcript_path, 'w') as output_file:
-                    with open(original_transcript_path, 'r') as input_file:
-                        for line in input_file:
-                            if 'gene_id \"' in line and 'ref_gene_name \"' in line:
-                                gene_id = line.split('gene_id \"')[1].split('"')[0]
-                                gene_name = line.split('ref_gene_name \"')[1].split('"')[0]
-                                line = line.replace(gene_id, gene_name)
-                                output_file.write(line)
-                            elif 'gene_id \"' in line and 'gene_name \"' in line:
-                                gene_id = line.split('gene_id \"')[1].split('"')[0]
-                                gene_name = line.split('gene_name \"')[1].split('"')[0]
-                                line = line.replace(gene_id, gene_name)
-                                output_file.write(line)
-                            else:
-                                output_file.write(line)
-            elif result_file_name == 't_data.ctab':
-                log('updating t_data.ctab gene_ids')
-                os.rename(os.path.join(result_directory, 't_data.ctab'),
-                          os.path.join(result_directory, 'original_t_data.ctab'))
-                original_tdata_path = os.path.join(result_directory, 
-                                                   'original_t_data.ctab')
-                exchange_tdata_path = os.path.join(result_directory, 
-                                                   result_file_name)
-
-                first_line = True
-                with open(exchange_tdata_path, 'w') as output_file:
-                    with open(original_tdata_path, 'r') as input_file:
-                        for line in input_file:
-                            if first_line:
-                                gene_id_index = line.split('\t').index('gene_id')
-                                gene_name_index = line.split('\t').index('gene_name')
-                                first_line = False
-                                output_file.write(line)
-                            else:
-                                line_list = line.split('\t')
-                                if len(line_list) >= max(gene_id_index, gene_name_index):
-                                    line_list[gene_id_index] = line_list[gene_name_index]
-                                    line = '\t'.join(line_list)
-                                    output_file.write(line)
-                                else:
-                                    output_file.write(line)
+        report_output = self._generate_report(returnVal.get('expression_obj_ref'),
+                                              params.get('workspace_name'),
+                                              returnVal.get('result_directory'),
+                                              returnVal.get('exprMatrix_FPKM_ref'),
+                                              returnVal.get('exprMatrix_TPM_ref'),
+                                              params['genome_ref'])
+        return report_output, returnVal
 
     def __init__(self, config):
         self.ws_url = config["workspace-url"]
@@ -832,7 +863,7 @@ class StringTieUtil:
         self.eu = ExpressionUtils(self.callback_url)
         self.ws = Workspace(self.ws_url, token=self.token)
         self.set_client = SetAPI(self.srv_wiz_url, service_ver='dev')
-       
+
     def run_stringtie_app(self, params):
         """
         run_stringtie_app: run StringTie app
@@ -869,9 +900,12 @@ class StringTieUtil:
             'params:\n{}'.format(json.dumps(params, indent=1)))
 
         self._validate_run_stringtie_params(params)
+        if isinstance(params.get('novel_isoforms'), dict) and \
+                "transcript_label" in params['novel_isoforms']:
+            params['label'] = params['novel_isoforms']['transcript_label']
 
         alignment_object_ref = params.get('alignment_object_ref')
-        alignment_object_info = self.ws.get_object_info3({"objects": 
+        alignment_object_info = self.ws.get_object_info3({"objects":
                                                          [{"ref": alignment_object_ref}]}
                                                          )['infos'][0]
         alignment_object_type = alignment_object_info[2]
@@ -886,59 +920,12 @@ class StringTieUtil:
         elif (re.match('KBaseRNASeq.RNASeqAlignmentSet-\d.\d', alignment_object_type) or
               re.match('KBaseSets.ReadsAlignmentSet-\d.\d', alignment_object_type)):
             params.update({'alignment_set_ref': alignment_object_ref})
-            if params.get('mode') in ['merge', 'novel_isoform']:
-
-                log('running Stringtie the 1st time')
-                if params.get('mode') == 'novel_isoform':
-                    params.update({'ballgown_mode': 0})
-                    params.update({'skip_reads_with_no_ref': 0})
-                elif params.get('mode') == 'merge':
-                    params.update({'ballgown_mode': 1})
-                    params.update({'skip_reads_with_no_ref': 1})
-
-                params['generate_ws_object'] = False
-                params['exchange_gene_ids'] = False
-                returnVal = self._process_alignment_set_object(params)
-                first_run_result_dir = returnVal.get('result_directory')
-                annotation_file = returnVal['annotation_file']
-
-                log('running StringTie merge')
-                self._run_merge_option(first_run_result_dir, params, annotation_file)
-
-                merge_file = os.path.join(first_run_result_dir, 
-                                          'merge_result', 
-                                          'stringtie_merge.gtf')
-
-                log('running StringTie the 3rd time with merged gtf')
-                if params.get('mode') == 'novel_isoform':
-                    params.update({'gtf_file': merge_file})
-                elif params.get('mode') == 'merge':
-                    filtered_merge_file = self._filter_merge_file(merge_file)
-                    params.update({'gtf_file': filtered_merge_file})
-                    params.update({'generate_ws_object': True})
-                    params.update({'exchange_gene_ids': 1})
-
-                params.update({'ballgown_mode': 1})
-                params.update({'skip_reads_with_no_ref': 1})
-                returnVal = self._process_alignment_set_object(params)
-
-                self._run_command('cp -R {} {}'.format(os.path.join(first_run_result_dir,
-                                                       'merge_result'),
-                                                       returnVal.get('result_directory')))
-
-                if params.get('mode') == 'novel_isoform':
-                    report_output = self._generate_merge_report(params.get('workspace_name'),
-                                                                returnVal.get('result_directory'))
-                elif params.get('mode') == 'merge':
-                    report_output = self._generate_report(returnVal.get('expression_obj_ref'),
-                                                          params.get('workspace_name'),
-                                                          returnVal.get('result_directory'),
-                                                          returnVal.get('exprMatrix_FPKM_ref'),
-                                                          returnVal.get('exprMatrix_TPM_ref'))
+            if params.get('novel_isoforms'):
+                report_output, returnVal = self._novel_isoform_mode(alignment_object_ref, params)
             else:
-                params.update({'ballgown_mode': 1})
-                params.update({'skip_reads_with_no_ref': 1})
-                params.update({'exchange_gene_ids': 0})
+                params.update({'ballgown_mode': 1,
+                               'skip_reads_with_no_ref': 1,
+                               'exchange_gene_ids': 0})
 
                 returnVal = self._process_alignment_set_object(params)
 

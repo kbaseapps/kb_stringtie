@@ -4,52 +4,24 @@ python:
 sudo: required
 services:
 - docker
-notifications:
-  email:
-    recipients:
-    - tgu@anl.gov
-    on_success: never
-    on_failure: always
-env:
-  global:
-  - secure: HZcs6xGAkdXWCkwJ0gyy/fKhc0v9pKPuvweJrCcaAdbBcgFLwNxFPzTL3B2ZMI196e4sWJnCTteWP/UmlufLItNI2nh58Ib2Pk5RKFzAM1sXEBWLcWcFJKZHtenS7Z/XbPmigy4wwLawuTLP6yl2P006UYGVlG4NsoMZaH9RdAY6l8OOXe3dhfuRBQGvXzz1hCHsX8ilnJpF5iNPXqd//TxTJJwmzLr0hSPYZhIcQHQWXLPOs3F0ba3x0QdTftGCuHHg22ETsy2yj5EvcOo2Taigq1Lg4q7Ij5dmWHmOCJkDVpGoX+yF+ziGWXpmIYnlzYpt53NOKb1mpmh16/A87xy+uvwiWGH9Y2dbey5mmNxZ5fKubQo92Xfy+IqXNq5pQe8uRpfeq4E4TM8fjdT9997H59ToQkBC9O5ATckz36N6R/UJlUlOmm12+B4n/T+/A4vXkut3ZrmX6SgvM48zI7zxuhKbXvVYjtg8EVTOInd8+RUte2zrRCKNFNP1Z0wpX96ds5bxQ26GzUuebb/z1UBneMtjrPbZCzTCTswpAR0wr4xk5WR7Q5XdTyLu/osv9KspeK5nMty81PAH18Pnea40SOzdaRwYaPtGfvxJB6yAvs/HJIKVTT5zX5WDIN092KGzNsKZUDRWZpw8vvHyrn8YvK1Mo/E7h7rQ26ht1ME=
-branches:
-  only:
-  - master
-before_install:
-- docker version
-- python --version
-- javac -version
-- java -version
 install:
-- pip install coveralls
-- git clone https://github.com/kbase/jars
-- git clone https://github.com/kbase/kb_sdk
-- cd kb_sdk
-- make
-- make sdkbase
-- docker images
-- export PATH=$(pwd)/bin:$PATH
-- cd ../
-- git clone https://github.com/kbaseapps/kb_stringtie.git
-- cd kb_stringtie
+- docker pull kbase/kb-sdk
+- docker run kbase/kb-sdk genscript > $HOME/bin/kb-sdk
+- chmod 755 $HOME/bin/kb-sdk
+- export PATH=$PATH:$HOME/bin/kb-sdk
+- kb-sdk sdkbase
 - kb-sdk test || true
+- make build-test-script
 - sed -i "s/test_token=/test_token=$TEST_TOKEN/" test_local/test.cfg
-- sed -i 's/$(id -u)/0:0/' test_local/run_tests.sh
-- pwd=$(pwd)
-- echo "#!/bin/bash" >> test_local/run_subjob.sh
-- echo -e "$pwd/test_local/run_docker.sh run --rm --user 0:0 -v $pwd/test_local/subjobs/\$1/workdir:/kb/module/work
-  -v $pwd/test_local/workdir/tmp:/kb/module/work/tmp \$4 -e \"SDK_CALLBACK_URL=\$3\"
-  \$2 async" >> test_local/run_subjob.sh
-- cat test_local/run_subjob.sh
+- sed -i "s/appdev./ci./" test_local/test.cfg
 script:
 - kb-sdk test
 after_success:
 - cp test_local/workdir/.coverage .
 - sudo mkdir -p /kb/module/lib/
-- sudo cp -R test_local/workdir/kb/module/lib/kb_stringtie /kb/module/lib/
-- pwd
-- ls -l /kb/module/lib/kb_stringtie
-- cat .coverage
+- sudo cp -R test_local/workdir/kb/module/lib/kb_deseq /kb/module/lib/
 - coverage report -m
 - coveralls
+env:
+  global:
+    secure: k4nH2/hNleBETX2MX/dOrAjcA9X2C53kwSjunTu+YdMXJhS7E9NiZPsUA46PiZNfr92Qikpi9ofinQTU1rnkSxoBmZPoe0hwnWCqyOavin8BWk+TCRjPUEQQ7gfe3CP0KRq906+J3OpJdGpHhF4pseZRvuVyaTic1KVgGMY9a6UUci/CrMdqc3yMQitMHymTcWi9lZ7yT+mKfNBn/HLVqzqtX3cns05Oq+v6rqrUreLbZyFf7V0sAtnZCO3w92WDzYAGRjVbIPPnnH7Mq1ZA+lwTwG2IaIgIwTlJ/7b5IksW+WqRgYE+FFMopctV/HJpkLVhRXxASOZIRZb7OvMdekSYfvkzJtyu4WM5EC5ZcFm6SWbP/85FAtAT42c9n3JSBv8tqtgYW5/pTzp7nDuwd32Yq9pcGCZJmXNyg6VDKKmskz+RVA4Bfn74BnkuBljS6EXIlldCj2UL5vszDCZg5WxZKYSnrjHHgmX3SRHB8iKY84wddZD71fNx5kriOeNK+A8Wf943UiGC0eTsLi9zLb7EC+0Mgc1KPjogzAycyKDb3dHRBvTg5IEDBikgv/rbILO/0ZsIv03t9+EE9TqHiq5gSaQjxol3jCtDoAjo+jh58/DTybwHxVT07m1M5cVrCZlvgSUlojQKKJ0jYCrCqhEeV3uQJyQin65SD1gHQbs=

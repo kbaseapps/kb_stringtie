@@ -1,4 +1,4 @@
-FROM kbase/kbase:sdkbase.latest
+FROM kbase/kbase:sdkbase2.latest
 MAINTAINER KBase Developer
 # -----------------------------------------
 # In this section, you can install any system dependencies required
@@ -11,17 +11,8 @@ MAINTAINER KBase Developer
 # Here we install a python coverage tool and an
 # https library that is out of date in the base image.
 
-RUN pip install coverage
-
-# update security libraries in the base image
-RUN pip install cffi --upgrade \
-    && pip install pyopenssl --upgrade \
-    && pip install ndg-httpsclient --upgrade \
-    && pip install pyasn1 --upgrade \
-    && pip install requests --upgrade \
-    && pip install 'requests[security]' --upgrade
-
-RUN pip install pathos
+RUN pip install coverage && \
+    pip install pathos
 
 # download StringTie software and untar it
 RUN cd /kb/dev_container/modules && \
@@ -52,6 +43,17 @@ RUN cd /kb/dev_container/modules && \
     cd gffread-0.9.9.Linux_x86_64 && \
     mkdir /kb/deployment/bin/gffread && \
     cp -R gffread /kb/deployment/bin/gffread/gffread
+
+# -----------------------------------------
+
+# download gffcompare script
+RUN cd /kb/dev_container/modules && \
+    mkdir gffcompare && cd gffcompare && \
+    wget http://ccb.jhu.edu/software/stringtie/dl/gffcompare-0.10.4.Linux_x86_64.tar.gz	 &&\
+    tar xvfz gffcompare-0.10.4.Linux_x86_64.tar.gz	 && \
+    cd gffcompare-0.10.4.Linux_x86_64	 && \
+    mkdir /kb/deployment/bin/gffcompare && \
+    cp -R gffcompare /kb/deployment/bin/gffcompare/gffcompare
 
 # -----------------------------------------
 
