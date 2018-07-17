@@ -224,7 +224,8 @@ class StringTieUtil:
             ret = self.au.get_assembly_as_fasta({'ref': contig_id})
             fa_output_file = ret['path']
 
-            shutil.copy(fa_output_file, result_directory)
+            if os.path.dirname(fa_output_file) != result_directory:
+                shutil.copy(fa_output_file, result_directory)
 
             # get the GFF
             ret = self.gfu.genome_to_gff({'genome_ref': genome_ref,
@@ -670,6 +671,16 @@ class StringTieUtil:
                                                                     'include_item_info': 0,
                                                                     'include_set_item_ref_paths': 1
                                                                     })
+        # pull down the genome once so as to avoid duplicate effort
+        if not params.get('gtf_file'):
+            alignment_ref = alignment_set["data"]["items"][0]["ref_path"]
+            params['gtf_file'] = self._get_gtf_file(alignment_ref, self.scratch)
+            if params.get('label'):
+                if params['label'] in open(params['gtf_file']).read():
+                    raise ValueError("Provided prefix for transcripts matches an existing "
+                                     "feature ID. Please select a different label for "
+                                     "transcripts.")
+
         mul_processor_params = []
         for alignment in alignment_set["data"]["items"]:
             alignment_ref = alignment['ref_path']
