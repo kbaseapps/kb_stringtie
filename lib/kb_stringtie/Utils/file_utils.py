@@ -128,26 +128,3 @@ def _update_merge_file(original_transcript_path):
                     line = line.replace(gene_id, ref_id)
 
                 output_file.write(line)
-
-
-def _filter_merge_file(gtf_file):
-    """
-    _filter_merge_file: remove lines with no gene_name
-    """
-
-    log('start filtering merged gft file')
-
-    dir_name = os.path.dirname(gtf_file)
-
-    filtered_file_name = 'filtered_stringtie_merge.gtf'
-    filtered_file_path = os.path.join(dir_name, filtered_file_name)
-
-    with open(filtered_file_path, 'w') as output_file:
-        with open(gtf_file, 'r') as input_file:
-            for line in input_file:
-                if line.startswith('#') or 'gene_name' in line:
-                    output_file.write(line)
-                else:
-                    log('skipping line:\n{}'.format(line))
-
-    return filtered_file_path
