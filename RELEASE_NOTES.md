@@ -25,5 +25,8 @@ Having only one stringtie app that does merge and novel-isoform
 1.0.9:
 Update display yaml file
 
-### Version 1.1.0
-- Module updated to handle ref chains for Reads Alignments within the input Alignment Set
+1.1.0:
+Module updated to handle ref chains for Reads Alignments within the input Alignment Set
+
+Version 1.1.2:
+Update the baseclients for all modules used to resolve _check_job BADSTATUSCODE failure
