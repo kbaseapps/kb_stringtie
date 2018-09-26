@@ -14,7 +14,7 @@ Add merge option to merge result gtf files
 Add a third run using merge reference annotation
 
 1.0.6:
-Split StringTie app and StringTie app with novel isoform 
+Split StringTie app and StringTie app with novel isoform
 
 1.0.7:
 Generate ExpressionMatrix object
@@ -30,3 +30,6 @@ Module updated to handle ref chains for Reads Alignments within the input Alignm
 
 Version 1.1.2:
 Update the baseclients for all modules used to resolve _check_job BADSTATUSCODE failure
+
+1.1.3:
+Updated citations to PLOS format

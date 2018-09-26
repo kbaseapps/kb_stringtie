@@ -25,7 +25,7 @@ method-suggestions :
 parameters :
   alignment_object_ref :
     ui-name : |
-        Reads Alignment or Reads AlignmentSet 
+        Reads Alignment or Reads AlignmentSet
     short-hint : |
         Select the RNASeqAlignment or AlignmentSet created by HISAT2, TopHat2 or Bowtie2.
   stringtie_genome_name :
@@ -52,10 +52,10 @@ parameters :
     ui-name : |
       Minimum Isoform Abundance
     short-hint : |
-      Set the minimum isoform abundance of the predicted transcripts as a fraction of the most abundant transcript assembled at a given locus. Lower abundance transcripts are often artifacts of incompletely spliced precursors of processed transcripts. Default: 0.1. 
+      Set the minimum isoform abundance of the predicted transcripts as a fraction of the most abundant transcript assembled at a given locus. Lower abundance transcripts are often artifacts of incompletely spliced precursors of processed transcripts. Default: 0.1.
   junction_base :
     ui-name : |
-      Filter Junctions 
+      Filter Junctions
     short-hint : |
       Junctions that don't have spliced reads that align across them with at least this amount of bases on both sides are filtered out. Default is 10.
   min_length :
@@ -93,30 +93,34 @@ description : |
     <p>The StringTie output object can be used to identify differential expression either using DESeq2, Cuffdiff or Ballgown.</p>
     <p>This method is one of the steps of the <a href= "http://kbase.us/rna-seq/"> KBase RNA-seq Pipeline </a>, however it can also be run standalone.</p>
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong> Tianhao Gu, Christopher Henry, Shane Canon, Stephen Chan, Jason Baumohl, Sean McCorkle, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Vivek Kumar</p>
-    
+
 publications :
     -
         display-text: |
-            Pertea M, Pertea GM, Antonescu CM, Chang TC, Mendell JT & Salzberg SL. StringTie enables improved reconstruction of a transcriptome from RNA-seq reads Nature Biotechnology 2015
-        link: http://www.nature.com/nbt/journal/v33/n3/full/nbt.3122.html
-    -
-        display-text: |
-            Kim D, Langmead B and Salzberg SL (2015). HISAT: a fast spliced aligner with low memory requirements. Nature Methods 2015
-        link: http://www.nature.com/nmeth/journal/v12/n4/full/nmeth.3317.html
+            Frazee AC, Pertea G, Jaffe AE, Langmead B, Salzberg SL, Leek JT. Ballgown bridges the gap between transcriptome assembly and expression analysis. Nat Biotechnol. 2015;33: 243–246. doi:10.1038/nbt.3172
+        link: https://www.nature.com/articles/nbt.3172
 
-        display-text: |
-            Kim D, Pertea G, Trapnell C, Pimentel H, Kelley R, Salzberg SL (2013) TopHat2: accurate alignment of transcriptomes in the presence of insertions, deletions and gene fusions. Genome Biology. 14:R36
-        link: http://www.genomebiology.com/2013/14/4/R36/abstract
-    -    
-        display-text: |
-            Trapnell C, Roberts A, Goff L, Pertea G, Kim D, Kelley DR, Pimentel H, Salzberg SL, Rinn JL, Pachter, L (2012) Differential gene and transcript expression analysis of RNA-seq experiments with TopHat and Cufflinks. Nature Protocols, 7(3), 562–578.
-        link: http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3334321/
     -
-        display-text: |
-            Trapnell C, Pachter L, Salzberg SL. (2009) TopHat: discovering splice junctions with RNA-Seq. Bioinformatics. Vol 25, 9:1105-1111.
-        link: http://bioinformatics.oxfordjournals.org/content/25/9/1105.abstract
-    -
-        display-text: |
-            Frazee, A. C., Pertea, G., Jaffe, A. E., Langmead, B., Salzberg, S. L., & Leek, J. T. (2015). Ballgown bridges the gap between transcriptome assembly and expression analysis. Nature Biotechnology, 33(3), 243–246.
-        link: http://www.ncbi.nlm.nih.gov/pmc/articles/PMC4792117/
+        display text: |
+            Kim D, Langmead B, Salzberg SL. HISAT: a fast spliced aligner with low memory requirements. Nature Methods. 2015;12: 357–360. doi:10.1038/nmeth.3317
+        link: https://www.nature.com/articles/nmeth.3317
 
+    -
+        display-text: |
+            Kim D, Pertea G, Trapnell C, Pimentel H, Kelley R, Salzberg SL. TopHat2: accurate alignment of transcriptomes in the presence of insertions, deletions and gene fusions. Genome Biology. 2013;14: R36. doi:10.1186/gb-2013-14-4-r36
+        link: https://genomebiology.biomedcentral.com/articles/10.1186/gb-2013-14-4-r36
+
+    -
+        display-text: |
+            Pertea M, Pertea GM, Antonescu CM, Chang T-C, Mendell JT, Salzberg SL. StringTie enables improved reconstruction of a transcriptome from RNA-seq reads. Nature Biotechnology. 2015;33: 290–295. doi:10.1038/nbt.3122
+        link: https://www.nature.com/articles/nbt.3122
+
+    -
+        display-text: |
+            Trapnell C, Pachter L, Salzberg SL. TopHat: discovering splice junctions with RNA-Seq. Bioinformatics. 2009;25: 1105–1111. doi:10.1093/bioinformatics/btp120
+        link: https://academic.oup.com/bioinformatics/article/25/9/1105/203994
+
+    -
+        display-text: |
+            Trapnell C, Roberts A, Goff L, Pertea G, Kim D, Kelley DR, et al. Differential gene and transcript expression analysis of RNA-seq experiments with TopHat and Cufflinks. Nat Protoc. 2012;7: 562–578. doi:10.1038/nprot.2012.016
+        link: https://www.nature.com/articles/nprot.2012.016
