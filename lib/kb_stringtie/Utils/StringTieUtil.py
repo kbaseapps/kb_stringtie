@@ -13,14 +13,14 @@ import zipfile
 
 from pathos.multiprocessing import ProcessingPool as Pool
 
-from AssemblyUtil.AssemblyUtilClient import AssemblyUtil
-from DataFileUtil.DataFileUtilClient import DataFileUtil
-from ExpressionUtils.ExpressionUtilsClient import ExpressionUtils
-from GenomeFileUtil.GenomeFileUtilClient import GenomeFileUtil
-from KBaseReport.KBaseReportClient import KBaseReport
-from ReadsAlignmentUtils.ReadsAlignmentUtilsClient import ReadsAlignmentUtils
-from SetAPI.SetAPIServiceClient import SetAPI
-from Workspace.WorkspaceClient import Workspace as Workspace
+from installed_clients.AssemblyUtilClient import AssemblyUtil
+from installed_clients.DataFileUtilClient import DataFileUtil
+from installed_clients.ExpressionUtilsClient import ExpressionUtils
+from installed_clients.GenomeFileUtilClient import GenomeFileUtil
+from installed_clients.KBaseReportClient import KBaseReport
+from installed_clients.ReadsAlignmentUtilsClient import ReadsAlignmentUtils
+from installed_clients.SetAPIServiceClient import SetAPI
+from installed_clients.WorkspaceClient import Workspace as Workspace
 from .file_utils import exchange_gene_ids, _update_merge_file, _make_gff
 
 
