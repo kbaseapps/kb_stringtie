@@ -3,11 +3,35 @@
   "type" : "sdk",
   "version_tag" : "release"
 }, {
+  "module_name" : "DataFileUtil",
+  "type" : "sdk",
+  "version_tag" : "release"
+}, {
   "module_name" : "ExpressionUtils",
+  "type" : "sdk",
+  "version_tag" : "release"
+}, {
+  "module_name" : "GenomeFileUtil",
+  "type" : "sdk",
+  "version_tag" : "release"
+}, {
+  "module_name" : "KBaseReport",
+  "type" : "sdk",
+  "version_tag" : "release"
+}, {
+  "module_name" : "ReadsAlignmentUtils",
+  "type" : "sdk",
+  "version_tag" : "release"
+}, {
+  "module_name" : "ReadsUtils",
   "type" : "sdk",
   "version_tag" : "release"
 }, {
   "module_name" : "SetAPI",
   "type" : "sdk",
   "version_tag" : "release"
+}, {
+  "module_name" : "Workspace",
+  "type" : "core",
+  "file_path" : "https://raw.githubusercontent.com/kbase/workspace_deluxe/master/workspace.spec"
 } ]

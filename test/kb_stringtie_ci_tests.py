@@ -10,15 +10,15 @@ except:
     from configparser import ConfigParser  # py3
 
 from biokbase.workspace.client import Workspace as workspaceService
-from Workspace.WorkspaceClient import Workspace as Workspace
+from installed_clients.WorkspaceClient import Workspace as Workspace
 from kb_stringtie.kb_stringtieImpl import kb_stringtie
 from kb_stringtie.kb_stringtieServer import MethodContext
 from kb_stringtie.authclient import KBaseAuth as _KBaseAuth
 from kb_stringtie.Utils.StringTieUtil import StringTieUtil
-from GenomeFileUtil.GenomeFileUtilClient import GenomeFileUtil
-from ReadsUtils.ReadsUtilsClient import ReadsUtils
-from ReadsAlignmentUtils.ReadsAlignmentUtilsClient import ReadsAlignmentUtils
-from DataFileUtil.DataFileUtilClient import DataFileUtil
+from installed_clients.GenomeFileUtilClient import GenomeFileUtil
+from installed_clients.ReadsUtilsClient import ReadsUtils
+from installed_clients.ReadsAlignmentUtilsClient import ReadsAlignmentUtils
+from installed_clients.DataFileUtilClient import DataFileUtil
 
 
 class kb_stringtie_ciTest(unittest.TestCase):
