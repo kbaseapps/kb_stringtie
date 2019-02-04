@@ -22,9 +22,9 @@ class kb_stringtie:
     # state. A method could easily clobber the state set by another while
     # the latter method is running.
     ######################################### noqa
-    VERSION = "1.1.0"
+    VERSION = "1.2.0"
     GIT_URL = "https://github.com/kbaseapps/kb_stringtie.git"
-    GIT_COMMIT_HASH = "5cad090efa931049afb1dee8dbf8eb952f9626fb"
+    GIT_COMMIT_HASH = "3f72e8205250a2b750c474d84747e683c6efb63e"
 
     #BEGIN_CLASS_HEADER
     #END_CLASS_HEADER
@@ -98,11 +98,11 @@ class kb_stringtie:
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN run_stringtie_app
-        print '--->\nRunning kb_stringtie.run_stringtie\nparams:'
-        print json.dumps(params, indent=1)
+        print('--->\nRunning kb_stringtie.run_stringtie\nparams:')
+        print(json.dumps(params, indent=1))
 
-        for key, value in params.iteritems():
-            if isinstance(value, basestring):
+        for key, value in params.items():
+            if isinstance(value, str):
                 params[key] = value.strip()
 
         stringtie_runner = StringTieUtil(self.config)

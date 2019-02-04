@@ -1,4 +1,4 @@
-FROM kbase/kbase:sdkbase2.latest
+FROM kbase/sdkbase2:python
 MAINTAINER KBase Developer
 # -----------------------------------------
 # In this section, you can install any system dependencies required
@@ -10,13 +10,11 @@ MAINTAINER KBase Developer
 
 # Here we install a python coverage tool and an
 # https library that is out of date in the base image.
-
-RUN pip install coverage && \
-    pip install pathos
+RUN apt-get install -y wget
+RUN pip install pathos
 
 # download StringTie software and untar it
-RUN cd /kb/dev_container/modules && \
-    mkdir StringTie && cd StringTie && \
+RUN mkdir StringTie && cd StringTie && \
     wget http://ccb.jhu.edu/software/stringtie/dl/stringtie-1.3.3b.Linux_x86_64.tar.gz &&\
     tar xvfz stringtie-1.3.3b.Linux_x86_64.tar.gz && \
     cd stringtie-1.3.3b.Linux_x86_64 && \
@@ -26,8 +24,7 @@ RUN cd /kb/dev_container/modules && \
 # -----------------------------------------
 
 # download prepDE script
-RUN cd /kb/dev_container/modules && \
-    mkdir prepDE && cd prepDE && \
+RUN mkdir prepDE && cd prepDE && \
     wget http://ccb.jhu.edu/software/stringtie/dl/prepDE.py &&\
     mkdir /kb/deployment/bin/prepDE && \
     cp -R prepDE.py /kb/deployment/bin/prepDE/prepDE.py && \
@@ -36,8 +33,7 @@ RUN cd /kb/dev_container/modules && \
 # -----------------------------------------
 
 # download gffread script
-RUN cd /kb/dev_container/modules && \
-    mkdir gffread && cd gffread && \
+RUN mkdir gffread && cd gffread && \
     wget http://ccb.jhu.edu/software/stringtie/dl/gffread-0.9.9.Linux_x86_64.tar.gz &&\
     tar xvfz gffread-0.9.9.Linux_x86_64.tar.gz && \
     cd gffread-0.9.9.Linux_x86_64 && \
@@ -47,8 +43,7 @@ RUN cd /kb/dev_container/modules && \
 # -----------------------------------------
 
 # download gffcompare script
-RUN cd /kb/dev_container/modules && \
-    mkdir gffcompare && cd gffcompare && \
+RUN mkdir gffcompare && cd gffcompare && \
     wget http://ccb.jhu.edu/software/stringtie/dl/gffcompare-0.10.4.Linux_x86_64.tar.gz	 &&\
     tar xvfz gffcompare-0.10.4.Linux_x86_64.tar.gz	 && \
     cd gffcompare-0.10.4.Linux_x86_64	 && \

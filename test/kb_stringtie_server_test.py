@@ -1,29 +1,20 @@
 # -*- coding: utf-8 -*-
-import unittest
 import os  # noqa: F401
-import json  # noqa: F401
-import time
-import requests  # noqa: F401
 import shutil
-
+import time
+import unittest
+from configparser import ConfigParser  # py3
 from os import environ
-try:
-    from ConfigParser import ConfigParser  # py2
-except:
-    from configparser import ConfigParser  # py3
 
-from pprint import pprint  # noqa: F401
-
-from biokbase.workspace.client import Workspace as workspaceService
+from installed_clients.DataFileUtilClient import DataFileUtil
+from installed_clients.GenomeFileUtilClient import GenomeFileUtil
+from installed_clients.ReadsAlignmentUtilsClient import ReadsAlignmentUtils
+from installed_clients.ReadsUtilsClient import ReadsUtils
 from installed_clients.WorkspaceClient import Workspace as Workspace
+from kb_stringtie.Utils.StringTieUtil import StringTieUtil
+from kb_stringtie.authclient import KBaseAuth as _KBaseAuth
 from kb_stringtie.kb_stringtieImpl import kb_stringtie
 from kb_stringtie.kb_stringtieServer import MethodContext
-from kb_stringtie.authclient import KBaseAuth as _KBaseAuth
-from kb_stringtie.Utils.StringTieUtil import StringTieUtil
-from installed_clients.GenomeFileUtilClient import GenomeFileUtil
-from installed_clients.ReadsUtilsClient import ReadsUtils
-from installed_clients.ReadsAlignmentUtilsClient import ReadsAlignmentUtils
-from installed_clients.DataFileUtilClient import DataFileUtil
 
 
 class kb_stringtieTest(unittest.TestCase):
@@ -53,7 +44,7 @@ class kb_stringtieTest(unittest.TestCase):
                              }],
                         'authenticated': 1})
         cls.wsURL = cls.cfg['workspace-url']
-        cls.wsClient = workspaceService(cls.wsURL)
+        cls.wsClient = Workspace(cls.wsURL)
         cls.ws = Workspace(cls.wsURL, token=token)
         cls.serviceImpl = kb_stringtie(cls.cfg)
         cls.scratch = cls.cfg['scratch']
@@ -220,13 +211,13 @@ class kb_stringtieTest(unittest.TestCase):
     def test_bad_run_stringtie_app_params(self):
         invalidate_input_params = {'missing_alignment_object_ref': 'alignment_object_ref',
                                    'workspace_name': 'workspace_name'}
-        with self.assertRaisesRegexp(ValueError, 
+        with self.assertRaisesRegex(ValueError, 
                                      '"alignment_object_ref" parameter is required, but missing'):
             self.getImpl().run_stringtie_app(self.getContext(), invalidate_input_params)
 
         invalidate_input_params = {'alignment_object_ref': 'alignment_object_ref',
                                    'missing_workspace_name': 'workspace_name'}
-        with self.assertRaisesRegexp(ValueError, 
+        with self.assertRaisesRegex(ValueError, 
                                      '"workspace_name" parameter is required, but missing'):
             self.getImpl().run_stringtie_app(self.getContext(), invalidate_input_params)
 
@@ -251,13 +242,12 @@ class kb_stringtieTest(unittest.TestCase):
             'cov_refs_file': 'cov_refs_file'
         }
 
-        expect_command = '/kb/deployment/bin/StringTie/stringtie '
-        expect_command += '-p 4 -B   -C cov_refs_file -e   -G gtf_file -m 100 '
-        expect_command += '-o output_transcripts_file -A gene_abundances_file '
-        expect_command += '-f 0.6 -j 0.8 -a 8 -t   -c 1.6 -l Lable -g 60 -M 0.8 input_file '
+        expect_command = ("/kb/deployment/bin/StringTie/stringtie -o output_transcripts_file -A "
+                          "gene_abundances_file -p 4 -C cov_refs_file -a 8 -j 0.8 -t   -g 60 -B   "
+                          "-e   -M 0.8 -l Lable -G gtf_file -m 100 -c 1.6 -f 0.6 input_file ")
 
         command = self.stringtie_runner._generate_command(command_params)
-        self.assertEquals(command, expect_command)
+        self.assertEqual(command, expect_command)
 
     def test_run_stringtie_app_alignment(self):
         input_params = {
@@ -405,6 +395,6 @@ class kb_stringtieTest(unittest.TestCase):
             "ballgown_mode": 1,
             "merge": 1,
         }
-        with self.assertRaisesRegexp(ValueError, "existing feature ID"):
+        with self.assertRaisesRegex(ValueError, "existing feature ID"):
             result = self.getImpl().run_stringtie_app(self.getContext(), input_params)[0]
 

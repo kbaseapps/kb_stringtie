@@ -33,3 +33,6 @@ Update the baseclients for all modules used to resolve _check_job BADSTATUSCODE 
 
 1.1.3:
 Updated citations to PLOS format
+
+1.2.0:
+Updated citations to Python 3

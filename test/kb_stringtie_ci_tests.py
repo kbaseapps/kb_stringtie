@@ -1,24 +1,18 @@
 # -*- coding: utf-8 -*-
-import shutil
-import unittest
 import os  # noqa: F401
-
+import unittest
+from configparser import ConfigParser  # py3
 from os import environ
-try:
-    from ConfigParser import ConfigParser  # py2
-except:
-    from configparser import ConfigParser  # py3
 
-from biokbase.workspace.client import Workspace as workspaceService
+from installed_clients.DataFileUtilClient import DataFileUtil
+from installed_clients.GenomeFileUtilClient import GenomeFileUtil
+from installed_clients.ReadsAlignmentUtilsClient import ReadsAlignmentUtils
+from installed_clients.ReadsUtilsClient import ReadsUtils
 from installed_clients.WorkspaceClient import Workspace as Workspace
+from kb_stringtie.Utils.StringTieUtil import StringTieUtil
+from kb_stringtie.authclient import KBaseAuth as _KBaseAuth
 from kb_stringtie.kb_stringtieImpl import kb_stringtie
 from kb_stringtie.kb_stringtieServer import MethodContext
-from kb_stringtie.authclient import KBaseAuth as _KBaseAuth
-from kb_stringtie.Utils.StringTieUtil import StringTieUtil
-from installed_clients.GenomeFileUtilClient import GenomeFileUtil
-from installed_clients.ReadsUtilsClient import ReadsUtils
-from installed_clients.ReadsAlignmentUtilsClient import ReadsAlignmentUtils
-from installed_clients.DataFileUtilClient import DataFileUtil
 
 
 class kb_stringtie_ciTest(unittest.TestCase):
@@ -48,7 +42,7 @@ class kb_stringtie_ciTest(unittest.TestCase):
                              }],
                         'authenticated': 1})
         cls.wsURL = cls.cfg['workspace-url']
-        cls.wsClient = workspaceService(cls.wsURL)
+        cls.wsClient = Workspace(cls.wsURL)
         cls.ws = Workspace(cls.wsURL, token=token)
         cls.serviceImpl = kb_stringtie(cls.cfg)
         cls.scratch = cls.cfg['scratch']
