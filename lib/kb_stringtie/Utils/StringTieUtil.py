@@ -870,9 +870,7 @@ class StringTieUtil:
 
     def get_ref_with_parent(self, ref):
         """ Use a reference chain if the parent is defined """
-        if self.parent_ref == ref:
-            return ref
-        if self.parent_ref:
+        if self.parent_ref and self.parent_ref != ref:
             return self.parent_ref + ";" + ref
         return ref
 
