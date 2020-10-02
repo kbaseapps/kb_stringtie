@@ -11,8 +11,6 @@ import traceback
 import uuid
 import zipfile
 
-from pathos.multiprocessing import ProcessingPool as Pool
-
 from installed_clients.AssemblyUtilClient import AssemblyUtil
 from installed_clients.DataFileUtilClient import DataFileUtil
 from installed_clients.ExpressionUtilsClient import ExpressionUtils
@@ -21,6 +19,8 @@ from installed_clients.KBaseReportClient import KBaseReport
 from installed_clients.ReadsAlignmentUtilsClient import ReadsAlignmentUtils
 from installed_clients.SetAPIServiceClient import SetAPI
 from installed_clients.WorkspaceClient import Workspace as Workspace
+from pathos.multiprocessing import ProcessingPool as Pool
+
 from .file_utils import exchange_gene_ids, _update_merge_file, _make_gff
 
 
@@ -64,7 +64,7 @@ class StringTieUtil:
         log('start validating run_stringtie params')
 
         # check for required parameters
-        for p in ['alignment_object_ref', 'workspace_name', 'expression_suffix', 
+        for p in ['alignment_object_ref', 'workspace_name', 'expression_suffix',
                   'expression_set_suffix']:
             if p not in params:
                 raise ValueError('"{}" parameter is required, but missing'.format(p))
@@ -158,8 +158,8 @@ class StringTieUtil:
 
         log('getting bam file from alignment')
 
-        bam_file_dir = self.rau.download_alignment({'source_ref': 
-                                                    alignment_ref})['destination_dir']
+        bam_file_dir = self.rau.download_alignment({'source_ref':
+                                                        alignment_ref})['destination_dir']
 
         files = os.listdir(bam_file_dir)
         bam_file_list = [file for file in files if re.match(r'.*\_sorted\.bam', file)]
@@ -181,7 +181,7 @@ class StringTieUtil:
         """
 
         alignment_data = self.ws.get_objects2({'objects':
-                                               [{'ref': alignment_ref}]})['data'][0]['data']
+                                                   [{'ref': alignment_ref}]})['data'][0]['data']
 
         genome_ref = alignment_data.get('genome_id')
 
@@ -269,7 +269,7 @@ class StringTieUtil:
         log('start saving Expression object')
 
         alignment_data_object = self.ws.get_objects2({'objects':
-                                                     [{'ref': alignment_ref}]})['data'][0]
+                                                          [{'ref': alignment_ref}]})['data'][0]
 
         alignment_name = alignment_data_object['info'][1]
         if re.match('.*_*[Aa]lignment', alignment_name):
@@ -308,7 +308,8 @@ class StringTieUtil:
                                'items': items}
 
         alignment_set_data_object = self.ws.get_objects2({'objects':
-                                                         [{'ref': alignment_set_ref}]})['data'][0]
+                                                              [{'ref': alignment_set_ref}]})[
+            'data'][0]
 
         alignment_set_name = alignment_set_data_object['info'][1]
         if re.match('.*_*[Aa]lignment_*[Ss]et', alignment_set_name):
@@ -446,7 +447,7 @@ class StringTieUtil:
         result_file_path = os.path.join(output_directory, 'report.html')
 
         expression_object = self.ws.get_objects2({'objects':
-                                                 [{'ref': obj_ref}]})['data'][0]
+                                                      [{'ref': obj_ref}]})['data'][0]
         expression_info = expression_object['info']
         expression_data = expression_object['data']
 
@@ -471,7 +472,8 @@ class StringTieUtil:
             Overview_Content += '<tr><th>Expression Name</th><th>Condition</th></tr>'
             for item in expression_data['items']:
                 item_expression_object = self.ws.get_objects2({'objects':
-                                                              [{'ref': item['ref']}]})['data'][0]
+                                                                   [{'ref': item['ref']}]})['data'][
+                    0]
                 item_expression_info = item_expression_object['info']
                 item_expression_data = item_expression_object['data']
                 expression_name = item_expression_info[1]
@@ -532,7 +534,7 @@ class StringTieUtil:
                                                        obj_ref)
 
         expression_object = self.ws.get_objects2({'objects':
-                                                 [{'ref': obj_ref}]})['data'][0]
+                                                      [{'ref': obj_ref}]})['data'][0]
         expression_info = expression_object['info']
         expression_data = expression_object['data']
         objects_created = []
@@ -585,7 +587,7 @@ class StringTieUtil:
             alignment_ref = params.get('alignment_ref')
 
             alignment_set_object = self.ws.get_objects2({'objects':
-                                                        [{'ref': alignment_ref}]})['data'][0]
+                                                             [{'ref': alignment_ref}]})['data'][0]
 
             alignment_info = alignment_set_object['info']
             alignment_data = alignment_set_object['data']
@@ -659,10 +661,10 @@ class StringTieUtil:
         alignment_set_ref = params.get('alignment_set_ref')
 
         alignment_set = self.set_client.get_reads_alignment_set_v1({
-                                                                    'ref': alignment_set_ref,
-                                                                    'include_item_info': 0,
-                                                                    'include_set_item_ref_paths': 1
-                                                                    })
+            'ref': alignment_set_ref,
+            'include_item_info': 0,
+            'include_set_item_ref_paths': 1
+        })
         # pull down the genome once so as to avoid duplicate effort
         if not params.get('gtf_file'):
             alignment_ref = alignment_set["data"]["items"][0]["ref_path"]
@@ -774,7 +776,7 @@ class StringTieUtil:
 
         for alignment in alignment_set_data['items']:
             alignment_data = self.dfu.get_objects(
-                {"object_refs":[alignment['ref']]})['data'][0]['data']
+                {"object_refs": [alignment['ref']]})['data'][0]['data']
             return alignment_data['genome_id']
 
     def _save_genome_with_novel_isoforms(self, workspace, genome_ref,
@@ -794,12 +796,12 @@ class StringTieUtil:
         if not new_genome_name:
             new_genome_name = genome_data['id'] + "_stringtie"
         ret = self.gfu.fasta_gff_to_genome({
-                'workspace_name': workspace,
-                'genome_name': new_genome_name,
-                'fasta_file': {'path': fasta_file},
-                'gff_file': {'path': gff_file},
-                'source': 'StringTie'
-            })
+            'workspace_name': workspace,
+            'genome_name': new_genome_name,
+            'fasta_file': {'path': fasta_file},
+            'gff_file': {'path': gff_file},
+            'source': 'StringTie'
+        })
         return ret['genome_ref']
 
     def _novel_isoform_mode(self, alignment_object_ref, params):
@@ -867,13 +869,6 @@ class StringTieUtil:
         self.ws = Workspace(self.ws_url, token=self.token)
         self.set_client = SetAPI(self.srv_wiz_url, service_ver='dev')
 
-
-    def get_ref_with_parent(self, ref):
-        """ Use a reference chain if the parent is defined """
-        if self.parent_ref and self.parent_ref != ref:
-            return self.parent_ref + ";" + ref
-        return ref
-
     def run_stringtie_app(self, params):
         """
         run_stringtie_app: run StringTie app
@@ -916,7 +911,7 @@ class StringTieUtil:
 
         alignment_object_ref = params.get('alignment_object_ref')
         alignment_object_info = self.ws.get_object_info3({"objects":
-                                                         [{"ref": alignment_object_ref}]}
+                                                              [{"ref": alignment_object_ref}]}
                                                          )['infos'][0]
         alignment_object_type = alignment_object_info[2]
 
