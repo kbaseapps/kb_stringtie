@@ -95,7 +95,7 @@ description : |
 
     <p>The StringTie output object can be used to identify differential expression either using DESeq2, Cuffdiff, or Ballgown.</p>
 
-    <p><strong>NOTE:</strong> This App is one of the steps in the <a href= "http://kbase.us/expression-analysis/"> Transcriptomics and Expression Analysis Workflow</a> in KBase.</p>
+    <p><strong>NOTE:</strong> This App is one of the steps in the <a href= "https://docs.kbase.us/workflows/rnaseq"> Transcriptomics and Expression Analysis Workflow</a> in KBase.</p>
 
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong> Tianhao Gu, Christopher Henry, Shane Canon, Stephen Chan, Jason Baumohl, Sean McCorkle, Sunita Kumari, Shinjae Yoo, Priya Ranjan, and Vivek Kumar. For questions, please <a href="http://kbase.us/contact-us/">contact us</a>.</p>
 
