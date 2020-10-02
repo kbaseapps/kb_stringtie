@@ -33,3 +33,7 @@ Update the baseclients for all modules used to resolve _check_job BADSTATUSCODE 
 
 1.1.3:
 Updated citations to PLOS format
+
+1.1.4:
+Reference Chain to clients added
+Updated citations to PLOS format
