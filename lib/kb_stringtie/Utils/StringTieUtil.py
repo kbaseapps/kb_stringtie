@@ -852,7 +852,7 @@ class StringTieUtil:
                                               params['genome_ref'])
         return report_output, returnVal
 
-    def __init__(self, config, parent_ref=None):
+    def __init__(self, config):
         self.ws_url = config["workspace-url"]
         self.callback_url = config['SDK_CALLBACK_URL']
         self.token = config['KB_AUTH_TOKEN']
@@ -866,7 +866,7 @@ class StringTieUtil:
         self.eu = ExpressionUtils(self.callback_url)
         self.ws = Workspace(self.ws_url, token=self.token)
         self.set_client = SetAPI(self.srv_wiz_url, service_ver='dev')
-        self.parent_ref = parent_ref
+
 
     def get_ref_with_parent(self, ref):
         """ Use a reference chain if the parent is defined """
@@ -914,8 +914,7 @@ class StringTieUtil:
                 "transcript_label" in params['novel_isoforms']:
             params['label'] = params['novel_isoforms']['transcript_label']
 
-        alignment_object_ref = self.get_ref_with_parent(ref=params.get('alignment_object_ref'))
-        print("About to get info for ", alignment_object_ref)
+        alignment_object_ref = params.get('alignment_object_ref')
         alignment_object_info = self.ws.get_object_info3({"objects":
                                                          [{"ref": alignment_object_ref}]}
                                                          )['infos'][0]
