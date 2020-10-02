@@ -105,7 +105,8 @@ class kb_stringtie:
             if isinstance(value, basestring):
                 params[key] = value.strip()
 
-        stringtie_runner = StringTieUtil(self.config)
+        parent_ref = params['alignment_object_ref']
+        stringtie_runner = StringTieUtil(self.config, parent_ref=parent_ref)
         returnVal = stringtie_runner.run_stringtie_app(params)
         #END run_stringtie_app
 
