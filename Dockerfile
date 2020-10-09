@@ -15,11 +15,12 @@ RUN pip install coverage && \
     pip install pathos
 
 # download StringTie software and untar it
+
 RUN cd /kb/dev_container/modules && \
     mkdir StringTie && cd StringTie && \
-    wget http://ccb.jhu.edu/software/stringtie/dl/stringtie-1.3.3b.Linux_x86_64.tar.gz &&\
-    tar xvfz stringtie-1.3.3b.Linux_x86_64.tar.gz && \
-    cd stringtie-1.3.3b.Linux_x86_64 && \
+    wget http://ccb.jhu.edu/software/stringtie/dl/stringtie-2.1.4.Linux_x86_64.tar.gz &&\
+    tar xvfz stringtie-2.1.4.Linux_x86_64.tar.gz && \
+    cd stringtie-2.1.4.Linux_x86_64 && \
     mkdir /kb/deployment/bin/StringTie && \
     cp -R stringtie /kb/deployment/bin/StringTie/stringtie
 
@@ -38,9 +39,9 @@ RUN cd /kb/dev_container/modules && \
 # download gffread script
 RUN cd /kb/dev_container/modules && \
     mkdir gffread && cd gffread && \
-    wget http://ccb.jhu.edu/software/stringtie/dl/gffread-0.9.9.Linux_x86_64.tar.gz &&\
-    tar xvfz gffread-0.9.9.Linux_x86_64.tar.gz && \
-    cd gffread-0.9.9.Linux_x86_64 && \
+    wget http://ccb.jhu.edu/software/stringtie/dl/gffread-0.12.3.Linux_x86_64.tar.gz &&\
+    tar xvfz gffread-0.12.3.Linux_x86_64.tar.gz && \
+    cd gffread-0.12.3.Linux_x86_64 && \
     mkdir /kb/deployment/bin/gffread && \
     cp -R gffread /kb/deployment/bin/gffread/gffread
 
@@ -49,9 +50,9 @@ RUN cd /kb/dev_container/modules && \
 # download gffcompare script
 RUN cd /kb/dev_container/modules && \
     mkdir gffcompare && cd gffcompare && \
-    wget http://ccb.jhu.edu/software/stringtie/dl/gffcompare-0.10.4.Linux_x86_64.tar.gz	 &&\
-    tar xvfz gffcompare-0.10.4.Linux_x86_64.tar.gz	 && \
-    cd gffcompare-0.10.4.Linux_x86_64	 && \
+    wget http://ccb.jhu.edu/software/stringtie/dl/gffcompare-0.12.1.Linux_x86_64.tar.gz	 &&\
+    tar xvfz gffcompare-0.12.1.Linux_x86_64.tar.gz	 && \
+    cd gffcompare-0.12.1.Linux_x86_64	 && \
     mkdir /kb/deployment/bin/gffcompare && \
     cp -R gffcompare /kb/deployment/bin/gffcompare/gffcompare
 

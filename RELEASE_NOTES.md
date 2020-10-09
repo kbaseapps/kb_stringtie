@@ -38,3 +38,7 @@ Updated citations to PLOS format
 Ran Black
 Reference Chain to clients added
 Updated citations to PLOS format
+
+1.1.6
+* Updated version of binaries
+* Change number of cores passed to each job
