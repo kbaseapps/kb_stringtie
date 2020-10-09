@@ -152,7 +152,7 @@
           "target_property" : "skip_reads_with_no_ref"
         },       
         {
-          "constant_value"  : 2,
+          "constant_value"  : 10,
           "target_property" : "num_threads"
         },      
         {

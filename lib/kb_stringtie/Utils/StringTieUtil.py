@@ -817,9 +817,11 @@ class StringTieUtil:
             alignment_upload_params["alignment_ref"] = alignment_ref
             mul_processor_params.append(alignment_upload_params)
 
-        cpus = max(1, multiprocessing.cpu_count() - 2)
-        pool = Pool(ncpus=cpus)
-        log("running _process_alignment_object with {} cpus".format(cpus))
+        # A max of 20 subtasks for the cbs
+        # A max of two simultaneous
+        worker_pool = 3
+        pool = Pool(ncpus=worker_pool)
+        log("running _process_alignment_object with {} cpus".format(worker_pool))
         alignment_expression_map = pool.map(
             self._process_alignment_object, mul_processor_params
         )
