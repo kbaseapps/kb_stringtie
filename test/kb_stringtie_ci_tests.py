@@ -2,6 +2,7 @@
 import shutil
 import unittest
 import os  # noqa: F401
+import time
 
 from os import environ
 try:
@@ -54,6 +55,10 @@ class kb_stringtie_ciTest(unittest.TestCase):
         cls.scratch = cls.cfg['scratch']
         cls.callback_url = os.environ['SDK_CALLBACK_URL']
 
+        suffix = int(time.time() * 1000)
+        cls.wsName = "test_kb_stringtie_" + str(suffix)
+        cls.wsClient.create_workspace({'workspace': cls.wsName})
+
         cls.gfu = GenomeFileUtil(cls.callback_url)
         cls.dfu = DataFileUtil(cls.callback_url)
         cls.ru = ReadsUtils(cls.callback_url)
@@ -89,7 +94,8 @@ class kb_stringtie_ciTest(unittest.TestCase):
         return self.__class__.wsClient
 
     def getWsName(self):
-        return "jjeffryes:narrative_1522765762916"
+        return self.__class__.wsName
+        #return "jjeffryes:narrative_1522765762916"
         #return "sunita:narrative_1522869877663"
 
     def getImpl(self):
@@ -170,3 +176,5 @@ class kb_stringtie_ciTest(unittest.TestCase):
         self.assertTrue(result['expression_obj_ref'])
         self.assertTrue('report_name' in result)
         self.assertTrue('report_ref' in result)
+
+

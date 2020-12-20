@@ -10,6 +10,7 @@ LBIN_DIR = bin
 EXECUTABLE_SCRIPT_NAME = run_$(SERVICE_CAPS)_async_job.sh
 STARTUP_SCRIPT_NAME = start_server.sh
 TEST_SCRIPT_NAME = run_tests.sh
+TARGET_TESTS = .  # ex ./kb_stringtie_ci_tests.py:kb_stringtie_ciTest.test_assembly_ref
 
 .PHONY: test
 
@@ -55,7 +56,7 @@ build-test-script:
 	echo 'export KB_AUTH_TOKEN=`cat /kb/module/work/token`' >> $(TEST_DIR)/$(TEST_SCRIPT_NAME)
 	echo 'export PYTHONPATH=$$script_dir/../$(LIB_DIR):$$PATH:$$PYTHONPATH' >> $(TEST_DIR)/$(TEST_SCRIPT_NAME)
 	echo 'cd $$script_dir/../$(TEST_DIR)' >> $(TEST_DIR)/$(TEST_SCRIPT_NAME)
-	echo 'python -m nose --with-coverage --cover-package=$(SERVICE_CAPS) --cover-html --cover-html-dir=/kb/module/work/test_coverage --nocapture  --nologcapture .' >> $(TEST_DIR)/$(TEST_SCRIPT_NAME)
+	echo 'python -m nose --with-coverage --cover-package=$(SERVICE_CAPS) --cover-html --cover-html-dir=/kb/module/work/test_coverage --nocapture  --nologcapture $(TARGET_TESTS)' >> $(TEST_DIR)/$(TEST_SCRIPT_NAME)
 	echo 'cp /kb/module/.coveragerc .' >> $(TEST_DIR)/$(TEST_SCRIPT_NAME) 
 	echo 'coverage report -m' >> $(TEST_DIR)/$(TEST_SCRIPT_NAME) 
 	echo 'cp .coverage /kb/module/work/' >> $(TEST_DIR)/$(TEST_SCRIPT_NAME) 

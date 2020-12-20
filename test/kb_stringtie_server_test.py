@@ -24,6 +24,7 @@ from installed_clients.GenomeFileUtilClient import GenomeFileUtil
 from installed_clients.ReadsUtilsClient import ReadsUtils
 from installed_clients.ReadsAlignmentUtilsClient import ReadsAlignmentUtils
 from installed_clients.DataFileUtilClient import DataFileUtil
+from installed_clients.AssemblyUtilClient import AssemblyUtil
 
 
 class kb_stringtieTest(unittest.TestCase):
@@ -63,6 +64,7 @@ class kb_stringtieTest(unittest.TestCase):
         cls.dfu = DataFileUtil(cls.callback_url)
         cls.ru = ReadsUtils(cls.callback_url)
         cls.rau = ReadsAlignmentUtils(cls.callback_url)
+        cls.au = AssemblyUtil(cls.callback_url)
 
         cls.stringtie_runner = StringTieUtil(cls.cfg)
 
@@ -81,6 +83,7 @@ class kb_stringtieTest(unittest.TestCase):
 
     @classmethod
     def prepare_data(cls):
+
         # upload genome object
         genbank_file_name = 'minimal.gbff'
         genbank_file_path = os.path.join(cls.scratch, genbank_file_name)
@@ -202,6 +205,39 @@ class kb_stringtieTest(unittest.TestCase):
         dfu_oi = cls.dfu.save_objects(save_object_params)[0]
         cls.reads_alignment_set_ref = str(dfu_oi[6]) + '/' + str(dfu_oi[0]) + '/' + str(dfu_oi[4])
 
+        # upload Assembly object
+        fasta_file_name = 'assembly.fasta'
+        fasta_file_path = os.path.join(cls.scratch, fasta_file_name)
+        shutil.copy(os.path.join('data', fasta_file_name), fasta_file_path)
+
+        cls.assembly_ref = cls.au.save_assembly_from_fasta({
+            'file': {
+                'path': fasta_file_path,
+                'name': fasta_file_name,
+            },
+            'workspace_name': cls.wsName,
+            'assembly_name': 'referenced_assembly',
+            'type': 'isolate',
+        })
+
+        # upload RNASeqAlignment object referencing Assembly object
+        alignment_file_name = 'accepted_hits.bam'
+        alignment_file_path = os.path.join(cls.scratch, alignment_file_name)
+        shutil.copy(os.path.join('data', alignment_file_name), alignment_file_path)
+
+        alignment_object_name_1 = 'test_Alignment_1_referencing_assembly'
+        cls.condition_1 = 'test_condition_1'
+        destination_ref = cls.wsName + '/' + alignment_object_name_1
+        cls.alignment_referencing_assembly = cls.rau.upload_alignment(
+            {
+                'file_path': alignment_file_path,
+                'destination_ref': destination_ref,
+                'read_library_ref': cls.reads_ref_1,
+                'condition': cls.condition_1,
+                'library_type': 'single_end',
+                'assembly_or_genome_ref': cls.assembly_ref
+            })['obj_ref']
+
     def getWsClient(self):
         return self.__class__.wsClient
 
@@ -229,6 +265,27 @@ class kb_stringtieTest(unittest.TestCase):
         with self.assertRaisesRegexp(ValueError, 
                                      '"workspace_name" parameter is required, but missing'):
             self.getImpl().run_stringtie_app(self.getContext(), invalidate_input_params)
+
+
+    def test_assembly_ref(self):
+        input_params =     {
+            'workspace_name': self.getWsName(),
+            "alignment_object_ref": self.alignment_referencing_assembly,
+            "expression_suffix": "_expression",
+            "expression_set_suffix": "_expression_set",
+            "min_isoform_abundance": 0.1,
+            "min_length": 200,
+            "junction_base": 10,
+            "junction_coverage": 1,
+            "min_read_coverage": 2.5,
+            "min_locus_gap_sep_value": 50,
+            "novel_isoforms": None
+        }
+
+        with self.assertRaisesRegexp(
+            ValueError,
+            'Genome at \d+/\d+/\d+ does not have reference to the assembly object'):
+            res = self.getImpl().run_stringtie_app(self.getContext(), input_params)
 
     def test_StringTieUtil_generate_command(self):
         command_params = {
