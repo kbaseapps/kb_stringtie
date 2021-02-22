@@ -98,6 +98,7 @@ class kb_stringtie_ciTest(unittest.TestCase):
     def getContext(self):
         return self.__class__.ctx
 
+    @unittest.skip("skip CI specific test")
     def test_run_stringtie_app_alignment(self):
         input_params = {
             'alignment_object_ref': self.alignment_ref_1,
@@ -129,12 +130,13 @@ class kb_stringtie_ciTest(unittest.TestCase):
         self.assertTrue('expression_obj_ref' in result)
         self.assertTrue('report_name' in result)
         self.assertTrue('report_ref' in result)
-        expression_data = self.ws.get_objects2({'objects': 
+        expression_data = self.ws.get_objects2({'objects':
                                                [{'ref': result.get('expression_obj_ref')}]}
                                                )['data'][0]['data']
         self.assertEqual(expression_data.get('genome_id'), self.genome_ref_1)
         self.assertEqual(expression_data.get('condition'), self.condition_1)
 
+    @unittest.skip("skip CI specific test")
     def test_run_stringtie_app_novel_isoform(self):
 
         input_params = {
