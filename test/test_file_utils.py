@@ -17,6 +17,7 @@ class KBFileUtilsTest(unittest.TestCase):
                              temp_data + '/GCF_000005845.2_ASM584v2_genomic.gff',
                              'novel_isoform')
 
+    @unittest.skip("_update_t_data never used")
     def test_update_t_data(self):
         file_utils._update_t_data(temp_data)
         self.assertMultiLineEqual(open(temp_data+"/t_data.ctab").read(),
