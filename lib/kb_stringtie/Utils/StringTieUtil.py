@@ -698,86 +698,79 @@ class StringTieUtil:
         _process_alignment_object: process KBaseRNASeq.RNASeqAlignment type input object
         """
 
-        try:
+        log("start processing RNASeqAlignment object\n")
+        log("params:\n{}".format(json.dumps(params, indent=1)))
+        alignment_ref = params.get("alignment_ref")
 
-            log("start processing RNASeqAlignment object\n")
-            log("params:\n{}".format(json.dumps(params, indent=1)))
-            alignment_ref = params.get("alignment_ref")
+        alignment_set_object = self.ws.get_objects2(
+            {"objects": [{"ref": alignment_ref}]}
+        )["data"][0]
 
-            alignment_set_object = self.ws.get_objects2(
-                {"objects": [{"ref": alignment_ref}]}
-            )["data"][0]
+        alignment_info = alignment_set_object["info"]
+        alignment_data = alignment_set_object["data"]
 
-            alignment_info = alignment_set_object["info"]
-            alignment_data = alignment_set_object["data"]
+        alignment_name = alignment_info[1]
+        alignment_label = alignment_data["condition"]
 
-            alignment_name = alignment_info[1]
-            alignment_label = alignment_data["condition"]
+        result_directory = os.path.join(
+            self.scratch, alignment_name + "_" + str(uuid.uuid4())
+        )
+        self._mkdir_p(result_directory)
 
-            result_directory = os.path.join(
-                self.scratch, alignment_name + "_" + str(uuid.uuid4())
+        # input files
+        if not params.get("gtf_file"):
+            params["gtf_file"] = self._get_gtf_file(alignment_ref, result_directory)
+            if params.get("label"):
+                if params["label"] in open(params["gtf_file"]).read():
+                    raise ValueError(
+                        "Provided prefix for transcripts matches an existing "
+                        "feature ID. Please select a different label for "
+                        "transcripts."
+                    )
+        else:
+            shutil.copy(params.get("gtf_file"), result_directory)
+        params["input_file"] = self._get_input_file(alignment_ref)
+        log("using {} as reference annotation file.".format(params.get("gtf_file")))
+
+        # output files
+        self.output_transcripts = "transcripts.gtf"
+        params["output_transcripts"] = os.path.join(
+            result_directory, self.output_transcripts
+        )
+
+        self.gene_abundances_file = "genes.fpkm_tracking"
+        params["gene_abundances_file"] = os.path.join(
+            result_directory, self.gene_abundances_file
+        )
+
+        command = self._generate_command(params)
+        self._run_command(command)
+
+        if params.get("exchange_gene_ids"):
+            exchange_gene_ids(result_directory)
+
+        if "generate_ws_object" in params and not params.get("generate_ws_object"):
+            log("skip generating expression object")
+            expression_obj_ref = ""
+        else:
+            expression_obj_ref = self._save_expression(
+                result_directory,
+                alignment_ref,
+                params.get("workspace_name"),
+                params["expression_suffix"],
+                params.get("genome_ref"),
+                params.get("novel_isoforms", 0),
             )
-            self._mkdir_p(result_directory)
 
-            # input files
-            if not params.get("gtf_file"):
-                params["gtf_file"] = self._get_gtf_file(alignment_ref, result_directory)
-                if params.get("label"):
-                    if params["label"] in open(params["gtf_file"]).read():
-                        raise ValueError(
-                            "Provided prefix for transcripts matches an existing "
-                            "feature ID. Please select a different label for "
-                            "transcripts."
-                        )
-            else:
-                shutil.copy(params.get("gtf_file"), result_directory)
-            params["input_file"] = self._get_input_file(alignment_ref)
-            log("using {} as reference annotation file.".format(params.get("gtf_file")))
-
-            # output files
-            self.output_transcripts = "transcripts.gtf"
-            params["output_transcripts"] = os.path.join(
-                result_directory, self.output_transcripts
-            )
-
-            self.gene_abundances_file = "genes.fpkm_tracking"
-            params["gene_abundances_file"] = os.path.join(
-                result_directory, self.gene_abundances_file
-            )
-
-            command = self._generate_command(params)
-            self._run_command(command)
-
-            if params.get("exchange_gene_ids"):
-                exchange_gene_ids(result_directory)
-
-            if "generate_ws_object" in params and not params.get("generate_ws_object"):
-                log("skip generating expression object")
-                expression_obj_ref = ""
-            else:
-                expression_obj_ref = self._save_expression(
-                    result_directory,
-                    alignment_ref,
-                    params.get("workspace_name"),
-                    params["expression_suffix"],
-                    params.get("genome_ref"),
-                    params.get("novel_isoforms", 0),
-                )
-
-            returnVal = {
-                "result_directory": result_directory,
-                "expression_obj_ref": expression_obj_ref,
-                "alignment_ref": alignment_ref,
-                "annotation_file": params["gtf_file"],
-                "alignment_label": alignment_label,
-            }
-        except:
-            log("caught exception in worker")
-            exctype, value = sys.exc_info()[:2]
-
-            returnVal = {"exception": "{}: {}".format(exctype, value)}
-        finally:
-            return returnVal
+        returnVal = {
+            "result_directory": result_directory,
+            "expression_obj_ref": expression_obj_ref,
+            "alignment_ref": alignment_ref,
+            "annotation_file": params["gtf_file"],
+            "alignment_label": alignment_label,
+        }
+    
+        return returnVal
 
     def _process_alignment_set_object(self, params):
         """
@@ -810,6 +803,16 @@ class StringTieUtil:
                         "transcripts."
                     )
 
+        def wrapped_process_alignment_object(params):
+            try:
+                returnVal = self._process_alignment_object(params)
+            except:
+                log("caught exception in worker")
+                exctype, value = sys.exc_info()[:2]
+                returnVal = {"exception": "{}: {}".format(exctype, value)}
+        
+            return returnVal
+
         mul_processor_params = []
         for alignment in alignment_set["data"]["items"]:
             alignment_ref = alignment["ref_path"]
@@ -821,7 +824,7 @@ class StringTieUtil:
         pool = Pool(ncpus=cpus)
         log("running _process_alignment_object with {} cpus".format(cpus))
         alignment_expression_map = pool.map(
-            self._process_alignment_object, mul_processor_params
+            wrapped_process_alignment_object, mul_processor_params
         )
 
         for proc_alignment_return in alignment_expression_map:
