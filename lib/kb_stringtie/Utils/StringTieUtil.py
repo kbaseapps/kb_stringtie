@@ -263,14 +263,12 @@ class StringTieUtil:
             if 'KBaseMetagenomes.AnnotatedMetagenomeAssembly' in obj_type:
                 ret = self.gfu.metagenome_to_gff(
                                         {"genome_ref": genome_ref,
-                                         "target_dir": result_directory,
-                                         "is_gtf": True})
+                                         "target_dir": result_directory})
                 genome_gff_file = ret["file_path"]
             elif 'KBaseGenomes.Genome' in obj_type:
                 ret = self.gfu.genome_to_gff(
                                         {"genome_ref": genome_ref,
-                                         "target_dir": result_directory,
-                                         "is_gtf": True})
+                                         "target_dir": result_directory})
                 genome_gff_file = ret["file_path"]
 
             if not genome_gff_file:
