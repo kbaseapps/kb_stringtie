@@ -1,4 +1,4 @@
-FROM kbase/sdkbase2:python
+FROM kbase/kbase:sdkbase2.latest
 MAINTAINER KBase Developer
 # -----------------------------------------
 # In this section, you can install any system dependencies required
