@@ -261,16 +261,16 @@ class StringTieUtil:
             # get the GFF
             genome_gff_file = None
             if 'KBaseMetagenomes.AnnotatedMetagenomeAssembly' in obj_type:
-                gff_handle_ref = ref[0]["data"].get('gff_handle_ref')
-
-                if not gff_handle_ref:
-                    raise ValueError("GFF file handle is not associated with the AnnotatedMetagenomeAssembly object")
-                genome_gff_file = self.dfu.shock_to_file({'handle_id': gff_handle_ref,
-                                                          'file_path': result_directory})['file_path']
+                ret = self.gfu.metagenome_to_gff(
+                                        {"genome_ref": genome_ref,
+                                         "target_dir": result_directory,
+                                         "is_gtf": True})
+                genome_gff_file = ret["file_path"]
             elif 'KBaseGenomes.Genome' in obj_type:
                 ret = self.gfu.genome_to_gff(
-                    {"genome_ref": genome_ref, "target_dir": result_directory}
-                )
+                                        {"genome_ref": genome_ref,
+                                         "target_dir": result_directory,
+                                         "is_gtf": True})
                 genome_gff_file = ret["file_path"]
 
             if not genome_gff_file:
