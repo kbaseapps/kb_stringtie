@@ -38,3 +38,6 @@ Updated citations to PLOS format
 Ran Black
 Reference Chain to clients added
 Updated citations to PLOS format
+
+1.1.6:
+Add support for AMA referenced RNASeqAlignment

@@ -231,8 +231,13 @@ class StringTieUtil:
         Create reference annotation file from genome
         """
         ref = self.ws.get_object_subset(
-            [{"ref": genome_ref, "included": ["contigset_ref", "assembly_ref"]}]
+            [{"ref": genome_ref, "included": ["contigset_ref", "assembly_ref", "gff_handle_ref"]}]
         )
+
+        obj_type = ref[0]['info'][2]
+
+        if 'KBaseMetagenomes.AnnotatedMetagenomeAssembly' not in obj_type and 'KBaseGenomes.Genome' not in obj_type:
+            raise ValueError('For Stringtie to work properly, input to alignment step must be a genome object')
         contig_id = None
         if "contigset_ref" in ref[0]["data"]:
             contig_id = ref[0]["data"]["contigset_ref"]
@@ -244,7 +249,7 @@ class StringTieUtil:
                     genome_ref
                 )
             )
-        print(contig_id)
+        log("Found contig reference: {}".format(contig_id))
         log("Generating GFF file from Genome")
         try:
             ret = self.au.get_assembly_as_fasta({"ref": genome_ref + ";" + contig_id})
@@ -254,10 +259,23 @@ class StringTieUtil:
                 shutil.copy(fa_output_file, result_directory)
 
             # get the GFF
-            ret = self.gfu.genome_to_gff(
-                {"genome_ref": genome_ref, "target_dir": result_directory}
-            )
-            genome_gff_file = ret["file_path"]
+            genome_gff_file = None
+            if 'KBaseMetagenomes.AnnotatedMetagenomeAssembly' in obj_type:
+                gff_handle_ref = ref[0]["data"].get('gff_handle_ref')
+
+                if not gff_handle_ref:
+                    raise ValueError("GFF file handle is not associated with the AnnotatedMetagenomeAssembly object")
+                genome_gff_file = self.dfu.shock_to_file({'handle_id': gff_handle_ref,
+                                                          'file_path': result_directory})['file_path']
+            elif 'KBaseGenomes.Genome' in obj_type:
+                ret = self.gfu.genome_to_gff(
+                    {"genome_ref": genome_ref, "target_dir": result_directory}
+                )
+                genome_gff_file = ret["file_path"]
+
+            if not genome_gff_file:
+                raise ValueError("Cannot retrieve GFF file from Genome")
+
             gtf_ext = ".gtf"
 
             if not genome_gff_file.endswith(gtf_ext):
@@ -769,7 +787,7 @@ class StringTieUtil:
             "annotation_file": params["gtf_file"],
             "alignment_label": alignment_label,
         }
-    
+
         return returnVal
 
     def _process_alignment_set_object(self, params):
@@ -810,7 +828,7 @@ class StringTieUtil:
                 log("caught exception in worker")
                 exctype, value = sys.exc_info()[:2]
                 returnVal = {"exception": "{}: {}".format(exctype, value)}
-        
+
             return returnVal
 
         mul_processor_params = []

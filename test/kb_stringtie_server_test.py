@@ -63,7 +63,7 @@ class kb_stringtieTest(unittest.TestCase):
         cls.gfu = GenomeFileUtil(cls.callback_url)
         cls.dfu = DataFileUtil(cls.callback_url)
         cls.ru = ReadsUtils(cls.callback_url)
-        cls.rau = ReadsAlignmentUtils(cls.callback_url)
+        cls.rau = ReadsAlignmentUtils(cls.callback_url, service_ver='dev')
         cls.au = AssemblyUtil(cls.callback_url)
 
         cls.stringtie_runner = StringTieUtil(cls.cfg)
@@ -170,9 +170,9 @@ class kb_stringtieTest(unittest.TestCase):
         alignment_set_object_name = 'test_RNASeq_Alignment_Set'
         alignment_set_data = {'genome_id': cls.genome_ref,
                               'read_sample_ids': [reads_object_name_1, reads_object_name_2],
-                              'mapped_rnaseq_alignments': [{reads_object_name_1: 
+                              'mapped_rnaseq_alignments': [{reads_object_name_1:
                                                             alignment_object_name_1},
-                                                           {reads_object_name_2: 
+                                                           {reads_object_name_2:
                                                             alignment_object_name_2}],
                               'mapped_alignments_ids': [{reads_object_name_1: cls.alignment_ref_1},
                                                         {reads_object_name_2: cls.alignment_ref_2}
@@ -220,6 +220,51 @@ class kb_stringtieTest(unittest.TestCase):
             'type': 'isolate',
         })
 
+        # upload AMA object
+        gff_file_name = 'example_stringtie_merge.gff'
+        gff_file_path = os.path.join(cls.scratch, gff_file_name)
+        shutil.copy(os.path.join('data', gff_file_name), gff_file_path)
+        handle_ref = cls.dfu.file_to_shock({'file_path': gff_file_path,
+                                            'make_handle': True})['handle']['hid']
+
+        ama_data = {
+            "feature_counts": {'test_feature': 10},
+            "dna_size": 10,
+            "num_contigs": 10,
+            "num_features": 10,
+            "molecule_type": 'test molecule type',
+            "source": 'User_upload',
+            "md5": 'test md5',
+            "gc_content": 0.1,
+            "assembly_ref": cls.assembly_ref,
+            "features_handle_ref": handle_ref,
+            "protein_handle_ref": handle_ref,
+            "environment": 'test environment'
+        }
+
+        save_object_params = {
+            'id': workspace_id,
+            'objects': [{'type': 'KBaseMetagenomes.AnnotatedMetagenomeAssembly',
+                         'data': ama_data,
+                         'name': 'test_mini_AMA'}]
+        }
+
+        dfu_oi = cls.dfu.save_objects(save_object_params)[0]
+        cls.ama_ref = str(dfu_oi[6]) + '/' + str(dfu_oi[0]) + '/' + str(dfu_oi[4])
+
+        # upload RNASeqAlignment object referencing AMA object
+        # alignment_object_name_1 = 'test_Alignment_1_referencing_AMA'
+        # destination_ref = cls.wsName + '/' + alignment_object_name_1
+        # cls.alignment_referencing_AMA = cls.rau.upload_alignment(
+        #     {
+        #         'file_path': alignment_file_path,
+        #         'destination_ref': destination_ref,
+        #         'read_library_ref': cls.reads_ref_1,
+        #         'condition': cls.condition_1,
+        #         'library_type': 'single_end',
+        #         'assembly_or_genome_ref': cls.ama_ref
+        #     })['obj_ref']
+
         # upload RNASeqAlignment object referencing Assembly object
         alignment_file_name = 'accepted_hits.bam'
         alignment_file_path = os.path.join(cls.scratch, alignment_file_name)
@@ -256,19 +301,18 @@ class kb_stringtieTest(unittest.TestCase):
     def test_bad_run_stringtie_app_params(self):
         invalidate_input_params = {'missing_alignment_object_ref': 'alignment_object_ref',
                                    'workspace_name': 'workspace_name'}
-        with self.assertRaisesRegexp(ValueError, 
+        with self.assertRaisesRegexp(ValueError,
                                      '"alignment_object_ref" parameter is required, but missing'):
             self.getImpl().run_stringtie_app(self.getContext(), invalidate_input_params)
 
         invalidate_input_params = {'alignment_object_ref': 'alignment_object_ref',
                                    'missing_workspace_name': 'workspace_name'}
-        with self.assertRaisesRegexp(ValueError, 
+        with self.assertRaisesRegexp(ValueError,
                                      '"workspace_name" parameter is required, but missing'):
             self.getImpl().run_stringtie_app(self.getContext(), invalidate_input_params)
 
-
     def test_assembly_ref(self):
-        input_params =     {
+        input_params = {
             'workspace_name': self.getWsName(),
             "alignment_object_ref": self.alignment_referencing_assembly,
             "expression_suffix": "_expression",
@@ -283,9 +327,9 @@ class kb_stringtieTest(unittest.TestCase):
         }
 
         with self.assertRaisesRegexp(
-            ValueError,
-            'Genome at \d+/\d+/\d+ does not have reference to the assembly object'):
-            res = self.getImpl().run_stringtie_app(self.getContext(), input_params)
+                ValueError,
+                'For Stringtie to work properly, input to alignment step must be a genome object'):
+            self.getImpl().run_stringtie_app(self.getContext(), input_params)
 
     def test_StringTieUtil_generate_command(self):
         command_params = {
@@ -352,6 +396,43 @@ class kb_stringtieTest(unittest.TestCase):
                                                )['data'][0]['data']
         self.assertEqual(expression_data.get('genome_id'), self.genome_ref)
         self.assertEqual(expression_data.get('condition'), self.condition_1)
+
+    # def test_run_stringtie_app_alignment_with_AMA(self):
+    #     input_params = {
+    #         'alignment_object_ref': self.alignment_referencing_AMA,
+    #         'workspace_name': self.getWsName(),
+    #         'expression_suffix': '_stringtie_expression',
+    #         'expression_set_suffix': '_stringtie_expression_set',
+
+    #         "min_read_coverage": 2.5,
+    #         "junction_base": 10,
+    #         "num_threads": 2,
+    #         "min_isoform_abundance": 0.1,
+    #         "min_length": 200,
+    #         "skip_reads_with_no_ref": 1,
+    #         "merge": 0,
+    #         "junction_coverage": 1,
+    #         "ballgown_mode": 1,
+    #         "min_locus_gap_sep_value": 50,
+    #         "disable_trimming": 1
+    #     }
+
+    #     result = self.getImpl().run_stringtie_app(self.getContext(), input_params)[0]
+
+    #     self.assertTrue('result_directory' in result)
+    #     result_files = os.listdir(result['result_directory'])
+    #     print(result_files)
+    #     expect_result_files = ['genes.fpkm_tracking', 'transcripts.gtf',
+    #                            'e2t.ctab', 'e_data.ctab', 'i2t.ctab', 'i_data.ctab', 't_data.ctab']
+    #     self.assertTrue(all(x in result_files for x in expect_result_files))
+    #     self.assertTrue('expression_obj_ref' in result)
+    #     self.assertTrue('report_name' in result)
+    #     self.assertTrue('report_ref' in result)
+    #     expression_data = self.ws.get_objects2({'objects':
+    #                                            [{'ref': result.get('expression_obj_ref')}]}
+    #                                            )['data'][0]['data']
+    #     self.assertEqual(expression_data.get('genome_id'), self.ama_ref)
+    #     self.assertEqual(expression_data.get('condition'), self.condition_1)
 
     def test_run_stringtie_app_rnaseq_alignment_set(self):
         input_params = {
@@ -463,5 +544,4 @@ class kb_stringtieTest(unittest.TestCase):
             "merge": 1,
         }
         with self.assertRaisesRegexp(ValueError, "existing feature ID"):
-            result = self.getImpl().run_stringtie_app(self.getContext(), input_params)[0]
-
+            self.getImpl().run_stringtie_app(self.getContext(), input_params)[0]
