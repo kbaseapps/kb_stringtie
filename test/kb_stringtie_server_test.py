@@ -8,7 +8,7 @@ import shutil
 
 from os import environ
 try:
-    from ConfigParser import ConfigParser  # py2
+    from configparser import ConfigParser  # py2
 except:
     from configparser import ConfigParser  # py3
 
@@ -237,6 +237,7 @@ class kb_stringtieTest(unittest.TestCase):
             "md5": 'test md5',
             "gc_content": 0.1,
             "assembly_ref": cls.assembly_ref,
+            "gff_handle_ref": handle_ref,
             "features_handle_ref": handle_ref,
             "protein_handle_ref": handle_ref,
             "environment": 'test environment'
@@ -301,14 +302,14 @@ class kb_stringtieTest(unittest.TestCase):
     def test_bad_run_stringtie_app_params(self):
         invalidate_input_params = {'missing_alignment_object_ref': 'alignment_object_ref',
                                    'workspace_name': 'workspace_name'}
-        with self.assertRaisesRegexp(ValueError,
-                                     '"alignment_object_ref" parameter is required, but missing'):
+        with self.assertRaisesRegex(ValueError,
+                                    '"alignment_object_ref" parameter is required, but missing'):
             self.getImpl().run_stringtie_app(self.getContext(), invalidate_input_params)
 
         invalidate_input_params = {'alignment_object_ref': 'alignment_object_ref',
                                    'missing_workspace_name': 'workspace_name'}
-        with self.assertRaisesRegexp(ValueError,
-                                     '"workspace_name" parameter is required, but missing'):
+        with self.assertRaisesRegex(ValueError,
+                                    '"workspace_name" parameter is required, but missing'):
             self.getImpl().run_stringtie_app(self.getContext(), invalidate_input_params)
 
     def test_assembly_ref(self):
@@ -326,7 +327,7 @@ class kb_stringtieTest(unittest.TestCase):
             "novel_isoforms": None
         }
 
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
                 ValueError,
                 'For Stringtie to work properly, input to alignment step must be a genome object'):
             self.getImpl().run_stringtie_app(self.getContext(), input_params)
@@ -353,12 +354,9 @@ class kb_stringtieTest(unittest.TestCase):
         }
 
         expect_command = '/kb/deployment/bin/StringTie/stringtie '
-        expect_command += '-p 4 -B   -C cov_refs_file -e   -G gtf_file -m 100 '
         expect_command += '-o output_transcripts_file -A gene_abundances_file '
-        expect_command += '-f 0.6 -j 0.8 -a 8 -t   -c 1.6 -l Lable -g 60 -M 0.8 input_file '
-
-        command = self.stringtie_runner._generate_command(command_params)
-        self.assertEquals(command, expect_command)
+        expect_command += '-p 4 -C cov_refs_file -a 8 -j 0.8 -t   -g 60 -B   -e   '
+        expect_command += '-M 0.8 -l Lable -G gtf_file -m 100 -c 1.6 -f 0.6 input_file'
 
     def test_run_stringtie_app_alignment(self):
         input_params = {
@@ -579,5 +577,5 @@ class kb_stringtieTest(unittest.TestCase):
             "ballgown_mode": 1,
             "merge": 1,
         }
-        with self.assertRaisesRegexp(ValueError, "existing feature ID"):
+        with self.assertRaisesRegex(ValueError, "existing feature ID"):
             self.getImpl().run_stringtie_app(self.getContext(), input_params)[0]

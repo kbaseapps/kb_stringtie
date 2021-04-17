@@ -26,12 +26,12 @@ from .file_utils import exchange_gene_ids, _update_merge_file, _make_gff
 
 def log(message, prefix_newline=False):
     """Logging function, provides a hook to suppress or redirect log messages."""
-    print(
+    print((
         ("\n" if prefix_newline else "")
         + "{0:.2f}".format(time.time())
         + ": "
         + str(message)
-    )
+    ))
 
 
 class StringTieUtil:
@@ -101,7 +101,7 @@ class StringTieUtil:
 
         command = self.STRINGTIE_TOOLKIT_PATH + "/stringtie "
 
-        for key, option in self.OPTIONS_MAP.items():
+        for key, option in list(self.OPTIONS_MAP.items()):
             option_value = params.get(key)
             if key in self.BOOLEAN_OPTIONS and option_value:
                 option_value = " "
@@ -942,7 +942,7 @@ class StringTieUtil:
         command += "--merge "
         command += "-G {} ".format(annotation_file)
 
-        for key, option in self.OPTIONS_MAP.items():
+        for key, option in list(self.OPTIONS_MAP.items()):
             option_value = option_params.get(key)
             if key in self.BOOLEAN_OPTIONS and option_value:
                 option_value = " "

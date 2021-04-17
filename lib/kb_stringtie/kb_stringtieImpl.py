@@ -98,11 +98,11 @@ class kb_stringtie:
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN run_stringtie_app
-        print '--->\nRunning kb_stringtie.run_stringtie\nparams:'
-        print json.dumps(params, indent=1)
+        print('--->\nRunning kb_stringtie.run_stringtie\nparams:')
+        print((json.dumps(params, indent=1)))
 
-        for key, value in params.iteritems():
-            if isinstance(value, basestring):
+        for key, value in list(params.items()):
+            if isinstance(value, str):
                 params[key] = value.strip()
 
         stringtie_runner = StringTieUtil(self.config)
