@@ -434,6 +434,42 @@ class kb_stringtieTest(unittest.TestCase):
     #     self.assertEqual(expression_data.get('genome_id'), self.ama_ref)
     #     self.assertEqual(expression_data.get('condition'), self.condition_1)
 
+    # def test_run_stringtie_app_alignment_with_AMA_data_only(self):
+    #     input_params = {
+    #         'alignment_object_ref': self.alignment_referencing_AMA,
+    #         'workspace_name': self.getWsName(),
+    #         'expression_suffix': '_stringtie_expression',
+    #         'expression_set_suffix': '_stringtie_expression_set',
+    #         'generate_ws_object': False,
+
+    #         "min_read_coverage": 2.5,
+    #         "junction_base": 10,
+    #         "num_threads": 2,
+    #         "min_isoform_abundance": 0.1,
+    #         "min_length": 200,
+    #         "skip_reads_with_no_ref": 1,
+    #         "merge": 0,
+    #         "junction_coverage": 1,
+    #         "ballgown_mode": 1,
+    #         "min_locus_gap_sep_value": 50,
+    #         "disable_trimming": 1
+    #     }
+
+    #     result = self.getImpl().run_stringtie_app(self.getContext(), input_params)[0]
+
+    #     self.assertTrue('result_directory' in result)
+    #     result_files = os.listdir(result['result_directory'])
+    #     print(result_files)
+    #     expect_result_files = ['genes.fpkm_tracking', 'transcripts.gtf',
+    #                            'e2t.ctab', 'e_data.ctab', 'i2t.ctab', 'i_data.ctab', 't_data.ctab']
+    #     self.assertTrue(all(x in result_files for x in expect_result_files))
+    #     self.assertTrue('expression_obj_data' in result)
+    #     self.assertTrue('report_name' in result)
+    #     self.assertTrue('report_ref' in result)
+    #     expression_data = result['expression_obj_data']
+    #     self.assertEqual(expression_data.get('genome_id'), self.ama_ref)
+    #     self.assertEqual(expression_data.get('condition'), self.condition_1)
+
     def test_run_stringtie_app_rnaseq_alignment_set(self):
         input_params = {
             'alignment_object_ref': self.rnaseq_alignment_set_ref,

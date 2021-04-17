@@ -315,6 +315,7 @@ class StringTieUtil:
         expression_suffix,
         genome_ref="",
         transcripts=0,
+        generate_data_only=False
     ):
         """
         _save_expression: save Expression object to workspace
@@ -343,9 +344,14 @@ class StringTieUtil:
             "tool_version": "1.3.3",
             "genome_ref": genome_ref,
             "transcripts": transcripts,
+            "generate_data_only": generate_data_only
         }
 
-        expression_ref = self.eu.upload_expression(upload_expression_params)["obj_ref"]
+        ret = self.eu.upload_expression(upload_expression_params)
+        if generate_data_only:
+            expression_ref = ret["obj_data"]
+        else:
+            expression_ref = ret["obj_ref"]
 
         return expression_ref
 
@@ -770,6 +776,15 @@ class StringTieUtil:
         if "generate_ws_object" in params and not params.get("generate_ws_object"):
             log("skip generating expression object")
             expression_obj_ref = ""
+            expression_obj_data = self._save_expression(
+                result_directory,
+                alignment_ref,
+                params.get("workspace_name"),
+                params["expression_suffix"],
+                params.get("genome_ref"),
+                params.get("novel_isoforms", 0),
+                generate_data_only=True
+            )
         else:
             expression_obj_ref = self._save_expression(
                 result_directory,
@@ -779,10 +794,12 @@ class StringTieUtil:
                 params.get("genome_ref"),
                 params.get("novel_isoforms", 0),
             )
+            expression_obj_data = ""
 
         returnVal = {
             "result_directory": result_directory,
             "expression_obj_ref": expression_obj_ref,
+            "expression_obj_data": expression_obj_data,
             "alignment_ref": alignment_ref,
             "annotation_file": params["gtf_file"],
             "alignment_label": alignment_label,
