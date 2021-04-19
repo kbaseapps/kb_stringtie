@@ -1076,7 +1076,7 @@ class StringTieUtil:
         self.gfu = GenomeFileUtil(self.callback_url)
         self.rau = ReadsAlignmentUtils(self.callback_url)
         self.au = AssemblyUtil(self.callback_url)
-        self.eu = ExpressionUtils(self.callback_url)
+        self.eu = ExpressionUtils(self.callback_url, service_ver="beta")
         self.ws = Workspace(self.ws_url, token=self.token)
         self.set_client = SetAPI(self.srv_wiz_url, service_ver="dev")
 
@@ -1133,12 +1133,13 @@ class StringTieUtil:
         if re.match("KBaseRNASeq.RNASeqAlignment-\d.\d", alignment_object_type):
             params.update({"alignment_ref": alignment_object_ref})
             returnVal = self._process_alignment_object(params)
-            report_output = self._generate_report(
-                returnVal.get("expression_obj_ref"),
-                params.get("workspace_name"),
-                returnVal.get("result_directory"),
-            )
-            returnVal.update(report_output)
+            if returnVal.get('expression_obj_ref'):
+                report_output = self._generate_report(
+                    returnVal.get("expression_obj_ref"),
+                    params.get("workspace_name"),
+                    returnVal.get("result_directory"),
+                )
+                returnVal.update(report_output)
         elif re.match(
             "KBaseRNASeq.RNASeqAlignmentSet-\d.\d", alignment_object_type
         ) or re.match("KBaseSets.ReadsAlignmentSet-\d.\d", alignment_object_type):
