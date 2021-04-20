@@ -7,10 +7,7 @@ import requests  # noqa: F401
 import shutil
 
 from os import environ
-try:
-    from configparser import ConfigParser  # py2
-except:
-    from configparser import ConfigParser  # py3
+from configparser import ConfigParser
 
 from pprint import pprint  # noqa: F401
 
@@ -221,37 +218,9 @@ class kb_stringtieTest(unittest.TestCase):
         })
 
         # upload AMA object
-        gff_file_name = 'example_stringtie_merge.gff'
-        gff_file_path = os.path.join(cls.scratch, gff_file_name)
-        shutil.copy(os.path.join('data', gff_file_name), gff_file_path)
-        handle_ref = cls.dfu.file_to_shock({'file_path': gff_file_path,
-                                            'make_handle': True})['handle']['hid']
 
-        ama_data = {
-            "feature_counts": {'test_feature': 10},
-            "dna_size": 10,
-            "num_contigs": 10,
-            "num_features": 10,
-            "molecule_type": 'test molecule type',
-            "source": 'User_upload',
-            "md5": 'test md5',
-            "gc_content": 0.1,
-            "assembly_ref": cls.assembly_ref,
-            "gff_handle_ref": handle_ref,
-            "features_handle_ref": handle_ref,
-            "protein_handle_ref": handle_ref,
-            "environment": 'test environment'
-        }
-
-        save_object_params = {
-            'id': workspace_id,
-            'objects': [{'type': 'KBaseMetagenomes.AnnotatedMetagenomeAssembly',
-                         'data': ama_data,
-                         'name': 'test_mini_AMA'}]
-        }
-
-        dfu_oi = cls.dfu.save_objects(save_object_params)[0]
-        cls.ama_ref = str(dfu_oi[6]) + '/' + str(dfu_oi[0]) + '/' + str(dfu_oi[4])
+        cls.name_ref = "KBaseTestData/metagenome_badabing.assembly.fa_metagenome/1"
+        cls.ama_ref = cls.wsClient.get_objects2({'objects': [{'ref': cls.name_ref}]})['data'][0]['path'][0]
 
         # upload RNASeqAlignment object referencing AMA object
         alignment_object_name_1 = 'test_Alignment_1_referencing_AMA'
@@ -399,41 +368,42 @@ class kb_stringtieTest(unittest.TestCase):
         self.assertEqual(expression_data.get('genome_id'), self.genome_ref)
         self.assertEqual(expression_data.get('condition'), self.condition_1)
 
-    # def test_run_stringtie_app_alignment_with_AMA_data_only(self):
-    #     input_params = {
-    #         'alignment_object_ref': self.alignment_referencing_AMA,
-    #         'workspace_name': self.getWsName(),
-    #         'expression_suffix': '_stringtie_expression',
-    #         'expression_set_suffix': '_stringtie_expression_set',
-    #         'generate_ws_object': False,
+    def test_run_stringtie_app_alignment_with_AMA_data_only(self):
+        input_params = {
+            'alignment_object_ref': self.alignment_referencing_AMA,
+            'workspace_name': self.getWsName(),
+            'expression_suffix': '_stringtie_expression',
+            'expression_set_suffix': '_stringtie_expression_set',
+            'generate_ws_object': False,
 
-    #         "min_read_coverage": 2.5,
-    #         "junction_base": 10,
-    #         "num_threads": 2,
-    #         "min_isoform_abundance": 0.1,
-    #         "min_length": 200,
-    #         "skip_reads_with_no_ref": 1,
-    #         "merge": 0,
-    #         "junction_coverage": 1,
-    #         "ballgown_mode": 1,
-    #         "min_locus_gap_sep_value": 50,
-    #         "disable_trimming": 1
-    #     }
+            "min_read_coverage": 2.5,
+            "junction_base": 10,
+            "num_threads": 2,
+            "min_isoform_abundance": 0.1,
+            "min_length": 200,
+            "skip_reads_with_no_ref": 1,
+            "merge": 0,
+            "junction_coverage": 1,
+            "ballgown_mode": 1,
+            "min_locus_gap_sep_value": 50,
+            "disable_trimming": 1
+        }
 
-    #     result = self.getImpl().run_stringtie_app(self.getContext(), input_params)[0]
+        result = self.getImpl().run_stringtie_app(self.getContext(), input_params)[0]
 
-    #     self.assertTrue('result_directory' in result)
-    #     result_files = os.listdir(result['result_directory'])
-    #     print(result_files)
-    #     expect_result_files = ['genes.fpkm_tracking', 'transcripts.gtf',
-    #                            'e2t.ctab', 'e_data.ctab', 'i2t.ctab', 'i_data.ctab', 't_data.ctab']
-    #     self.assertTrue(all(x in result_files for x in expect_result_files))
-    #     self.assertTrue('expression_obj_data' in result)
-    #     self.assertTrue('report_name' not in result)
-    #     self.assertTrue('report_ref' not in result)
-    #     expression_data = result['expression_obj_data']
-    #     self.assertEqual(expression_data.get('genome_id'), self.ama_ref)
-    #     self.assertEqual(expression_data.get('condition'), self.condition_1)
+        self.assertTrue('result_directory' in result)
+        result_files = os.listdir(result['result_directory'])
+        print(result_files)
+        expect_result_files = ['genes.fpkm_tracking', 'transcripts.gtf',
+                               'e2t.ctab', 'e_data.ctab', 'i2t.ctab', 'i_data.ctab', 't_data.ctab']
+        self.assertTrue(all(x in result_files for x in expect_result_files))
+        self.assertTrue('expression_obj_data' in result)
+        self.assertTrue('report_name' not in result)
+        self.assertTrue('report_ref' not in result)
+
+        expression_data = result['expression_obj_data']
+        self.assertEqual(expression_data.get('genome_id'), self.ama_ref)
+        self.assertEqual(expression_data.get('condition'), self.condition_1)
 
     def test_run_stringtie_app_alignment_data_only(self):
         input_params = {

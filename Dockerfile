@@ -18,6 +18,7 @@ RUN pip install --upgrade pip \
     && python --version
 
 RUN pip install coverage==5.5 && \
+    pip install in_place==0.5.0 && \
     pip install pathos==0.2.7
 
 # download StringTie software and untar it
@@ -45,9 +46,9 @@ RUN cd /kb/deployment/bin/modules && \
 # download gffread script
 RUN cd /kb/deployment/bin/modules && \
     mkdir gffread && cd gffread && \
-    wget http://ccb.jhu.edu/software/stringtie/dl/gffread-0.9.9.Linux_x86_64.tar.gz &&\
-    tar xvfz gffread-0.9.9.Linux_x86_64.tar.gz && \
-    cd gffread-0.9.9.Linux_x86_64 && \
+    wget http://ccb.jhu.edu/software/stringtie/dl/gffread-0.12.6.Linux_x86_64.tar.gz &&\
+    tar xvfz gffread-0.12.6.Linux_x86_64.tar.gz && \
+    cd gffread-0.12.6.Linux_x86_64 && \
     mkdir /kb/deployment/bin/gffread && \
     cp -R gffread /kb/deployment/bin/gffread/gffread
 
