@@ -1,7 +1,7 @@
 #
 # Define basic display information
 #
-name     : Assemble Transcripts using StringTie - v1.3.3b
+name     : Assemble Transcripts using StringTie - v2.1.5
 
 tooltip  : |
     Assemble the transcripts from RNA-seq read alignments using StringTie.
