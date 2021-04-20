@@ -289,7 +289,10 @@ class StringTieUtil:
 
                     with in_place.InPlace(genome_gff_file) as file:
                         for line in file:
-                            delimiter = csv.Sniffer().sniff(line).delimiter
+                            if '\t' in line:
+                                delimiter = '\t'
+                            else:
+                                delimiter = csv.Sniffer().sniff(line).delimiter
                             line_split = line.split(delimiter)
                             line_split[6] = '+'
                             line = delimiter.join(line_split)
