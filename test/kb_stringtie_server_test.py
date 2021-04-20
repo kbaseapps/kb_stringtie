@@ -22,6 +22,8 @@ from installed_clients.ReadsUtilsClient import ReadsUtils
 from installed_clients.ReadsAlignmentUtilsClient import ReadsAlignmentUtils
 from installed_clients.DataFileUtilClient import DataFileUtil
 from installed_clients.AssemblyUtilClient import AssemblyUtil
+from installed_clients.kb_hisat2Client import kb_hisat2 as kb_hisat2_runner
+from installed_clients.kb_stringtieClient import kb_stringtie as kb_stringtie_runner
 
 
 class kb_stringtieTest(unittest.TestCase):
@@ -71,12 +73,66 @@ class kb_stringtieTest(unittest.TestCase):
         cls.wsClient.create_workspace({'workspace': cls.wsName})
 
         cls.prepare_data()
+        # cls.prepare_ama_data()
 
     @classmethod
     def tearDownClass(cls):
         if hasattr(cls, 'wsName'):
             cls.wsClient.delete_workspace({'workspace': cls.wsName})
             print('Test workspace was deleted')
+
+    @classmethod
+    def prepare_ama_data(cls):
+        reads_file_name = 'Sample1.fastq'
+        reads_file_path = os.path.join(cls.scratch, reads_file_name)
+        shutil.copy(os.path.join('data', reads_file_name), reads_file_path)
+
+        reads_object_name_1 = 'test_Reads_1'
+        cls.reads_ref_1 = cls.ru.upload_reads({'fwd_file': reads_file_path,
+                                               'wsname': cls.wsName,
+                                               'sequencing_tech': 'Unknown',
+                                               'interleaved': 0,
+                                               'name': reads_object_name_1
+                                               })['obj_ref']
+
+        cls.condition_1 = 'test_condition_1'
+
+        fasta_file_name = 'mini_ama.fna'
+        fasta_file_path = os.path.join(cls.scratch, fasta_file_name)
+        shutil.copy(os.path.join('data', fasta_file_name), fasta_file_path)
+
+        gff_file_name = 'mini_ama.gff'
+        gff_file_path = os.path.join(cls.scratch, gff_file_name)
+        shutil.copy(os.path.join('data', gff_file_name), gff_file_path)
+        cls.ama_ref = cls.gfu.fasta_gff_to_metagenome({'fasta_file': {'path': fasta_file_path},
+                                                       'gff_file': {'path': gff_file_path},
+                                                       'genome_name': 'test_small_ama',
+                                                       'workspace_name': cls.wsName,
+                                                       'generate_missing_genes': 1})['metagenome_ref']
+
+        # run Hisat2(dev version) as normal
+        cls.kb_hisat2_runner = kb_hisat2_runner(cls.callback_url, service_ver='dev')
+        ret = cls.kb_hisat2_runner.run_hisat2({'ws_name': cls.wsName,
+                                               'alignment_suffix': '_alignment',
+                                               'sampleset_ref': cls.reads_ref_1,
+                                               'condition': cls.condition_1,
+                                               'genome_ref': cls.ama_ref})
+        cls.alignment_referencing_AMA = ret['alignment_objs'][cls.reads_ref_1]['ref']
+
+        # run stringtie(dev version) with 'generate_ws_object':False
+        cls.kb_stringtie_runner = kb_stringtie_runner(cls.callback_url, service_ver='dev')
+        ret = cls.kb_stringtie_runner.run_stringtie_app({
+            'alignment_object_ref': cls.alignment_referencing_AMA,
+            'workspace_name': cls.wsName,
+            'expression_suffix': '_stringtie_expression',
+            'expression_set_suffix': '_stringtie_expression_set',
+            'generate_ws_object': False})
+        expression_obj_data = ret['expression_obj_data']
+        expression_levels = expression_obj_data['expression_levels']
+        tpm_expression_levels = expression_obj_data['tpm_expression_levels']
+        print('expression_obj_data generated')
+        print(expression_levels)
+        print(tpm_expression_levels)
 
     @classmethod
     def prepare_data(cls):

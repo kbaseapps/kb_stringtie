@@ -15,6 +15,14 @@
   "type" : "sdk",
   "version_tag" : "release"
 }, {
+  "module_name" : "kb_hisat2",
+  "type" : "sdk",
+  "version_tag" : "dev"
+}, {
+  "module_name" : "kb_stringtie",
+  "type" : "sdk",
+  "version_tag" : "dev"
+}, {
   "module_name" : "KBaseReport",
   "type" : "sdk",
   "version_tag" : "release"
