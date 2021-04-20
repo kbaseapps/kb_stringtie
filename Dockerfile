@@ -22,8 +22,8 @@ RUN pip install coverage==5.5 && \
     pip install pathos==0.2.7
 
 # download StringTie software and untar it
-RUN STRINGTIE_V='2.1.5'
-RUN mkdir /kb/deployment/bin/modules && \
+RUN STRINGTIE_V='2.1.5' && \
+    mkdir /kb/deployment/bin/modules && \
     cd /kb/deployment/bin/modules && \
     mkdir StringTie && cd StringTie && \
     wget http://ccb.jhu.edu/software/stringtie/dl/stringtie-${STRINGTIE_V}.Linux_x86_64.tar.gz &&\
@@ -45,8 +45,8 @@ RUN cd /kb/deployment/bin/modules && \
 # -----------------------------------------
 
 # download gffread script
-RUN GFFREAD_V='0.12.6'
-RUN cd /kb/deployment/bin/modules && \
+RUN GFFREAD_V='0.12.6' && \
+    cd /kb/deployment/bin/modules && \
     mkdir gffread && cd gffread && \
     wget http://ccb.jhu.edu/software/stringtie/dl/gffread-${GFFREAD_V}.Linux_x86_64.tar.gz &&\
     tar xvfz gffread-${GFFREAD_V}.Linux_x86_64.tar.gz && \
@@ -57,8 +57,8 @@ RUN cd /kb/deployment/bin/modules && \
 # -----------------------------------------
 
 # download gffcompare script
-RUN GFFCOMP_V='0.12.2'
-RUN cd /kb/deployment/bin/modules && \
+RUN GFFCOMP_V='0.12.2' && \
+    cd /kb/deployment/bin/modules && \
     mkdir gffcompare && cd gffcompare && \
     wget http://ccb.jhu.edu/software/stringtie/dl/gffcompare-${GFFCOMP_V}.Linux_x86_64.tar.gz	 &&\
     tar xvfz gffcompare-${GFFCOMP_V}.Linux_x86_64.tar.gz	 && \
