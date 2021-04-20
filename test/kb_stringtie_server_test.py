@@ -254,17 +254,17 @@ class kb_stringtieTest(unittest.TestCase):
         cls.ama_ref = str(dfu_oi[6]) + '/' + str(dfu_oi[0]) + '/' + str(dfu_oi[4])
 
         # upload RNASeqAlignment object referencing AMA object
-        # alignment_object_name_1 = 'test_Alignment_1_referencing_AMA'
-        # destination_ref = cls.wsName + '/' + alignment_object_name_1
-        # cls.alignment_referencing_AMA = cls.rau.upload_alignment(
-        #     {
-        #         'file_path': alignment_file_path,
-        #         'destination_ref': destination_ref,
-        #         'read_library_ref': cls.reads_ref_1,
-        #         'condition': cls.condition_1,
-        #         'library_type': 'single_end',
-        #         'assembly_or_genome_ref': cls.ama_ref
-        #     })['obj_ref']
+        alignment_object_name_1 = 'test_Alignment_1_referencing_AMA'
+        destination_ref = cls.wsName + '/' + alignment_object_name_1
+        cls.alignment_referencing_AMA = cls.rau.upload_alignment(
+            {
+                'file_path': alignment_file_path,
+                'destination_ref': destination_ref,
+                'read_library_ref': cls.reads_ref_1,
+                'condition': cls.condition_1,
+                'library_type': 'single_end',
+                'assembly_or_genome_ref': cls.ama_ref
+            })['obj_ref']
 
         # upload RNASeqAlignment object referencing Assembly object
         alignment_file_name = 'accepted_hits.bam'
@@ -356,9 +356,10 @@ class kb_stringtieTest(unittest.TestCase):
         expect_command = '/kb/deployment/bin/StringTie/stringtie '
         expect_command += '-o output_transcripts_file -A gene_abundances_file '
         expect_command += '-p 4 -C cov_refs_file -a 8 -j 0.8 -t   -g 60 -B   -e   '
-        expect_command += '-M 0.8 -l Lable -G gtf_file -m 100 -c 1.6 -f 0.6 input_file'
+        expect_command += '-M 0.8 -l Lable -G gtf_file -m 100 -c 1.6 -f 0.6 input_file '
 
         command = self.stringtie_runner._generate_command(command_params)
+
         self.assertEquals(command, expect_command)
 
     def test_run_stringtie_app_alignment(self):
