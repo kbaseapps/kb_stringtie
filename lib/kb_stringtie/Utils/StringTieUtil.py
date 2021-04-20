@@ -10,6 +10,8 @@ import time
 import traceback
 import uuid
 import zipfile
+import in_place
+import csv
 
 from installed_clients.AssemblyUtilClient import AssemblyUtil
 from installed_clients.DataFileUtilClient import DataFileUtil
@@ -277,9 +279,23 @@ class StringTieUtil:
 
             gtf_ext = ".gtf"
 
-            if not genome_gff_file.endswith(gtf_ext):
-                gtf_path = os.path.splitext(genome_gff_file)[0] + ".gtf"
-                self._run_gffread(genome_gff_file, gtf_path)
+            if not genome_gff_file.lower().endswith(gtf_ext):
+                try:
+                    gtf_path = os.path.splitext(genome_gff_file)[0] + ".gtf"
+                    self._run_gffread(genome_gff_file, gtf_path)
+                except Exception:
+                    log("Failed to convert GFF to GTF")
+                    log("Trying to fix GFF file")
+
+                    with in_place.InPlace(genome_gff_file) as file:
+                        for line in file:
+                            delimiter = csv.Sniffer().sniff(line).delimiter
+                            line_split = line.split(delimiter)
+                            line_split[6] = '+'
+                            line = delimiter.join(line_split)
+                            file.write(line)
+                    gtf_path = os.path.splitext(genome_gff_file)[0] + ".gtf"
+                    self._run_gffread(genome_gff_file, gtf_path)
             else:
                 gtf_path = genome_gff_file
 
@@ -1077,7 +1093,7 @@ class StringTieUtil:
         self.gfu = GenomeFileUtil(self.callback_url)
         self.rau = ReadsAlignmentUtils(self.callback_url)
         self.au = AssemblyUtil(self.callback_url)
-        self.eu = ExpressionUtils(self.callback_url, service_ver="beta")
+        self.eu = ExpressionUtils(self.callback_url, service_ver="dev")
         self.ws = Workspace(self.ws_url, token=self.token)
         self.set_client = SetAPI(self.srv_wiz_url, service_ver="dev")
 
