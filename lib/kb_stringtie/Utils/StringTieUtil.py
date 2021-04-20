@@ -10,6 +10,8 @@ import time
 import traceback
 import uuid
 import zipfile
+import in_place
+import csv
 
 from installed_clients.AssemblyUtilClient import AssemblyUtil
 from installed_clients.DataFileUtilClient import DataFileUtil
@@ -26,12 +28,12 @@ from .file_utils import exchange_gene_ids, _update_merge_file, _make_gff
 
 def log(message, prefix_newline=False):
     """Logging function, provides a hook to suppress or redirect log messages."""
-    print(
+    print((
         ("\n" if prefix_newline else "")
         + "{0:.2f}".format(time.time())
         + ": "
         + str(message)
-    )
+    ))
 
 
 class StringTieUtil:
@@ -101,7 +103,7 @@ class StringTieUtil:
 
         command = self.STRINGTIE_TOOLKIT_PATH + "/stringtie "
 
-        for key, option in self.OPTIONS_MAP.items():
+        for key, option in list(self.OPTIONS_MAP.items()):
             option_value = params.get(key)
             if key in self.BOOLEAN_OPTIONS and option_value:
                 option_value = " "
@@ -231,8 +233,13 @@ class StringTieUtil:
         Create reference annotation file from genome
         """
         ref = self.ws.get_object_subset(
-            [{"ref": genome_ref, "included": ["contigset_ref", "assembly_ref"]}]
+            [{"ref": genome_ref, "included": ["contigset_ref", "assembly_ref", "gff_handle_ref"]}]
         )
+
+        obj_type = ref[0]['info'][2]
+
+        if 'KBaseMetagenomes.AnnotatedMetagenomeAssembly' not in obj_type and 'KBaseGenomes.Genome' not in obj_type:
+            raise ValueError('For Stringtie to work properly, input to alignment step must be a genome object')
         contig_id = None
         if "contigset_ref" in ref[0]["data"]:
             contig_id = ref[0]["data"]["contigset_ref"]
@@ -244,7 +251,7 @@ class StringTieUtil:
                     genome_ref
                 )
             )
-        print(contig_id)
+        log("Found contig reference: {}".format(contig_id))
         log("Generating GFF file from Genome")
         try:
             ret = self.au.get_assembly_as_fasta({"ref": genome_ref + ";" + contig_id})
@@ -254,15 +261,44 @@ class StringTieUtil:
                 shutil.copy(fa_output_file, result_directory)
 
             # get the GFF
-            ret = self.gfu.genome_to_gff(
-                {"genome_ref": genome_ref, "target_dir": result_directory}
-            )
-            genome_gff_file = ret["file_path"]
+            if 'KBaseMetagenomes.AnnotatedMetagenomeAssembly' in obj_type:
+                ret = self.gfu.metagenome_to_gff(
+                                        {"metagenome_ref": genome_ref,
+                                         "target_dir": result_directory})
+            elif 'KBaseGenomes.Genome' in obj_type:
+                ret = self.gfu.genome_to_gff(
+                                        {"genome_ref": genome_ref,
+                                         "target_dir": result_directory})
+            else:
+                raise ValueError('Unsupported genome data type: {}'.format(obj_type))
+
+            genome_gff_file = ret.get("file_path")
+
+            if not genome_gff_file:
+                raise ValueError("Cannot retrieve GFF file from Genome")
+
             gtf_ext = ".gtf"
 
-            if not genome_gff_file.endswith(gtf_ext):
-                gtf_path = os.path.splitext(genome_gff_file)[0] + ".gtf"
-                self._run_gffread(genome_gff_file, gtf_path)
+            if not genome_gff_file.lower().endswith(gtf_ext):
+                try:
+                    gtf_path = os.path.splitext(genome_gff_file)[0] + ".gtf"
+                    self._run_gffread(genome_gff_file, gtf_path)
+                except Exception:
+                    log("Failed to convert GFF to GTF")
+                    log("Trying to fix GFF file")
+
+                    with in_place.InPlace(genome_gff_file) as file:
+                        for line in file:
+                            if '\t' in line:
+                                delimiter = '\t'
+                            else:
+                                delimiter = csv.Sniffer().sniff(line).delimiter
+                            line_split = line.split(delimiter)
+                            line_split[6] = '+'
+                            line = delimiter.join(line_split)
+                            file.write(line)
+                    gtf_path = os.path.splitext(genome_gff_file)[0] + ".gtf"
+                    self._run_gffread(genome_gff_file, gtf_path)
             else:
                 gtf_path = genome_gff_file
 
@@ -297,6 +333,7 @@ class StringTieUtil:
         expression_suffix,
         genome_ref="",
         transcripts=0,
+        generate_data_only=False
     ):
         """
         _save_expression: save Expression object to workspace
@@ -325,9 +362,14 @@ class StringTieUtil:
             "tool_version": "1.3.3",
             "genome_ref": genome_ref,
             "transcripts": transcripts,
+            "generate_data_only": generate_data_only
         }
 
-        expression_ref = self.eu.upload_expression(upload_expression_params)["obj_ref"]
+        ret = self.eu.upload_expression(upload_expression_params)
+        if generate_data_only:
+            expression_ref = ret["obj_data"]
+        else:
+            expression_ref = ret["obj_ref"]
 
         return expression_ref
 
@@ -752,6 +794,15 @@ class StringTieUtil:
         if "generate_ws_object" in params and not params.get("generate_ws_object"):
             log("skip generating expression object")
             expression_obj_ref = ""
+            expression_obj_data = self._save_expression(
+                result_directory,
+                alignment_ref,
+                params.get("workspace_name"),
+                params["expression_suffix"],
+                params.get("genome_ref"),
+                params.get("novel_isoforms", 0),
+                generate_data_only=True
+            )
         else:
             expression_obj_ref = self._save_expression(
                 result_directory,
@@ -761,15 +812,17 @@ class StringTieUtil:
                 params.get("genome_ref"),
                 params.get("novel_isoforms", 0),
             )
+            expression_obj_data = ""
 
         returnVal = {
             "result_directory": result_directory,
             "expression_obj_ref": expression_obj_ref,
+            "expression_obj_data": expression_obj_data,
             "alignment_ref": alignment_ref,
             "annotation_file": params["gtf_file"],
             "alignment_label": alignment_label,
         }
-    
+
         return returnVal
 
     def _process_alignment_set_object(self, params):
@@ -810,7 +863,7 @@ class StringTieUtil:
                 log("caught exception in worker")
                 exctype, value = sys.exc_info()[:2]
                 returnVal = {"exception": "{}: {}".format(exctype, value)}
-        
+
             return returnVal
 
         mul_processor_params = []
@@ -909,7 +962,7 @@ class StringTieUtil:
         command += "--merge "
         command += "-G {} ".format(annotation_file)
 
-        for key, option in self.OPTIONS_MAP.items():
+        for key, option in list(self.OPTIONS_MAP.items()):
             option_value = option_params.get(key)
             if key in self.BOOLEAN_OPTIONS and option_value:
                 option_value = " "
@@ -1043,7 +1096,7 @@ class StringTieUtil:
         self.gfu = GenomeFileUtil(self.callback_url)
         self.rau = ReadsAlignmentUtils(self.callback_url)
         self.au = AssemblyUtil(self.callback_url)
-        self.eu = ExpressionUtils(self.callback_url)
+        self.eu = ExpressionUtils(self.callback_url, service_ver="dev")
         self.ws = Workspace(self.ws_url, token=self.token)
         self.set_client = SetAPI(self.srv_wiz_url, service_ver="dev")
 
@@ -1100,12 +1153,13 @@ class StringTieUtil:
         if re.match("KBaseRNASeq.RNASeqAlignment-\d.\d", alignment_object_type):
             params.update({"alignment_ref": alignment_object_ref})
             returnVal = self._process_alignment_object(params)
-            report_output = self._generate_report(
-                returnVal.get("expression_obj_ref"),
-                params.get("workspace_name"),
-                returnVal.get("result_directory"),
-            )
-            returnVal.update(report_output)
+            if returnVal.get('expression_obj_ref'):
+                report_output = self._generate_report(
+                    returnVal.get("expression_obj_ref"),
+                    params.get("workspace_name"),
+                    returnVal.get("result_directory"),
+                )
+                returnVal.update(report_output)
         elif re.match(
             "KBaseRNASeq.RNASeqAlignmentSet-\d.\d", alignment_object_type
         ) or re.match("KBaseSets.ReadsAlignmentSet-\d.\d", alignment_object_type):

@@ -6,7 +6,7 @@ import time
 
 from os import environ
 try:
-    from ConfigParser import ConfigParser  # py2
+    from configparser import ConfigParser  # py2
 except:
     from configparser import ConfigParser  # py3
 
