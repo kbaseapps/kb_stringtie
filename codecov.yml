@@ -1,0 +1,4 @@
+ignore:
+  - "lib/installed_clients"
+  - "lib/kb_stringtie/kb_stringtieServer.py"
+  - "lib/kb_stringtie/authclient.py"
