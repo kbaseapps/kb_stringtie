@@ -92,30 +92,7 @@
     "text_options" : {
       "validate_as": "int"
     }
-   },{
-    "id" : "stringtie_genome_name",
-    "optional" : true,
-    "advanced" : false,
-    "allow_multiple" : false,
-    "default_values" : [ "" ],
-    "field_type" : "text"
-   },{
-    "id" : "transcript_label",
-    "optional" : false,
-    "advanced" : false,
-    "allow_multiple" : false,
-    "default_values" : [ "" ],
-    "field_type" : "text"
-  }],
-  "parameter-groups": [
-      {
-	      "id": "novel_isoforms",
-	      "parameters": ["stringtie_genome_name", "transcript_label"],
-	      "optional": true,
-	      "allow_multiple": false,
-	      "with_border": true
-      }
-  ],
+   }],
   "behavior" : {
     "service-mapping" : {
       "url" : "",
@@ -138,10 +115,6 @@
         {
             "input_parameter" : "expression_set_suffix",
             "target_property" : "expression_set_suffix"
-        },
-        {
-          "input_parameter" : "novel_isoforms",
-          "target_property" : "novel_isoforms"
         },
         {
           "constant_value"  : 1,
