@@ -1,10 +1,9 @@
 
 Build status:
 
-master: [![Coverage Status](https://coveralls.io/repos/github/kbaseapps/kb_stringtie/badge.svg?branch=master)](https://coveralls.io/github/kbaseapps/kb_stringtie?branch=master)
-
-master:  [![Build Status](https://travis-ci.org/kbaseapps/kb_stringtie.svg?branch=master)](https://travis-ci.org/kbaseapps/kb_stringtie)
-
+| Branch  | Build | Coverage | LGTM Alerts |
+| --- | --- | --- | --- |
+| master  | [![KBase SDK Tests](https://github.com/kbaseapps/kb_stringtie/workflows/KBase%20SDK%20Tests/badge.svg)](https://github.com/kbaseapps/kb_stringtie/actions?query=workflow%3A%22KBase+SDK+Tests%22)  | [![codecov](https://codecov.io/gh/kbaseapps/kb_stringtie/branch/master/graph/badge.svg?token=9N9niXuVcJ)](https://codecov.io/gh/kbaseapps/kb_stringtie) | [![Total alerts](https://img.shields.io/lgtm/alerts/g/kbaseapps/kb_stringtie.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/kbaseapps/kb_stringtie/alerts/) |
 
 # kb_stringtie
 ---
