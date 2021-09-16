@@ -42,3 +42,6 @@ Updated citations to PLOS format
 1.1.6:
 Add support for AMA referenced RNASeqAlignment
 update module to use Python 3
+
+1.1.7:
+disable novel_isoforms option from UI
