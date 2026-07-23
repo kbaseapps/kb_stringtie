@@ -11,7 +11,7 @@ from configparser import ConfigParser
 
 from pprint import pprint  # noqa: F401
 
-from biokbase.workspace.client import Workspace as workspaceService
+from installed_clients.WorkspaceClient import Workspace as workspaceService
 from installed_clients.WorkspaceClient import Workspace as Workspace
 from kb_stringtie.kb_stringtieImpl import kb_stringtie
 from kb_stringtie.kb_stringtieServer import MethodContext
@@ -69,17 +69,17 @@ class kb_stringtieTest(unittest.TestCase):
 
         suffix = int(time.time() * 1000)
         cls.wsName = "test_kb_stringtie_" + str(suffix)
-        # cls.wsName = "jjeffryes:narrative_1516993063374"
+        #cls.wsName = "keenholdhc:narrative_1784748773123"
         cls.wsClient.create_workspace({'workspace': cls.wsName})
 
         cls.prepare_data()
         # cls.prepare_ama_data()
 
-    @classmethod
-    def tearDownClass(cls):
-        if hasattr(cls, 'wsName'):
-            cls.wsClient.delete_workspace({'workspace': cls.wsName})
-            print('Test workspace was deleted')
+    # @classmethod
+    # def tearDownClass(cls):
+    #     if hasattr(cls, 'wsName'):
+    #         cls.wsClient.delete_workspace({'workspace': cls.wsName})
+    #         print('Test workspace was deleted')
 
     @classmethod
     def prepare_ama_data(cls):
@@ -275,8 +275,24 @@ class kb_stringtieTest(unittest.TestCase):
 
         # upload AMA object
 
-        cls.name_ref = "KBaseTestData/metagenome_badabing.assembly.fa_metagenome/1"
-        cls.ama_ref = cls.wsClient.get_objects2({'objects': [{'ref': cls.name_ref}]})['data'][0]['path'][0]
+        # cls.name_ref = "KBaseTestData/metagenome_badabing.assembly.fa_metagenome/1"
+        # cls.ama_ref = cls.wsClient.get_objects2({'objects': [{'ref': cls.name_ref}]})['data'][0]['path'][0]
+
+        fasta_file_name = 'mini_ama.fna'
+        fasta_file_path = os.path.join(cls.scratch, fasta_file_name)
+        shutil.copy(os.path.join('data', fasta_file_name), fasta_file_path)
+
+        gff_file_name = 'mini_ama.gff'
+        gff_file_path = os.path.join(cls.scratch, gff_file_name)
+        shutil.copy(os.path.join('data', gff_file_name), gff_file_path)
+
+        cls.ama_ref = cls.gfu.fasta_gff_to_metagenome({
+            'fasta_file': {'path': fasta_file_path},
+            'gff_file': {'path': gff_file_path},
+            'genome_name': 'test_small_ama',
+            'workspace_name': cls.wsName,
+            'generate_missing_genes': 1
+        })['metagenome_ref']
 
         # upload RNASeqAlignment object referencing AMA object
         alignment_object_name_1 = 'test_Alignment_1_referencing_AMA'
