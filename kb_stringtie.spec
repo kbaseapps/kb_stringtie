@@ -64,6 +64,9 @@ module kb_stringtie {
         int min_length;
         float min_read_coverage;
         float min_isoform_abundance;
+        boolean mix_mode;
+        boolean long_read_mode;
+        string long_read_alignment_object_ref;        
     } StringTieInput;
 
     /*

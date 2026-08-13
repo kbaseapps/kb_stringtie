@@ -1,5 +1,5 @@
 {
-  "ver" : "1.0.0",
+  "ver" : "3.0.3",
   "authors" : ["tgu2"],
   "contact" : "help@kbase.us",
   "visible" : true,
@@ -18,7 +18,39 @@
     "text_options" : {
       "valid_ws_types" : ["KBaseRNASeq.RNASeqAlignmentSet" , "KBaseRNASeq.RNASeqAlignment", "KBaseSets.ReadsAlignmentSet"]
     }
-  },{
+   },{
+  "id" : "mix_mode",
+  "optional" : true,
+  "advanced" : true,
+  "allow_multiple" : false,
+  "default_values" : [ "0" ],
+  "field_type" : "checkbox",
+  "checkbox_options" : {
+    "checked_value" : 1,
+    "unchecked_value" : 0
+  }
+},{
+  "id" : "long_read_alignment_object_ref",
+  "optional" : true,
+  "advanced" : true,
+  "allow_multiple" : false,
+  "default_values" : [ "" ],
+  "field_type" : "text",
+  "text_options" : {
+    "valid_ws_types" : ["KBaseRNASeq.RNASeqAlignmentSet" , "KBaseRNASeq.RNASeqAlignment", "KBaseSets.ReadsAlignmentSet"]
+  }
+},{
+  "id" : "long_read_mode",
+  "optional" : true,
+  "advanced" : true,
+  "allow_multiple" : false,
+  "default_values" : [ "0" ],
+  "field_type" : "checkbox",
+  "checkbox_options" : {
+    "checked_value" : 1,
+    "unchecked_value" : 0
+  }
+},{
     "id" : "expression_suffix",
     "optional" : false,
     "advanced" : true,
@@ -109,13 +141,26 @@
           "target_property" : "alignment_object_ref"
         },
         {
-            "input_parameter" : "expression_suffix",
-            "target_property" : "expression_suffix"
+          "input_parameter" : "mix_mode",
+          "target_property" : "mix_mode"
         },
         {
-            "input_parameter" : "expression_set_suffix",
-            "target_property" : "expression_set_suffix"
+          "input_parameter" : "long_read_alignment_object_ref",
+          "target_type_transform": "resolved-ref",
+          "target_property" : "long_read_alignment_object_ref"
+        },    
+        {
+          "input_parameter" : "long_read_mode",
+          "target_property" : "long_read_mode"
         },
+        {
+          "input_parameter" : "expression_suffix",
+          "target_property" : "expression_suffix"
+        },
+        {
+          "input_parameter" : "expression_set_suffix",
+          "target_property" : "expression_set_suffix"
+        },             
         {
           "constant_value"  : 1,
           "target_property" : "ballgown_mode"

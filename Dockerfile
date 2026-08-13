@@ -1,4 +1,4 @@
-FROM kbase/sdkbase2:python
+FROM kbase/sdkpython:3.8.0
 MAINTAINER KBase Developer
 # -----------------------------------------
 # In this section, you can install any system dependencies required
@@ -22,11 +22,11 @@ RUN pip install coverage==5.5 && \
     pip install pathos==0.2.7
 
 # download StringTie software and untar it
-RUN STRINGTIE_V='2.1.5' && \
-    mkdir /kb/deployment/bin/modules && \
+RUN STRINGTIE_V='3.0.3' && \
+    mkdir -p /kb/deployment/bin/modules && \
     cd /kb/deployment/bin/modules && \
     mkdir StringTie && cd StringTie && \
-    wget http://ccb.jhu.edu/software/stringtie/dl/stringtie-${STRINGTIE_V}.Linux_x86_64.tar.gz &&\
+    wget https://ccb.jhu.edu/software/stringtie/dl/stringtie-${STRINGTIE_V}.Linux_x86_64.tar.gz &&\
     tar xvfz stringtie-${STRINGTIE_V}.Linux_x86_64.tar.gz && \
     cd stringtie-${STRINGTIE_V}.Linux_x86_64 && \
     mkdir /kb/deployment/bin/StringTie && \
@@ -37,7 +37,7 @@ RUN STRINGTIE_V='2.1.5' && \
 # download prepDE script
 RUN cd /kb/deployment/bin/modules && \
     mkdir prepDE && cd prepDE && \
-    wget http://ccb.jhu.edu/software/stringtie/dl/prepDE.py3 &&\
+    wget https://ccb.jhu.edu/software/stringtie/dl/prepDE.py3 &&\
     mkdir /kb/deployment/bin/prepDE && \
     cp -R prepDE.py3 /kb/deployment/bin/prepDE/prepDE.py && \
     chmod 777 /kb/deployment/bin/prepDE/prepDE.py
@@ -48,7 +48,7 @@ RUN cd /kb/deployment/bin/modules && \
 RUN GFFREAD_V='0.12.6' && \
     cd /kb/deployment/bin/modules && \
     mkdir gffread && cd gffread && \
-    wget http://ccb.jhu.edu/software/stringtie/dl/gffread-${GFFREAD_V}.Linux_x86_64.tar.gz &&\
+    wget https://ccb.jhu.edu/software/stringtie/dl/gffread-${GFFREAD_V}.Linux_x86_64.tar.gz &&\
     tar xvfz gffread-${GFFREAD_V}.Linux_x86_64.tar.gz && \
     cd gffread-${GFFREAD_V}.Linux_x86_64 && \
     mkdir /kb/deployment/bin/gffread && \
@@ -60,7 +60,7 @@ RUN GFFREAD_V='0.12.6' && \
 RUN GFFCOMP_V='0.12.2' && \
     cd /kb/deployment/bin/modules && \
     mkdir gffcompare && cd gffcompare && \
-    wget http://ccb.jhu.edu/software/stringtie/dl/gffcompare-${GFFCOMP_V}.Linux_x86_64.tar.gz	 &&\
+    wget https://ccb.jhu.edu/software/stringtie/dl/gffcompare-${GFFCOMP_V}.Linux_x86_64.tar.gz	 &&\
     tar xvfz gffcompare-${GFFCOMP_V}.Linux_x86_64.tar.gz	 && \
     cd gffcompare-${GFFCOMP_V}.Linux_x86_64	 && \
     mkdir /kb/deployment/bin/gffcompare && \
